@@ -45,3 +45,14 @@ VHFHelper/InterchangeVHF2Frequency = 0
 Additional dependencies besides X-Plane 11, SmartCopilot and FlyWithLua:
 - LUA INI Parser
 (bundled with each release)
+
+## Public API
+
+VHF Helper offers a public API via a global `VHFHelperPublicInterface` while its panel is visible. To programmatically set the next VHF frequency in VHF Helper's window from other FlyWithLua plugins, do:
+```text
+if (VHFHelperPublicInterface ~= nil) then
+	VHFHelperPublicInterface.enterFrequencyProgrammaticallyAsString("124.800")
+end
+```
+
+Only valid default VHF airband frequencies are accepted (118.000 to 136.975), with one exception: If the last digit doesn't match the default airband exactly, it is replaced by either a "0" or "5" based on whatever makes more sense. Any completely invalid, i.e. out-of-range, frequency is ignored and the next VHF frequency currently entered is cleared.

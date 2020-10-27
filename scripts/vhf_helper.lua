@@ -24,19 +24,66 @@ SOFTWARE.
 
 --]]
 
-local licensesOfDependencies = {
-  { "Lua INI Parser", "MIT License", "https://github.com/Dynodzzo/Lua_INI_Parser" },
-}
-
-for i = 1, #licensesOfDependencies do
-  logMsg(("VHF Helper using '%s' with license '%s'. Project homepage: %s"):format(licensesOfDependencies[i][1], licensesOfDependencies[i][2], licensesOfDependencies[i][3]))
-end
-
 local emptyString = ""
 local decimalCharacter = "."
 local underscoreCharacter = "_"
 
+local licensesOfDependencies = {
+	{ "Lua INI Parser", "MIT License", "https://github.com/Dynodzzo/Lua_INI_Parser" },
+}
+
+for i = 1, #licensesOfDependencies do
+	logMsg(("VHF Helper using '%s' with license '%s'. Project homepage: %s"):format(licensesOfDependencies[i][1], licensesOfDependencies[i][2], licensesOfDependencies[i][3]))
+end
+
+
 local function trim(str) return str:gsub("^%s*(.-)%s*$", "%1") end
+local function replaceCharacter(str, pos, newCharacter) return str:sub(1, pos - 1) .. newCharacter .. str:sub(pos+1) end
+
+local nextVhfFrequency = emptyString
+
+VHFHelperPublicInterface = nil
+
+local function validateFullFrequencyString(fullFrequencyString)
+	if (fullFrequencyString:len() ~= 7) then return nil end
+	cleanFrequencyString = string.sub(fullFrequencyString, 1, 3) .. string.sub(fullFrequencyString, 5, 7)
+	
+	frequencyNumber = tonumber(cleanFrequencyString)
+	minVhfFrequency = 118000
+	maxVhfFrequency = 136975
+	if (frequencyNumber < minVhfFrequency or frequencyNumber > maxVhfFrequency) then return nil end
+		
+	minorOneDigit = string.sub(cleanFrequencyString, 6, 6)
+	minorTenDigit = string.sub(cleanFrequencyString, 5, 5)
+	if (minorOneDigit ~= "0" and minorOneDigit ~= "5") then
+		minorOneDigit = "0"
+		cleanFrequencyString = replaceCharacter(cleanFrequencyString, 6, minorOneDigit)
+	end
+	
+	if (minorTenDigit == "2" or minorTenDigit == "7") then
+		minorOneDigit = "5"
+		cleanFrequencyString = replaceCharacter(cleanFrequencyString, 6, minorOneDigit)
+	end
+	
+	return string.sub(cleanFrequencyString, 1, 3) .. decimalCharacter .. string.sub(cleanFrequencyString, 4, 7)
+end
+
+local function activatePublicInterface()
+	VHFHelperPublicInterface = {
+		enterFrequencyProgrammaticallyAsString = function(newFullString)
+			newFullString = validateFullFrequencyString(newFullString)
+			if (newFullString ~= nil) then
+				nextVhfFrequency = newFullString
+			else
+				nextVhfFrequency = emptyString
+			end
+		end
+	}
+end
+
+local function deactivatePublicInterface()
+	VHFHelperPublicInterface = nil
+end
 
 local function windowVisibilityToInitialMacroState(windowIsVisible) if windowIsVisible then return "activate" else return "deactivate" end end
 
@@ -92,8 +139,6 @@ local currentVhfFrequencies = {
 	0,
 	0
 }
-
-local nextVhfFrequency = emptyString
 
 local lastInterchangeFrequencies = {
 	0,
@@ -359,6 +404,8 @@ function destroyVhfHelperWindow()
 	
 	setConfigurationValue("Windows", "MainWindowVisibility", windowVisibilityHidden)
 	saveConfiguration()
+	
+	deactivatePublicInterface()
 end
 
 function everyFrameLoopFunction()
@@ -390,6 +437,8 @@ function createVhfHelperWindow()
 	
 	setConfigurationValue("Windows", "MainWindowVisibility", windowVisibilityVisible)
 	saveConfiguration()
+	
+	activatePublicInterface()
 end
 
 VHFHelperIsInitialized = false
@@ -444,14 +493,13 @@ local function toggleVhfHelperWindow()
 	showVhfHelperWindow(vhfHelperWindow and true or false)
 end
 
-local function globalInitializeOnce()
+local function initializeOnce()
 	create_command("FlyWithLua/VHF Helper/ToggleWindow", "Toggle VHF Helper Window", "toggleVhfHelperWindow()", "", "")
 	
 	loadConfiguration()
 	
-	configWindowVisibility = getConfigurationValue("Windows", "MainWindowVisibility", windowVisibilityVisible)
 	windowIsSupposedToBeVisible = false
-	if (trim(configWindowVisibility) == "visible") then
+	if (trim(getConfigurationValue("Windows", "MainWindowVisibility", windowVisibilityVisible)) == windowVisibilityVisible) then
 		windowIsSupposedToBeVisible = true
 	end
 
@@ -466,5 +514,5 @@ local function globalInitializeOnce()
 	do_often("tryInitLoopFunction()")
 end
 
-globalInitializeOnce()
+initializeOnce()
 
