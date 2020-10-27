@@ -19,6 +19,7 @@ VHF Helper:
 
 * Install FlyWithLua: https://forums.x-plane.org/index.php?/files/file/38445-flywithlua-ng-next-generation-edition-for-x-plane-11-win-lin-mac/
 * Download [latest VHF Helper release](https://github.com/VerticalLongboard/xplane-vhf-helper/releases/latest)
+* Move dependencies to `<X-Plane 11 Folder>/Resources/plugins/FlyWithLua/Modules`
 * Move `vhf_helper.lua` to `<X-Plane 11 Folder>/Resources/plugins/FlyWithLua/Scripts`
 
 To make it multicrew-ready (do that in **BOTH** pilot's airplanes):
