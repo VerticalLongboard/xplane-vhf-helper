@@ -12,6 +12,7 @@ VHF Helper:
 * Integrates well with ATC networks (e.g. VATSIM)
 
 ![VHF Helper Screenshot](screenshots/VHFHelperScreenshot2.png "VHF Helper Screenshot")
+![VHF Helper Video](screenshots/VHFHelperUsageVideo.gif "VHF Helper Video")
 
 ## Installation
 
