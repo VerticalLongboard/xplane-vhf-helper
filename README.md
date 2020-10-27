@@ -7,11 +7,11 @@ VHF Helper is a FlyWithLua plugin for X-Plane 11. It allows to change the two ma
 Flying multicrew in X-Plane with ATC is a blast! Yet, the default X-Plane 11 VR knobs are horrible when trying to monitor/fly and dial in a new ATC frequency at the same time (takes up to 2 minutes for a 2-hour flight, just turning the knob and making sure that no turn got lost when using SmartCopilot).
 
 VHF Helper:
-* Makes tuning in a new ATC frequency a breeze!
-* Works with SmartCopilot (both pilots need to install VHF Helper) and synchronizes COM frequencies between two pilots
+* Works with SmartCopilot (both pilots need to install VHF Helper)
 * Works in VR (free positioning in 3D space)
+* Integrates well with ATC networks (e.g. VATSIM)
 
-![VHF Helper Screenshot](screenshots/VHFHelperScreenshot1.jpg "VHF Helper Screenshot")
+![VHF Helper Screenshot](VHFHelperScreenshot2.png "VHF Helper Screenshot")
 
 ## Installation
 
@@ -32,9 +32,7 @@ VHFHelper/InterchangeVHF2Frequency = 0
 ## Usage
 
 * Go to `Plugins/FlyWithLua/FlyWithLua Macros/VHF Helper`
-* Place and scale the window wherever you like (in 2D and VR)
-* Use the number buttons to enter the new VHF frequency. The last two digits are subject to auto completion.
-* Press the COM1 or COM2 switch button to switch to the new frequency
+* Place the window wherever you like (in 2D and VR)
 * **Chat with ATC! :-)**
 
 ## Dependencies
