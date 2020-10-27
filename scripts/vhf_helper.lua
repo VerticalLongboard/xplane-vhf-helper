@@ -24,9 +24,69 @@ SOFTWARE.
 
 --]]
 
+local licensesOfDependencies = {
+  { "Lua INI Parser", "MIT License", "https://github.com/Dynodzzo/Lua_INI_Parser" },
+}
+
+for i = 1, #licensesOfDependencies do
+  logMsg(("VHF Helper using '%s' with license '%s'. Project homepage: %s"):format(licensesOfDependencies[i][1], licensesOfDependencies[i][2], licensesOfDependencies[i][3]))
+end
+
 local emptyString = ""
 local decimalCharacter = "."
 local underscoreCharacter = "_"
+
+local function trim(str) return str:gsub("^%s*(.-)%s*$", "%1") end
+
+local function windowVisibilityToInitialMacroState(windowIsVisible) if windowIsVisible then return "activate" else return "deactivate" end end
+
+local LuaIniParser = require("LIP")
+
+local Configuration = {
+	Path = SCRIPT_DIRECTORY .. "vhf-helper.ini",
+	Content = {},
+}
+
+local function fileExists(filePath)
+	local file = io.open(filePath, "r")
+	if file == nil then
+		return false
+	end
+	
+	io.close(file)
+	return true
+end
+
+local function loadConfiguration()
+	if (not fileExists(Configuration.Path)) then
+		return
+	end
+	
+	Configuration.Content = LuaIniParser.load(Configuration.Path);
+end
+
+local function saveConfiguration()
+	LuaIniParser.save(Configuration.Path, Configuration.Content)
+end
+
+local function setConfigurationValue(section, key, value)
+	if Configuration.Content == nil then Configuration.Content = {} end
+	if Configuration.Content[section] == nil then Configuration.Content[section] = {} end
+	if type(value) == "string" then value = trim(value) end
+	
+	Configuration.Content[section][key] = value
+end
+
+local function getConfigurationValue(section, key, defaultValue)
+	if Configuration.Content == nil then Configuration.Content = {} end
+	if Configuration.Content[section] == nil then Configuration.Content[section] = {} end
+	if Configuration.Content[section][key] == nil then Configuration.Content[section][key] = defaultValue end
+	
+	return Configuration.Content[section][key]
+end
+
+local windowVisibilityVisible = "visible"
+local windowVisibilityHidden = "hidden"
 
 local currentVhfFrequencies = {
 	0,
@@ -84,16 +144,16 @@ local function updateCurrentVhfFrequenciesFromPlane()
 	currentVhfFrequencies[2] = CurrentVHF2FrequencyRead
 end
 
-local function setPlaneVHF1Frequency(newFrequency)
-	XPLMSetDatai(vhfFrequencyWriteHandles[1], newFrequency)
-	InterchangeVHF1Frequency = newFrequency
-	lastInterchangeFrequencies[1] = newFrequency
-end
-
-local function setPlaneVHF2Frequency(newFrequency)
-	XPLMSetDatai(vhfFrequencyWriteHandles[2], newFrequency)
-	InterchangeVHF2Frequency = newFrequency
-	lastInterchangeFrequencies[2] = newFrequency
+local function setPlaneVHFFrequency(comNumber, newFrequency)
+	XPLMSetDatai(vhfFrequencyWriteHandles[comNumber], newFrequency)
+	
+	if (comNumber == 1) then
+		InterchangeVHF1Frequency = newFrequency
+	elseif (comNumber == 2) then
+		InterchangeVHF2Frequency = newFrequency
+	end
+		
+	lastInterchangeFrequencies[comNumber] = newFrequency
 end
 
 local function autocompleteCleanFrequencyString(cleanVhfFrequencyString)
@@ -121,12 +181,7 @@ local function validateAndSetNextVHFFrequency(comNumber)
 	cleanVhfFrequency = autocompleteCleanFrequencyString(cleanVhfFrequency)
 	nextFrequencyAsNumber = tonumber(cleanVhfFrequency)
 	
-	if (comNumber == 1) then
-		setPlaneVHF1Frequency(nextFrequencyAsNumber)
-	elseif (comNumber == 2) then
-		setPlaneVHF2Frequency(nextFrequencyAsNumber)
-	end
-	
+	setPlaneVHFFrequency(comNumber, nextFrequencyAsNumber)
 	nextVhfFrequency = emptyString
 end
 
@@ -233,7 +288,7 @@ end
 function buildVhfHelperWindow()
 	imgui.SetWindowFontScale(2.0)
 
-	nextVhfFrequencyIsSettable = nextVhfFrequencyCanBeSetNow() --nextVhfFrequencyIsEnteredCompletely()
+	nextVhfFrequencyIsSettable = nextVhfFrequencyCanBeSetNow()
 	
 	buildCurrentVhfLine(1, nextVhfFrequencyIsSettable)
 	buildCurrentVhfLine(2, nextVhfFrequencyIsSettable)
@@ -297,10 +352,13 @@ end
 
 vhfHelperWindow = nil
 
-function hideVhfHelperWindow()
+function destroyVhfHelperWindow()
 	if (vhfHelperWindow) then
 		float_wnd_destroy(vhfHelperWindow)
 	end
+	
+	setConfigurationValue("Windows", "MainWindowVisibility", windowVisibilityHidden)
+	saveConfiguration()
 end
 
 function everyFrameLoopFunction()
@@ -309,17 +367,17 @@ function everyFrameLoopFunction()
 	currentInterchangeVhf1Freq = InterchangeVHF1Frequency;
 	
 	if (currentInterchangeVhf1Freq ~= lastInterchangeFrequencies[1]) then
-		setPlaneVHF1Frequency(currentInterchangeVhf1Freq)
+		setPlaneVHFFrequency(1, currentInterchangeVhf1Freq)
 	end
 	
 	currentInterchangeVhf2Freq = InterchangeVHF2Frequency;
 	
 	if (currentInterchangeVhf2Freq ~= lastInterchangeFrequencies[2]) then
-		setPlaneVHF2Frequency(currentInterchangeVhf2Freq)
+		setPlaneVHFFrequency(2, currentInterchangeVhf2Freq)
 	end
 end
 
-function showVhfHelperWindow()
+function createVhfHelperWindow()
 	tryInitLoopFunction()
 	
 	minWidthWithoutScrollbars = 255
@@ -328,7 +386,10 @@ function showVhfHelperWindow()
 	vhfHelperWindow = float_wnd_create(minWidthWithoutScrollbars, minHeightWithoutScrollbars, 1, true)
 	float_wnd_set_title(vhfHelperWindow, "VHF Helper")
 	float_wnd_set_imgui_builder(vhfHelperWindow, "buildVhfHelperWindow")
-	float_wnd_set_onclose(vhfHelperWindow, "hideVhfHelperWindow")
+	float_wnd_set_onclose(vhfHelperWindow, "destroyVhfHelperWindow")
+	
+	setConfigurationValue("Windows", "MainWindowVisibility", windowVisibilityVisible)
+	saveConfiguration()
 end
 
 VHFHelperIsInitialized = false
@@ -371,12 +432,39 @@ function tryInitLoopFunction()
 	VHFHelperIsInitialized = true
 end
 
-add_macro("VHF Helper", "showVhfHelperWindow()", "hideVhfHelperWindow()", "deactivate")
+local function showVhfHelperWindow(value)
+	if (vhfHelperWindow == nil and value) then
+		createVhfHelperWindow()
+	elseif (vhfHelperWindow ~= nil and not value) then
+		destroyVhfHelperWindow()
+	end
+end
 
-InterchangeVHF1Frequency = define_shared_DataRef(interchangeFrequencyNames[1], "Int")
-dataref("InterchangeVHF1Frequency", interchangeFrequencyNames[1], "writable")
+local function toggleVhfHelperWindow()
+	showVhfHelperWindow(vhfHelperWindow and true or false)
+end
 
-InterchangeVHF2Frequency = define_shared_DataRef(interchangeFrequencyNames[2], "Int")
-dataref("InterchangeVHF2Frequency", interchangeFrequencyNames[2], "writable")
+local function globalInitializeOnce()
+	create_command("FlyWithLua/VHF Helper/ToggleWindow", "Toggle VHF Helper Window", "toggleVhfHelperWindow()", "", "")
+	
+	loadConfiguration()
+	
+	configWindowVisibility = getConfigurationValue("Windows", "MainWindowVisibility", windowVisibilityVisible)
+	windowIsSupposedToBeVisible = false
+	if (trim(configWindowVisibility) == "visible") then
+		windowIsSupposedToBeVisible = true
+	end
 
-do_often("tryInitLoopFunction()")
+	add_macro("VHF Helper", "createVhfHelperWindow()", "destroyVhfHelperWindow()", windowVisibilityToInitialMacroState(windowIsSupposedToBeVisible))
+
+	InterchangeVHF1Frequency = define_shared_DataRef(interchangeFrequencyNames[1], "Int")
+	dataref("InterchangeVHF1Frequency", interchangeFrequencyNames[1], "writable")
+
+	InterchangeVHF2Frequency = define_shared_DataRef(interchangeFrequencyNames[2], "Int")
+	dataref("InterchangeVHF2Frequency", interchangeFrequencyNames[2], "writable")
+
+	do_often("tryInitLoopFunction()")
+end
+
+globalInitializeOnce()
+
