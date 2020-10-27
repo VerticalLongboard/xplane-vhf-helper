@@ -91,7 +91,7 @@ local function setPlaneVHF1Frequency(newFrequency)
 end
 
 local function setPlaneVHF2Frequency(newFrequency)
-	XPLMSetDatai(CurrentVHF2FrequencyWriteHandle, newFrequency)
+	XPLMSetDatai(vhfFrequencyWriteHandles[2], newFrequency)
 	InterchangeVHF2Frequency = newFrequency
 	lastInterchangeFrequencies[2] = newFrequency
 end
@@ -356,7 +356,7 @@ function tryInitLoopFunction()
 	vhfFrequencyWriteHandles[1] = XPLMFindDataRef(comVhfFrequencyDataRefNames[1])
 	
 	dataref("CurrentVHF2FrequencyRead", comVhfFrequencyDataRefNames[2], "readable")
-	CurrentVHF2FrequencyWriteHandle = XPLMFindDataRef(comVhfFrequencyDataRefNames[2])
+	vhfFrequencyWriteHandles[2] = XPLMFindDataRef(comVhfFrequencyDataRefNames[2])
 	
 	do_every_frame("everyFrameLoopFunction()")
 		
