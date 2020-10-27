@@ -11,7 +11,7 @@ VHF Helper:
 * Works in VR (free positioning in 3D space)
 * Integrates well with ATC networks (e.g. VATSIM)
 
-![VHF Helper Screenshot](VHFHelperScreenshot2.png "VHF Helper Screenshot")
+![VHF Helper Screenshot](screenshots/VHFHelperScreenshot2.png "VHF Helper Screenshot")
 
 ## Installation
 
