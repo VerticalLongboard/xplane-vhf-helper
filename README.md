@@ -41,4 +41,5 @@ VHFHelper/InterchangeVHF2Frequency = 0
 
 ## Dependencies
 
-No additional dependencies besides X-Plane 11, SmartCopilot and FlyWithLua.
+Additional dependencies besides X-Plane 11, SmartCopilot and FlyWithLua:
+- LUA INI Parser
