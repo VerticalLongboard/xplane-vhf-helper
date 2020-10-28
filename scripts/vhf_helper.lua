@@ -40,6 +40,16 @@ end
 local function trim(str) return str:gsub("^%s*(.-)%s*$", "%1") end
 local function replaceCharacter(str, pos, newCharacter) return str:sub(1, pos - 1) .. newCharacter .. str:sub(pos+1) end
 
+local lastVhfFrequencies = {
+	0,
+	0
+}
+
+local currentVhfFrequencies = {
+	0,
+	0
+}
+
 local nextVhfFrequency = emptyString
 
 VHFHelperPublicInterface = nil
@@ -68,6 +78,28 @@ local function validateFullFrequencyString(fullFrequencyString)
 	return string.sub(cleanFrequencyString, 1, 3) .. decimalCharacter .. string.sub(cleanFrequencyString, 4, 7)
 end
 
+local function autocompleteFrequencyString(fullFrequencyString)
+	nextStringLength = string.len(fullFrequencyString)
+	if (nextStringLength == 5) then
+		fullFrequencyString = fullFrequencyString .. "00"
+	elseif (nextStringLength == 6) then
+		minorTenDigit = string.sub(fullFrequencyString, 6, 6)
+		if (minorTenDigit == "2" or minorTenDigit == "7") then
+			fullFrequencyString = fullFrequencyString .. "5"
+		else
+			fullFrequencyString = fullFrequencyString .. "0"
+		end
+	end
+	
+	return fullFrequencyString
+end
+
+local onFrequencyChangedCallback = nil
+
+local EventBus = require("eventbus")
+VHFHelperEventBus = EventBus.new()
+VHFHelperEventOnComFrequencyChanged = "EventBus_EventName_VHFHelperEventOnComFrequencyChanged"
+
 local function activatePublicInterface()
 	VHFHelperPublicInterface = {
 		enterFrequencyProgrammaticallyAsString = function(newFullString)
@@ -77,6 +109,34 @@ local function activatePublicInterface()
 			else
 				nextVhfFrequency = emptyString
 			end
+			
+			return nextVhfFrequency
+		end,
+		
+		isCurrentlyTunedIn = function(fullFrequencyString)
+			newFullString = validateFullFrequencyString(fullFrequencyString)
+			if (newFullString == nil) then return false end
+			
+			for c = 1, 2 do
+				currentComString = tostring(currentVhfFrequencies[c])
+				currentComString = string.sub(currentComString, 1, 3) .. decimalCharacter .. string.sub(currentComString, 4, 7)
+				if (newFullString == currentComString) then return true end
+			end
+			
+			return false
+		end,
+		
+		isCurrentlyEntered = function(fullFrequencyString)
+			newFullString = validateFullFrequencyString(fullFrequencyString)
+			if (newFullString == nil) then return false end
+			
+			autocompletedNextVhf = autocompleteFrequencyString(nextVhfFrequency)
+			
+			logMsg(("valid new=%s autocompleted next=%s"):format(newFullString, autocompletedNextVhf))
+			
+			if (newFullString == autocompletedNextVhf) then return true end
+			
+			return false
 		end
 	}
 end
@@ -90,7 +150,7 @@ local function windowVisibilityToInitialMacroState(windowIsVisible) if windowIsV
 local LuaIniParser = require("LIP")
 
 local Configuration = {
-	Path = SCRIPT_DIRECTORY .. "vhf-helper.ini",
+	Path = SCRIPT_DIRECTORY .. "vhf_helper.ini",
 	Content = {},
 }
 
@@ -135,11 +195,6 @@ end
 local windowVisibilityVisible = "visible"
 local windowVisibilityHidden = "hidden"
 
-local currentVhfFrequencies = {
-	0,
-	0
-}
-
 local lastInterchangeFrequencies = {
 	0,
 	0
@@ -178,10 +233,13 @@ local function removeLastCharacterFromNextVhfFrequency()
 	if (string.len(nextVhfFrequency) == 4) then
 		nextVhfFrequency = string.sub(nextVhfFrequency, 1, -2)
 	end
+	
+	VHFHelperEventBus.emit(VHFHelperEventOnComFrequencyChanged)
 end
 
 local function resetNextFrequency()
 	nextVhfFrequency = emptyString
+	VHFHelperEventBus.emit(VHFHelperEventOnComFrequencyChanged)
 end
 
 local function updateCurrentVhfFrequenciesFromPlane()
@@ -201,30 +259,13 @@ local function setPlaneVHFFrequency(comNumber, newFrequency)
 	lastInterchangeFrequencies[comNumber] = newFrequency
 end
 
-local function autocompleteCleanFrequencyString(cleanVhfFrequencyString)
-	nextStringLength = string.len(cleanVhfFrequencyString)
-	if (nextStringLength == 4) then
-		cleanVhfFrequencyString = cleanVhfFrequencyString .. "00"
-	elseif (nextStringLength == 5) then
-		minorTenDigit = string.sub(cleanVhfFrequencyString, 5, 5)
-		if (minorTenDigit == "2" or minorTenDigit == "7") then
-			cleanVhfFrequencyString = cleanVhfFrequencyString .. "5"
-		else
-			cleanVhfFrequencyString = cleanVhfFrequencyString .. "0"
-		end
-	end
-	
-	return cleanVhfFrequencyString
-end
-
 local function validateAndSetNextVHFFrequency(comNumber)
 	if (not nextVhfFrequencyCanBeSetNow()) then
 		return
 	end
 
-	cleanVhfFrequency = string.gsub(nextVhfFrequency, "%.", "")
-	cleanVhfFrequency = autocompleteCleanFrequencyString(cleanVhfFrequency)
-	nextFrequencyAsNumber = tonumber(cleanVhfFrequency)
+	local cleanVhfFrequency = string.gsub(autocompleteFrequencyString(nextVhfFrequency), "%.", "")
+	local nextFrequencyAsNumber = tonumber(cleanVhfFrequency)
 	
 	setPlaneVHFFrequency(comNumber, nextFrequencyAsNumber)
 	nextVhfFrequency = emptyString
@@ -292,6 +333,7 @@ local function createNumberButtonAndReactToClicks(number)
 				
 	if (imgui.Button(numberCharacter, defaultDummySize, defaultDummySize) and numberCharacter ~= underscoreCharacter) then
 		addToNextVhfFrequency(numberCharacter)
+		VHFHelperEventBus.emit(VHFHelperEventOnComFrequencyChanged)
 	end
 end
 
@@ -411,16 +453,28 @@ end
 function everyFrameLoopFunction()
 	updateCurrentVhfFrequenciesFromPlane()
 	
-	currentInterchangeVhf1Freq = InterchangeVHF1Frequency;
+	local currentInterchangeFrequencies = {
+		InterchangeVHF1Frequency,
+		InterchangeVHF2Frequency
+	}
 	
-	if (currentInterchangeVhf1Freq ~= lastInterchangeFrequencies[1]) then
-		setPlaneVHFFrequency(1, currentInterchangeVhf1Freq)
+	for c = 1, 2 do
+		if (currentInterchangeFrequencies[c] ~= lastInterchangeFrequencies[c]) then
+			setPlaneVHFFrequency(c, currentInterchangeFrequencies[c])
+		end
 	end
 	
-	currentInterchangeVhf2Freq = InterchangeVHF2Frequency;
-	
-	if (currentInterchangeVhf2Freq ~= lastInterchangeFrequencies[2]) then
-		setPlaneVHFFrequency(2, currentInterchangeVhf2Freq)
+	local localFrequenciesHaveChanged = false
+	for c = 1, 2 do
+		if (currentVhfFrequencies[c] ~= lastVhfFrequencies[c]) then
+			localFrequenciesHaveChanged = true
+		end
+		
+		lastVhfFrequencies[c] = currentVhfFrequencies[c]
+	end
+		
+	if (localFrequenciesHaveChanged) then
+		VHFHelperEventBus.emit(VHFHelperEventOnComFrequencyChanged)
 	end
 end
 
