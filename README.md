@@ -58,7 +58,7 @@ if (VHFHelperPublicInterface ~= nil) then
 end
 ```
 
-To programmatically set the `Next VHF` frequency in VHF Helper's panel, do:
+To programmatically set the `Next VHF` frequency in VHF Helper's panel (nil if invalid):
 ```text
 VHFHelperPublicInterface.enterFrequencyProgrammaticallyAsString("124.800")
 ```
