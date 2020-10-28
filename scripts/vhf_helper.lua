@@ -30,6 +30,7 @@ local underscoreCharacter = "_"
 
 local licensesOfDependencies = {
 	{ "Lua INI Parser", "MIT License", "https://github.com/Dynodzzo/Lua_INI_Parser" },
+	{ "Lua Event Bus", "MIT License", "https://github.com/prabirshrestha/lua-eventbus" },
 }
 
 for i = 1, #licensesOfDependencies do
@@ -131,8 +132,6 @@ local function activatePublicInterface()
 			if (newFullString == nil) then return false end
 			
 			autocompletedNextVhf = autocompleteFrequencyString(nextVhfFrequency)
-			
-			logMsg(("valid new=%s autocompleted next=%s"):format(newFullString, autocompletedNextVhf))
 			
 			if (newFullString == autocompletedNextVhf) then return true end
 			
