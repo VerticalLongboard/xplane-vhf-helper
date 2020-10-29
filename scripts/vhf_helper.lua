@@ -54,6 +54,7 @@ local currentVhfFrequencies = {
 local nextVhfFrequency = emptyString
 
 local function validateFullFrequencyString(fullFrequencyString)
+	if (fullFrequencyString == nil) then return nil end
 	if (fullFrequencyString:len() ~= 7) then return nil end
 	if (string.sub(fullFrequencyString, 4, 4) ~= decimalCharacter) then return nil end
 	
