@@ -75,7 +75,11 @@ VHFHelperPublicInterface.isCurrentlyEntered("119.250")
 
 Only valid default VHF airband frequencies are accepted (118.000 to 136.975), with one exception: If the last digit doesn't match the default airband exactly, it is replaced by either a "0" or "5" based on whatever makes more sense. Any completely invalid, i.e. out-of-range, frequency is ignored and, in case of `enterFrequencyProgrammaticallyAsString`, the next VHF frequency currently entered is cleared.
 
-VHF Helper uses an Event Bus to emit any changes in tuned-in or currently entered frequencies (even when its panel is not visible). Use the `VHFHelperEventOnComFrequencyChanged` event to listen:
+VHF Helper uses an Event Bus to emit any changes (even when its panel is not visible) in:
+* tuned-in frequencies (`COM1` or `COM2`)
+* currently entered frequencies (`Next VHF`)
+
+Use the `VHFHelperEventOnComFrequencyChanged` event to listen:
 ```text
 function onComFrequencyChanged()
 	-- Do something when frequencies change
