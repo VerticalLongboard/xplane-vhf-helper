@@ -58,17 +58,17 @@ if (VHFHelperPublicInterface ~= nil) then
 end
 ```
 
-To programmatically set the `Next VHF` frequency in VHF Helper's panel (nil if invalid):
+To programmatically set the `Next VHF` frequency in VHF Helper's panel (returns `nil` if invalid):
 ```text
 VHFHelperPublicInterface.enterFrequencyProgrammaticallyAsString("124.800")
 ```
 
-To find out if a frequency is currently tuned in (true/false):
+To find out if a frequency is currently tuned in (returns `true/false`):
 ```text
 VHFHelperPublicInterface.isCurrentlyTunedIn("119.250")
 ```
 
-To find out if a frequency is the same as the currently entered `Next VHF` (true/false):
+To find out if a frequency is the same as the currently entered `Next VHF` (returns `true/false`):
 ```text
 VHFHelperPublicInterface.isCurrentlyEntered("119.250")
 ```
