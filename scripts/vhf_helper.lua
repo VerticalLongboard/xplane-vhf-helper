@@ -111,6 +111,8 @@ local function activatePublicInterface()
 				nextVhfFrequency = emptyString
 			end
 			
+			VHFHelperEventBus.emit(VHFHelperEventOnComFrequencyChanged)
+			
 			return nextVhfFrequency
 		end,
 		
@@ -256,6 +258,12 @@ local function setPlaneVHFFrequency(comNumber, newFrequency)
 	end
 		
 	lastInterchangeFrequencies[comNumber] = newFrequency
+	
+	-- Emit change based on the user having pressed a button, even if the new frequency is equal.
+	-- Any real change will emit an event later anyway.
+	if (currentVhfFrequencies[comNumber] == newFrequency) then
+		VHFHelperEventBus.emit(VHFHelperEventOnComFrequencyChanged)
+	end
 end
 
 local function validateAndSetNextVHFFrequency(comNumber)
@@ -325,7 +333,8 @@ local function getValidNumberCharacterOrUnderscore(number)
 	return getValidNumberCharacterOrUnderscoreInDefaultAirband(number)
 end
 
-local defaultDummySize = 40.0
+local globalFontScale = nil
+local defaultDummySize = nil
 
 local function createNumberButtonAndReactToClicks(number)
 	numberCharacter = getValidNumberCharacterOrUnderscore(number)
@@ -372,7 +381,7 @@ local function buildCurrentVhfLine(comNumber, nextVhfFrequencyIsSettable)
 end
 
 function buildVhfHelperWindow()
-	imgui.SetWindowFontScale(2.0)
+	imgui.SetWindowFontScale(1.0 * globalFontScale)
 
 	nextVhfFrequencyIsSettable = nextVhfFrequencyCanBeSetNow()
 	
@@ -394,7 +403,7 @@ function buildVhfHelperWindow()
 	
 	imgui.PopStyleColor()
 	
-	imgui.Dummy(defaultDummySize * 1.9, defaultDummySize)
+	imgui.Dummy(defaultDummySize, defaultDummySize)
 	imgui.SameLine()
 	
 	if (imgui.Button("Clear")) then
@@ -407,13 +416,10 @@ function buildVhfHelperWindow()
 		removeLastCharacterFromNextVhfFrequency()
 	end
 		
-	imgui.SameLine()
-	imgui.Dummy(defaultDummySize * 0.5, defaultDummySize * 0.5)
-	
 	imgui.Dummy(defaultDummySize, defaultDummySize)
 	imgui.SameLine()
 	
-	imgui.SetWindowFontScale(3.0)
+	imgui.SetWindowFontScale(1.3 * globalFontScale)
 		
 	imgui.PushStyleColor(imgui.constant.Col.Text, a320Blue)
 		
@@ -479,9 +485,26 @@ end
 
 function createVhfHelperWindow()
 	tryInitLoopFunction()
+			
+	local minWidthWithoutScrollbars = nil
+	local minHeightWithoutScrollbars = nil	
 	
-	minWidthWithoutScrollbars = 255
-	minHeightWithoutScrollbars = 335
+	globalFontScaleDescriptor = trim(getConfigurationValue("Windows", "GlobalFontScale", "normal"))
+	if (globalFontScaleDescriptor == "huge") then
+		globalFontScale = 3.0
+		minWidthWithoutScrollbars = 360
+		minHeightWithoutScrollbars = 480
+	elseif (globalFontScaleDescriptor == "big") then
+		globalFontScale = 2.0
+		minWidthWithoutScrollbars = 255
+		minHeightWithoutScrollbars = 340
+	else
+		globalFontScale = 1.0
+		minWidthWithoutScrollbars = 145
+		minHeightWithoutScrollbars = 195
+	end
+	
+	defaultDummySize = 20.0 * globalFontScale
 	
 	vhfHelperWindow = float_wnd_create(minWidthWithoutScrollbars, minHeightWithoutScrollbars, 1, true)
 	float_wnd_set_title(vhfHelperWindow, "VHF Helper")
@@ -555,6 +578,7 @@ local function initializeOnce()
 	if (trim(getConfigurationValue("Windows", "MainWindowVisibility", windowVisibilityVisible)) == windowVisibilityVisible) then
 		windowIsSupposedToBeVisible = true
 	end
+
 
 	add_macro("VHF Helper", "createVhfHelperWindow()", "destroyVhfHelperWindow()", windowVisibilityToInitialMacroState(windowIsSupposedToBeVisible))
 
