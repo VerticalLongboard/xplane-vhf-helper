@@ -53,10 +53,10 @@ local currentVhfFrequencies = {
 
 local nextVhfFrequency = emptyString
 
-VHFHelperPublicInterface = nil
-
 local function validateFullFrequencyString(fullFrequencyString)
 	if (fullFrequencyString:len() ~= 7) then return nil end
+	if (string.sub(fullFrequencyString, 4, 4) ~= decimalCharacter) then return nil end
+	
 	cleanFrequencyString = string.sub(fullFrequencyString, 1, 3) .. string.sub(fullFrequencyString, 5, 7)
 	
 	frequencyNumber = tonumber(cleanFrequencyString)
@@ -95,11 +95,10 @@ local function autocompleteFrequencyString(fullFrequencyString)
 	return fullFrequencyString
 end
 
-local onFrequencyChangedCallback = nil
-
+VHFHelperPublicInterface = nil
 local EventBus = require("eventbus")
 VHFHelperEventBus = EventBus.new()
-VHFHelperEventOnComFrequencyChanged = "EventBus_EventName_VHFHelperEventOnComFrequencyChanged"
+VHFHelperEventOnFrequencyChanged = "EventBus_EventName_VHFHelperEventOnFrequencyChanged"
 
 local function activatePublicInterface()
 	VHFHelperPublicInterface = {
@@ -111,7 +110,7 @@ local function activatePublicInterface()
 				nextVhfFrequency = emptyString
 			end
 			
-			VHFHelperEventBus.emit(VHFHelperEventOnComFrequencyChanged)
+			VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
 			
 			return nextVhfFrequency
 		end,
@@ -138,7 +137,12 @@ local function activatePublicInterface()
 			if (newFullString == autocompletedNextVhf) then return true end
 			
 			return false
-		end
+		end,
+		
+		isValidFrequency = function(fullFrequencyString)
+			if (validateFullFrequencyString(fullFrequencyString) == nil) then return false
+			else return true end
+		end,
 	}
 end
 
@@ -235,12 +239,12 @@ local function removeLastCharacterFromNextVhfFrequency()
 		nextVhfFrequency = string.sub(nextVhfFrequency, 1, -2)
 	end
 	
-	VHFHelperEventBus.emit(VHFHelperEventOnComFrequencyChanged)
+	VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
 end
 
 local function resetNextFrequency()
 	nextVhfFrequency = emptyString
-	VHFHelperEventBus.emit(VHFHelperEventOnComFrequencyChanged)
+	VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
 end
 
 local function updateCurrentVhfFrequenciesFromPlane()
@@ -262,7 +266,7 @@ local function setPlaneVHFFrequency(comNumber, newFrequency)
 	-- Emit change based on the user having pressed a button, even if the new frequency is equal.
 	-- Any real change will emit an event later anyway.
 	if (currentVhfFrequencies[comNumber] == newFrequency) then
-		VHFHelperEventBus.emit(VHFHelperEventOnComFrequencyChanged)
+		VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
 	end
 end
 
@@ -341,7 +345,7 @@ local function createNumberButtonAndReactToClicks(number)
 				
 	if (imgui.Button(numberCharacter, defaultDummySize, defaultDummySize) and numberCharacter ~= underscoreCharacter) then
 		addToNextVhfFrequency(numberCharacter)
-		VHFHelperEventBus.emit(VHFHelperEventOnComFrequencyChanged)
+		VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
 	end
 end
 
@@ -352,13 +356,20 @@ local whiteColor = 0xFFFFFFFF
 local fullyPaddedFreqString = "___.___"
 
 local function buildCurrentVhfLine(comNumber, nextVhfFrequencyIsSettable)
-	imgui.TextUnformatted("COM" .. tonumber(comNumber) .. ":")
+	imgui.PushStyleVar_2(imgui.constant.StyleVar.FramePadding, 0.0, 0.0)
+
+
+	imgui.TextUnformatted("COM" .. tonumber(comNumber) .. ": ")
 
 	imgui.SameLine()
 	imgui.PushStyleColor(imgui.constant.Col.Text, a320Orange)
 	currentVhfString = tostring(currentVhfFrequencies[comNumber])
 	imgui.TextUnformatted(string.sub(currentVhfString, 1, 3) .. decimalCharacter .. string.sub(currentVhfString, 4, 7))
 	imgui.PopStyleColor()
+	
+	local colorDefaultImguiBackground = 0xFF121110
+	
+	imgui.PushStyleColor(imgui.constant.Col.Button, colorDefaultImguiBackground)
 	
 	if (nextVhfFrequencyIsSettable) then
 		imgui.PushStyleColor(imgui.constant.Col.Text, a320Green)
@@ -367,28 +378,36 @@ local function buildCurrentVhfLine(comNumber, nextVhfFrequencyIsSettable)
 	end
 	
 	imgui.SameLine()
+	imgui.TextUnformatted(" ")
 	
-	buttonText = "___"
+	local buttonText = "   "
 	if (nextVhfFrequencyIsSettable) then
 		buttonText = "<" .. tonumber(comNumber) .. ">"
-	end
-
-	if (imgui.Button(buttonText)) then
-		validateAndSetNextVHFFrequency(comNumber)
+		
+		
+		imgui.SameLine()
+		if (imgui.Button(buttonText)) then
+			validateAndSetNextVHFFrequency(comNumber)
+		end
 	end
 	
 	imgui.PopStyleColor()
+	imgui.PopStyleColor()
+	
+	imgui.PopStyleVar()
 end
 
 function buildVhfHelperWindow()
 	imgui.SetWindowFontScale(1.0 * globalFontScale)
 
 	nextVhfFrequencyIsSettable = nextVhfFrequencyCanBeSetNow()
+		
+	imgui.PushStyleVar_2(imgui.constant.StyleVar.ItemSpacing, 0.0, 2.0)
 	
 	buildCurrentVhfLine(1, nextVhfFrequencyIsSettable)
 	buildCurrentVhfLine(2, nextVhfFrequencyIsSettable)
 		
-	imgui.TextUnformatted("Next VHF:")
+	imgui.TextUnformatted("Next VHF: ")
 	
 	if (nextVhfFrequencyCanBeSetNow()) then
 		imgui.PushStyleColor(imgui.constant.Col.Text, a320Orange)
@@ -400,6 +419,8 @@ function buildVhfHelperWindow()
 	
 	paddedFreqString = nextVhfFrequency .. string.sub(fullyPaddedFreqString, string.len(nextVhfFrequency) + 1, 7)
 	imgui.TextUnformatted(paddedFreqString)
+	
+	imgui.PopStyleVar()
 	
 	imgui.PopStyleColor()
 	
@@ -479,7 +500,7 @@ function everyFrameLoopFunction()
 	end
 		
 	if (localFrequenciesHaveChanged) then
-		VHFHelperEventBus.emit(VHFHelperEventOnComFrequencyChanged)
+		VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
 	end
 end
 
@@ -489,19 +510,19 @@ function createVhfHelperWindow()
 	local minWidthWithoutScrollbars = nil
 	local minHeightWithoutScrollbars = nil	
 	
-	globalFontScaleDescriptor = trim(getConfigurationValue("Windows", "GlobalFontScale", "normal"))
+	globalFontScaleDescriptor = trim(getConfigurationValue("Windows", "GlobalFontScale", "big"))
 	if (globalFontScaleDescriptor == "huge") then
 		globalFontScale = 3.0
-		minWidthWithoutScrollbars = 360
-		minHeightWithoutScrollbars = 480
+		minWidthWithoutScrollbars = 375
+		minHeightWithoutScrollbars = 460
 	elseif (globalFontScaleDescriptor == "big") then
 		globalFontScale = 2.0
 		minWidthWithoutScrollbars = 255
-		minHeightWithoutScrollbars = 340
+		minHeightWithoutScrollbars = 320
 	else
 		globalFontScale = 1.0
 		minWidthWithoutScrollbars = 145
-		minHeightWithoutScrollbars = 195
+		minHeightWithoutScrollbars = 180
 	end
 	
 	defaultDummySize = 20.0 * globalFontScale
@@ -578,7 +599,6 @@ local function initializeOnce()
 	if (trim(getConfigurationValue("Windows", "MainWindowVisibility", windowVisibilityVisible)) == windowVisibilityVisible) then
 		windowIsSupposedToBeVisible = true
 	end
-
 
 	add_macro("VHF Helper", "createVhfHelperWindow()", "destroyVhfHelperWindow()", windowVisibilityToInitialMacroState(windowIsSupposedToBeVisible))
 
