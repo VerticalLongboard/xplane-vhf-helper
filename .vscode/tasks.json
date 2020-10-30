@@ -1,0 +1,35 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "buildTests",
+            "type": "shell",
+            "command": "echo No non-windows command available.",
+            "windows": {
+                "command": ".\\test\\run_script_in_folder_with_test_lua_paths.cmd"
+            },
+            "args": [
+                {
+                    "value": "."
+                },
+                {
+                    "value": "test\\test_vhf_helper.lua"
+                }
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "new",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+        }
+    ]
+}
