@@ -4,9 +4,66 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "buildTests",
+            "label": "packReleasePackage",
+            "dependsOn": [
+                "runAllTests"
+            ],
             "type": "shell",
-            "command": "echo No non-windows command available.",
+            "command": "No non-windows command available.",
+            "windows": {
+                "command": ".\\pack_release.cmd"
+            },
+            "args": [
+                {
+                    "value": "xplane-vhf-helper"
+                }
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "copyToXPlane",
+            "dependsOn": [
+                "runAllTests"
+            ],
+            "type": "shell",
+            "command": "No non-windows command available.",
+            "windows": {
+                "command": ".\\copy_file.cmd"
+            },
+            "args": [
+                {
+                    "value": "scripts\\vhf_helper.lua"
+                },
+                {
+                    "value": "C:\\X-Plane 11\\Resources\\plugins\\FlyWithLua\\Scripts"
+                }
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+        },
+        {
+            "label": "runAllTests",
+            "type": "shell",
+            "command": "No non-windows command available.",
             "windows": {
                 "command": ".\\test\\run_script_in_folder_with_test_lua_paths.cmd"
             },
@@ -22,14 +79,15 @@
                 "echo": true,
                 "reveal": "always",
                 "focus": false,
-                "panel": "new",
+                "panel": "shared",
                 "showReuseMessage": true,
-                "clear": false
+                "clear": true
             },
             "group": {
-                "kind": "build",
+                "kind": "test",
                 "isDefault": true
             },
+            "problemMatcher": []
         }
     ]
 }
