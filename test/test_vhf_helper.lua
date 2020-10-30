@@ -66,20 +66,20 @@ function TestVhfHelperFrequencyValidation:testNilOrEmptyStringIsNotConsideredVal
 	luaUnit.assertEquals(vhfHelperPackageExport.test.validateFullFrequencyString(""), nil)
 end
 
-function TestVhfHelperFrequencyValidation:fullFrequencyIsNotChangedByAutocompletion()
+function TestVhfHelperFrequencyValidation:testFullFrequencyIsNotChangedByAutocompletion()
 	luaUnit.assertEquals(vhfHelperPackageExport.test.autocompleteFrequencyString("123.500"), "123.500")
 end
 
-function TestVhfHelperFrequencyValidation:fiveDigitFrequencyIsAutocompleted()
+function TestVhfHelperFrequencyValidation:testFiveDigitFrequencyIsAutocompleted()
 	luaUnit.assertEquals(vhfHelperPackageExport.test.autocompleteFrequencyString("123.42"), "123.425")
 	luaUnit.assertEquals(vhfHelperPackageExport.test.autocompleteFrequencyString("123.43"), "123.430")
 end
 
-function TestVhfHelperFrequencyValidation:fourDigitFrequencyIsAutocompleted()
+function TestVhfHelperFrequencyValidation:testFourDigitFrequencyIsAutocompleted()
 	luaUnit.assertEquals(vhfHelperPackageExport.test.autocompleteFrequencyString("123.4"), "123.400")
 end
 
-function TestVhfHelperFrequencyValidation:lessThanFourDigitFrequencyIsNotAutocompleted()
+function TestVhfHelperFrequencyValidation:testLessThanFourDigitFrequencyIsNotAutocompleted()
 	luaUnit.assertEquals(vhfHelperPackageExport.test.autocompleteFrequencyString("123."), "123.")
 	luaUnit.assertEquals(vhfHelperPackageExport.test.autocompleteFrequencyString("123"), "123")
 	luaUnit.assertEquals(vhfHelperPackageExport.test.autocompleteFrequencyString("12"), "12")
@@ -87,33 +87,33 @@ function TestVhfHelperFrequencyValidation:lessThanFourDigitFrequencyIsNotAutocom
 	luaUnit.assertEquals(vhfHelperPackageExport.test.autocompleteFrequencyString(""), "")
 end
 
-function TestVhfHelperFrequencyValidation:validFrequencyCanBeEntered()
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("", "1"), "1")
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("1", "2"), "2")
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("12", "4"), "4")
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("124", "5"), "5")
+function TestVhfHelperFrequencyValidation:testValidFrequencyCanBeEntered()
+	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("", 1), "1")
+	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("1", 2), "2")
+	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("12", 4), "4")
+	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("124", 5), "5")
 	luaUnit.assertEquals(
-		vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("124.5", "7"),
+		vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("124.5", 7),
 		"7"
 	)
 	luaUnit.assertEquals(
-		vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("124.57", "5"),
+		vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("124.57", 5),
 		"5"
 	)
 end
 
-function TestVhfHelperFrequencyValidation:invalidFrequencyFirstDigitsCanNotBeEntered()
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("", "1"), "1")
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("1", "4"), "_")
+function TestVhfHelperFrequencyValidation:testInvalidFrequencyFirstDigitsCanNotBeEntered()
+	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("", 1), "1")
+	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("1", 4), "_")
 end
 
-function TestVhfHelperFrequencyValidation:invalidFrequencyLastDigitsCanNotBeEntered()
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("", "1"), "1")
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("1", "3"), "3")
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("13", "6"), "6")
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("136", "9"), "9")
+function TestVhfHelperFrequencyValidation:testInvalidFrequencyLastDigitsCanNotBeEntered()
+	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("", 1), "1")
+	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("1", 3), "3")
+	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("13", 6), "6")
+	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("136", 9), "9")
 	luaUnit.assertEquals(
-		vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("136.9", "8"),
+		vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("136.9", 8),
 		"_"
 	)
 end
