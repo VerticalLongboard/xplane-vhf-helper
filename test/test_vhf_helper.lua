@@ -146,20 +146,17 @@ function TestVhfHelperDatarefHandling:setUp()
 	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
 end
 
-function TestVhfHelperDatarefHandling:testTwoIndependentInterchangeFrequenciesAreDefinedCorrectly()
-	local f1 = flyWithLuaStub.datarefs[self.Constants.firstInterchangeFreq]
-	local f2 = flyWithLuaStub.datarefs[self.Constants.secondInterchangeFreq]
-
+function TestVhfHelperDatarefHandling:_assertDifferentLocalVariablesDeclaredForTwoDatarefs(d1, d2, expectedAccessType)
 	local variableCount = 0
 	local lastVariableName = nil
-	for localVariableName, localVariable in pairs(f1.localVariables) do
-		luaUnit.assertEquals(localVariable.accessType, flyWithLuaStub.Constants.AccessTypeWritable)
+	for localVariableName, localVariable in pairs(d1.localVariables) do
+		luaUnit.assertEquals(localVariable.accessType, expectedAccessType)
 		variableCount = variableCount + 1
 		lastVariableName = localVariableName
 	end
 
-	for localVariableName, localVariable in pairs(f2.localVariables) do
-		luaUnit.assertEquals(localVariable.accessType, flyWithLuaStub.Constants.AccessTypeWritable)
+	for localVariableName, localVariable in pairs(d2.localVariables) do
+		luaUnit.assertEquals(localVariable.accessType, expectedAccessType)
 		variableCount = variableCount + 1
 
 		luaUnit.assertNotEquals(localVariableName, lastVariableName)
@@ -168,26 +165,18 @@ function TestVhfHelperDatarefHandling:testTwoIndependentInterchangeFrequenciesAr
 	luaUnit.assertTrue(variableCount == 2)
 end
 
+function TestVhfHelperDatarefHandling:testTwoIndependentInterchangeFrequenciesAreDefinedCorrectly()
+	local f1 = flyWithLuaStub.datarefs[self.Constants.firstInterchangeFreq]
+	local f2 = flyWithLuaStub.datarefs[self.Constants.secondInterchangeFreq]
+
+	self:_assertDifferentLocalVariablesDeclaredForTwoDatarefs(f1, f2, flyWithLuaStub.Constants.AccessTypeWritable)
+end
+
 function TestVhfHelperDatarefHandling:testTwoIndependentComFrequenciesAreDefinedCorrectly()
 	local c1 = flyWithLuaStub.datarefs[self.Constants.firstComFreq]
 	local c2 = flyWithLuaStub.datarefs[self.Constants.secondComFreq]
 
-	local variableCount = 0
-	local lastVariableName = nil
-	for localVariableName, localVariable in pairs(c1.localVariables) do
-		luaUnit.assertEquals(localVariable.accessType, flyWithLuaStub.Constants.AccessTypeReadable)
-		variableCount = variableCount + 1
-		lastVariableName = localVariableName
-	end
-
-	for localVariableName, localVariable in pairs(c2.localVariables) do
-		luaUnit.assertEquals(localVariable.accessType, flyWithLuaStub.Constants.AccessTypeReadable)
-		variableCount = variableCount + 1
-
-		luaUnit.assertNotEquals(localVariableName, lastVariableName)
-	end
-
-	luaUnit.assertTrue(variableCount == 2)
+	self:_assertDifferentLocalVariablesDeclaredForTwoDatarefs(c1, c2, flyWithLuaStub.Constants.AccessTypeReadable)
 end
 
 function TestVhfHelperDatarefHandling:testInternalFrequencyChangeUpdatesBothComAndInterchange()
