@@ -65,6 +65,7 @@ function flyWithLuaStub:createSharedDatarefHandle(datarefId, datarefType, initia
 
     self.datarefs[datarefId] = {
         type = datarefType,
+        localVariables = {},
         localVariableAccessType = flyWithLuaStub.Constants.AccessTypeHandleOnly,
         data = initialData
     }
@@ -97,16 +98,20 @@ end
 
 function flyWithLuaStub:readbackAllWritableDatarefs()
     for n, d in pairs(self.datarefs) do
-        if (d.localVariableAccessType == self.Constants.AccessTypeWritable) then
-            d.data = d.localVariableRead()
+        for localVariableName, localVariable in pairs(d.localVariables) do
+            if (localVariable.accessType == self.Constants.AccessTypeWritable) then
+                d.data = localVariable.readFunction()
+            end
         end
     end
 end
 
-function flyWithLuaStub:writeDatarefValueToLocalVariable(globalDatarefIdName)
+function flyWithLuaStub:writeDatarefValueToLocalVariables(globalDatarefIdName)
     local d = self.datarefs[globalDatarefIdName]
-    d.localVariableWrite = loadstring(d.localVariableName .. " = " .. d.data)
-    d.localVariableWrite()
+    for localVariableName, localVariable in pairs(d.localVariables) do
+        localVariable.writeFunction = loadstring(localVariableName .. " = " .. d.data)
+        localVariable.writeFunction()
+    end
 end
 
 function create_command(commandName, readableCommandName, toggleExpressionName, something1, something2)
@@ -126,6 +131,7 @@ end
 function define_shared_DataRef(globalDatarefIdName, datarefType)
     local d = {}
     d.type = datarefType
+    d.localVariables = {}
     flyWithLuaStub.datarefs[globalDatarefIdName] = d
 end
 
@@ -139,20 +145,17 @@ function dataref(localDatarefVariable, globalDatarefIdName, accessType)
     )
 
     local d = flyWithLuaStub.datarefs[globalDatarefIdName]
-    d.localVariableName = localDatarefVariable
-    d.localVariableRead = loadstring("return " .. localDatarefVariable)
-
-    if
-        (d.localVariableAccessType == flyWithLuaStub.Constants.AccessTypeHandleOnly and
-            accessType == flyWithLuaStub.Constants.AccessTypeReadable)
-     then
-        logMsg(("Warning: Changing dataref=%s from handle to readable"):format(globalDatarefIdName))
+    local variable = d.localVariables[localDatarefVariable]
+    if (variable == nil) then
+        variable = {}
+        d.localVariables[localDatarefVariable] = variable
     end
 
-    d.localVariableAccessType = accessType
+    variable.readFunction = loadstring("return " .. localDatarefVariable)
+    variable.accessType = accessType
 
     if (accessType == flyWithLuaStub.Constants.AccessTypeReadable) then
-        flyWithLuaStub:writeDatarefValueToLocalVariable(globalDatarefIdName)
+        flyWithLuaStub:writeDatarefValueToLocalVariables(globalDatarefIdName)
     end
 end
 
