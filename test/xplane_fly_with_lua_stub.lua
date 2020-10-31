@@ -39,7 +39,6 @@ flyWithLuaStub = {
     Constants = {
         AccessTypeReadable = "readable",
         AccessTypeWritable = "writable",
-        AccessTypeHandleOnly = "handleonly",
         DatarefTypeInteger = "Int",
         InitialStateActivate = "activate",
         InitialStateDeactivate = "deactivate"
@@ -66,7 +65,7 @@ function flyWithLuaStub:createSharedDatarefHandle(datarefId, datarefType, initia
     self.datarefs[datarefId] = {
         type = datarefType,
         localVariables = {},
-        localVariableAccessType = flyWithLuaStub.Constants.AccessTypeHandleOnly,
+        isInternallyDefinedDataref = true,
         data = initialData
     }
 end
@@ -132,6 +131,7 @@ function define_shared_DataRef(globalDatarefIdName, datarefType)
     local d = {}
     d.type = datarefType
     d.localVariables = {}
+    d.isInternallyDefinedDataref = false
     flyWithLuaStub.datarefs[globalDatarefIdName] = d
 end
 
@@ -174,7 +174,7 @@ function XPLMFindDataRef(datarefName)
         return nil
     end
 
-    luaUnit.assertNotNil(d.localVariableAccessType)
+    luaUnit.assertTrue(d.isInternallyDefinedDataref)
 
     return datarefName
 end
@@ -183,6 +183,8 @@ function XPLMSetDatai(datarefName, newDataAsInteger)
     local d = flyWithLuaStub.datarefs[datarefName]
     luaUnit.assertEquals(d.type, flyWithLuaStub.Constants.DatarefTypeInteger)
     d.data = newDataAsInteger
+
+    luaUnit.assertTrue(d.isInternallyDefinedDataref)
 end
 
 function float_wnd_create(width, height, something, whatever)
@@ -195,10 +197,15 @@ function float_wnd_set_title(window, newTitle)
 end
 
 function float_wnd_set_onclose(window, newCloseFunctionName)
+    window.closeFunction = loadstring(newCloseFunctionName .. "()")
 end
 
 function float_wnd_set_imgui_builder(window, newImguiBuilderFunctionName)
     window.imguiBuilderFunction = loadstring(newImguiBuilderFunctionName .. "()")
+end
+
+function float_wnd_destroy(window)
+    flyWithLuaStub.windows[window] = nil
 end
 
 return flyWithLuaStub

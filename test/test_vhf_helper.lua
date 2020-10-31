@@ -294,6 +294,18 @@ function TestVhfHelperHighLevelBehaviour:setUp()
 	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
 end
 
+function TestVhfHelperHighLevelBehaviour:testClosingThePanelChangesConfigurationAccordingly()
+	luaUnit.assertIsTrue(flyWithLuaStub.userInterfaceIsActive)
+
+	for _, window in pairs(flyWithLuaStub.windows) do
+		window.closeFunction()
+	end
+
+	flyWithLuaStub.windows = {}
+
+	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowVisibility, "hidden")
+end
+
 function TestVhfHelperHighLevelBehaviour:testPanelIsVisibleByDefault()
 	luaUnit.assertIsTrue(flyWithLuaStub.userInterfaceIsActive)
 end

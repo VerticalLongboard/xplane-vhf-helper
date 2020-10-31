@@ -517,10 +517,11 @@ vhfHelperWindow = nil
 function destroyVhfHelperWindow()
 	if (vhfHelperWindow) then
 		float_wnd_destroy(vhfHelperWindow)
+		vhfHelperWindow = nil
 	end
 
-	setConfigurationValue("Windows", "MainWindowVisibility", windowVisibilityHidden)
-	saveConfiguration()
+	Config:setValue("Windows", "MainWindowVisibility", windowVisibilityHidden)
+	Config:save()
 
 	deactivatePublicInterface()
 end
@@ -679,6 +680,7 @@ vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband 
 	getValidNumberCharacterOrUnderscoreInDefaultAirband
 
 vhfHelperPackageExport.test.setPlaneVHFFrequency = setPlaneVHFFrequency
+vhfHelperPackageExport.test.Config = Config
 
 -- When returning anything besides nothing, FlyWithLua does not expose global fields
 return
