@@ -43,11 +43,17 @@ flyWithLuaStub = {
 }
 
 function logMsg(stringToLog)
-    if
-        (flyWithLuaStub.suppressLogMessageString ~= nil and
-            stringToLog:sub(1, #flyWithLuaStub.suppressLogMessageString) == flyWithLuaStub.suppressLogMessageString)
-     then
-        return
+    if (type(stringToLog) ~= "string") then
+        stringToLog = tostring(stringToLog)
+    end
+
+    if (stringToLog ~= nil) then
+        if
+            (flyWithLuaStub.suppressLogMessageString ~= nil and
+                stringToLog:sub(1, #flyWithLuaStub.suppressLogMessageString) == flyWithLuaStub.suppressLogMessageString)
+         then
+            return
+        end
     end
 
     print("TEST LOG: " .. stringToLog)
@@ -86,6 +92,18 @@ function flyWithLuaStub:bootstrapScriptUserInterface()
     end
 end
 
+function flyWithLuaStub:shutdownScriptUserInterface()
+    self.deactivateScriptFunction()
+    self.userInterfaceIsActive = false
+end
+
+function flyWithLuaStub:closeWindow(window)
+    luaUnit.assertTrue(window.isOpen)
+    luaUnit.assertFalse(window.wasDestroyed)
+    window.closeFunction()
+    window.isOpen = false
+end
+
 function flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
     self.doOftenFunction()
     self.doEveryFrameFunction()
@@ -98,7 +116,9 @@ function flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
     imguiStub:startFrame()
 
     for _, w in pairs(flyWithLuaStub.windows) do
-        w.imguiBuilderFunction()
+        if (not w.wasDestroyed and w.isOpen) then
+            w.imguiBuilderFunction()
+        end
     end
 
     imguiStub:endFrame()
@@ -197,7 +217,10 @@ function XPLMSetDatai(datarefName, newDataAsInteger)
 end
 
 function float_wnd_create(width, height, something, whatever)
-    local newWindow = {}
+    local newWindow = {
+        wasDestroyed = false,
+        isOpen = true
+    }
     table.insert(flyWithLuaStub.windows, newWindow)
     return newWindow
 end
@@ -214,7 +237,8 @@ function float_wnd_set_imgui_builder(window, newImguiBuilderFunctionName)
 end
 
 function float_wnd_destroy(window)
-    flyWithLuaStub.windows[window] = nil
+    window.wasDestroyed = true
+    window.isOpen = false
 end
 
 return flyWithLuaStub
