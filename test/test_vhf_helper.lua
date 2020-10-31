@@ -25,6 +25,7 @@ SOFTWARE.
 --]]
 local luaUnit = require("luaunit")
 local flyWithLuaStub = require("xplane_fly_with_lua_stub")
+local imguiStub = require("imgui_stub")
 
 local vhfHelper = dofile("scripts/vhf_helper.lua")
 
@@ -204,6 +205,77 @@ function TestVhfHelperDatarefHandling:testExternalChangeViaInterchangeUpdatesLoc
 
 	luaUnit.assertEquals(i1.data, newFrequency)
 	luaUnit.assertEquals(c1.data, newFrequency)
+end
+
+TestVhfHelperHighLevelBehaviour = {
+	Constants = {
+		initialCom1Frequency = 119000,
+		initialCom2Frequency = 124300
+	}
+}
+
+function TestVhfHelperHighLevelBehaviour:setUp()
+	flyWithLuaStub.windows = {}
+	flyWithLuaStub.userInterfaceIsActive = false
+	flyWithLuaStub.datarefs = {}
+	flyWithLuaStub.datarefs[TestVhfHelperDatarefHandling.Constants.firstComFreq] = {
+		type = flyWithLuaStub.Constants.DatarefTypeInteger,
+		localVariableAccessType = flyWithLuaStub.Constants.AccessTypeHandleOnly,
+		data = self.Constants.initialCom1Frequency
+	}
+	flyWithLuaStub.datarefs[TestVhfHelperDatarefHandling.Constants.secondComFreq] = {
+		type = flyWithLuaStub.Constants.DatarefTypeInteger,
+		localVariableAccessType = flyWithLuaStub.Constants.AccessTypeHandleOnly,
+		data = self.Constants.initialCom2Frequency
+	}
+
+	vhfHelper = dofile("scripts/vhf_helper.lua")
+	flyWithLuaStub:bootstrapScriptUserInterface()
+	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+end
+
+function TestVhfHelperHighLevelBehaviour:testCurrentComFrequenciesAreShownSomewhere()
+	local freqAsString = tostring(self.Constants.initialCom1Frequency)
+	local fullFrequencyString = freqAsString:sub(1, 3) .. "." .. freqAsString:sub(4, 6)
+	imguiStub:keepALookOutForString(fullFrequencyString)
+	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+	luaUnit.assertTrue(imguiStub:wasWatchStringFound())
+
+	freqAsString = tostring(self.Constants.initialCom2Frequency)
+	fullFrequencyString = freqAsString:sub(1, 3) .. "." .. freqAsString:sub(4, 6)
+	imguiStub:keepALookOutForString(fullFrequencyString)
+	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+	luaUnit.assertTrue(imguiStub:wasWatchStringFound())
+end
+
+function TestVhfHelperHighLevelBehaviour:testEnteredStringIsShownSomewhere()
+	local freqString = "132805"
+	for i = 1, #freqString do
+		imguiStub:pressButtonProgrammaticallyOnce(freqString:sub(i, i))
+		flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+		luaUnit.assertTrue(imguiStub:wasButtonPressed())
+	end
+
+	imguiStub:keepALookOutForString(freqString:sub(1, 3) .. "." .. freqString:sub(4, 6))
+	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+	luaUnit.assertTrue(imguiStub:wasWatchStringFound())
+end
+
+function TestVhfHelperHighLevelBehaviour:testSwitchingToAFrequencyDoesSwitch()
+	local freqString = "129725"
+	for i = 1, #freqString do
+		imguiStub:pressButtonProgrammaticallyOnce(freqString:sub(i, i))
+		flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+		luaUnit.assertTrue(imguiStub:wasButtonPressed())
+	end
+
+	imguiStub:pressButtonProgrammaticallyOnce("<2>")
+	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+	luaUnit.assertTrue(imguiStub:wasButtonPressed())
+
+	local c2 = flyWithLuaStub.datarefs[TestVhfHelperDatarefHandling.Constants.secondComFreq]
+	luaUnit.assertEquals(c2.data, tonumber(freqString))
 end
 
 local runner = luaUnit.LuaUnit.new()

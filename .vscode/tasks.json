@@ -90,7 +90,7 @@
             "type": "process",
             "command": "No non-windows command available.",
             "windows": {
-                "command": ".\\test\\run_script_in_folder_with_test_lua_paths.cmd"
+                "command": ".\\build\\run_script_in_folder_with_test_lua_paths.cmd"
             },
             "args": [
                 {
