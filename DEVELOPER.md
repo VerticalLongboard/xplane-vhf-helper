@@ -9,7 +9,7 @@ Perks:
 * Pressing "Build" runs all tests, copies the script to X-Plane and triggers a running X-Plane instance to reload all scripts
 * Building a release package is only one button away
 
-# Setup
+### Setup
 Required:
 * Vanilla Windows 10
 * Visual Studio Code: https://code.visualstudio.com/
