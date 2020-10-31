@@ -207,6 +207,35 @@ function TestVhfHelperDatarefHandling:testExternalChangeViaInterchangeUpdatesLoc
 	luaUnit.assertEquals(c1.data, newFrequency)
 end
 
+function TestVhfHelperDatarefHandling:testInternalChangeLeadsToStableFrequencyAcrossMultipleFrames()
+	local i2 = flyWithLuaStub.datarefs[self.Constants.secondInterchangeFreq]
+	local c2 = flyWithLuaStub.datarefs[self.Constants.secondComFreq]
+
+	local newFrequency = 129225
+	vhfHelperPackageExport.test.setPlaneVHFFrequency(2, newFrequency)
+
+	for f = 1, 10 do
+		flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+		luaUnit.assertEquals(i2.data, newFrequency)
+		luaUnit.assertEquals(c2.data, newFrequency)
+	end
+end
+
+function TestVhfHelperDatarefHandling:testExternalChangeLeadsToStableFrequencyAcrossMultipleFrames()
+	local i2 = flyWithLuaStub.datarefs[self.Constants.secondInterchangeFreq]
+	local c2 = flyWithLuaStub.datarefs[self.Constants.secondComFreq]
+
+	local newFrequency = 129225
+	i2.data = newFrequency
+	flyWithLuaStub:writeDatarefValueToLocalVariable(self.Constants.secondInterchangeFreq)
+
+	for f = 1, 10 do
+		flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+		luaUnit.assertEquals(i2.data, newFrequency)
+		luaUnit.assertEquals(c2.data, newFrequency)
+	end
+end
+
 TestVhfHelperConfiguration = {}
 
 function TestVhfHelperConfiguration:testConfigurationValuesAreSetAndRetrievedCorrectly()
@@ -256,6 +285,10 @@ function TestVhfHelperHighLevelBehaviour:setUp()
 	flyWithLuaStub:bootstrapScriptUserInterface()
 	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
 	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+end
+
+function TestVhfHelperHighLevelBehaviour:testPanelIsVisibleByDefault()
+	luaUnit.assertIsTrue(flyWithLuaStub.userInterfaceIsActive)
 end
 
 function TestVhfHelperHighLevelBehaviour:testCurrentComFrequenciesAreShownSomewhere()
