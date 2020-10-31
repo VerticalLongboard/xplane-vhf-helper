@@ -7,17 +7,22 @@ Perks:
 * Linting and colors while coding
 * Testing as you're used to
 * Pressing "Build" runs all tests, copies the script to X-Plane and triggers a running X-Plane instance to reload all scripts
+* Building a release package is only one button away
 
 # Setup
 Required:
 * Vanilla Windows 10
 * Visual Studio Code: https://code.visualstudio.com/
-* Install 7zip and add executable to PATH: https://www.7-zip.org/
 * Install Lua and add executable to PATH: https://github.com/rjpcomputing/luaforwindows
 
 Optional:
 * git: https://git-scm.com/
+* Install 7zip and add executable to PATH: https://www.7-zip.org/
 * Install Packetsender and add executable to PATH: https://packetsender.com/
+* Update `tasks.json` to refer to your local X-Plane installation: tasks/copyToXPlane
+* Install VS Code extensions:
+  * vscode-lua (linting)
+  * Code Runner (lets you run selected snippets of code)
 
 Clone the VHF Helper repository and open the workspace in VS Code!
 
