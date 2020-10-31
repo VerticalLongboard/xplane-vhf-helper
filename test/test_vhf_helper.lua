@@ -23,29 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 --]]
-function logMsg(stringToLog)
-	print("TEST LOG: " .. stringToLog)
-end
-
-function create_command(commandName, readableCommandName, toggleExpressionName, something1, something2)
-end
-
-function add_macro(readableScriptName, activateExpression, deactivateExpression, activateOrDeactivate)
-end
-
-function define_shared_DataRef(globalDatarefIdName, datarefType)
-end
-
-function dataref(localDatarefVariable, globalDatarefIdName, writableOrReadable)
-end
-
-function do_often(doOftenExpression)
-end
-
-SCRIPT_DIRECTORY = "."
-
 local luaUnit = require("luaunit")
-local vhfHelper = require("vhf_helper")
+local flyWithLuaStub = require("xplane_fly_with_lua_stub")
+
+local vhfHelper = dofile("scripts/vhf_helper.lua")
 
 TestVhfHelperFrequencyValidation = {}
 
@@ -92,14 +73,8 @@ function TestVhfHelperFrequencyValidation:testValidFrequencyCanBeEntered()
 	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("1", 2), "2")
 	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("12", 4), "4")
 	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("124", 5), "5")
-	luaUnit.assertEquals(
-		vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("124.5", 7),
-		"7"
-	)
-	luaUnit.assertEquals(
-		vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("124.57", 5),
-		"5"
-	)
+	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("124.5", 7), "7")
+	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("124.57", 5), "5")
 end
 
 function TestVhfHelperFrequencyValidation:testInvalidFrequencyFirstDigitsCanNotBeEntered()
@@ -112,10 +87,7 @@ function TestVhfHelperFrequencyValidation:testInvalidFrequencyLastDigitsCanNotBe
 	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("1", 3), "3")
 	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("13", 6), "6")
 	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("136", 9), "9")
-	luaUnit.assertEquals(
-		vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("136.9", 8),
-		"_"
-	)
+	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("136.9", 8), "_")
 end
 
 TestVhfHelperPublicInterface = {}
@@ -143,6 +115,95 @@ function TestVhfHelperPublicInterface:testEnteringProgrammaticallyReportsEntered
 	local enterFreq = "132.850"
 	luaUnit.assertEquals(self.activeInterface.enterFrequencyProgrammaticallyAsString(enterFreq), enterFreq)
 	luaUnit.assertIsTrue(self.activeInterface.isCurrentlyEntered(enterFreq))
+end
+
+TestVhfHelperDatarefHandling = {
+	Constants = {
+		firstComFreq = "sim/cockpit2/radios/actuators/com1_frequency_hz_833",
+		secondComFreq = "sim/cockpit2/radios/actuators/com2_frequency_hz_833",
+		firstInterchangeFreq = "VHFHelper/InterchangeVHF1Frequency",
+		secondInterchangeFreq = "VHFHelper/InterchangeVHF2Frequency",
+		initialComFrequency = 118000
+	}
+}
+
+function TestVhfHelperDatarefHandling:setUp()
+	flyWithLuaStub.datarefs = {}
+	flyWithLuaStub.datarefs[self.Constants.firstComFreq] = {
+		type = flyWithLuaStub.Constants.DatarefTypeInteger,
+		localVariableAccessType = flyWithLuaStub.Constants.AccessTypeHandleOnly,
+		data = self.Constants.initialComFrequency
+	}
+	flyWithLuaStub.datarefs[self.Constants.secondComFreq] = {
+		type = flyWithLuaStub.Constants.DatarefTypeInteger,
+		localVariableAccessType = flyWithLuaStub.Constants.AccessTypeHandleOnly,
+		data = self.Constants.initialComFrequency
+	}
+
+	vhfHelper = dofile("scripts/vhf_helper.lua")
+	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+end
+
+function TestVhfHelperDatarefHandling:testTwoIndependentInterchangeFrequenciesAreDefinedCorrectly()
+	local f1 = flyWithLuaStub.datarefs[self.Constants.firstInterchangeFreq]
+	local f2 = flyWithLuaStub.datarefs[self.Constants.secondInterchangeFreq]
+
+	luaUnit.assertEquals(f1.localVariableAccessType, flyWithLuaStub.Constants.AccessTypeWritable)
+	luaUnit.assertEquals(f2.localVariableAccessType, flyWithLuaStub.Constants.AccessTypeWritable)
+
+	luaUnit.assertNotNil(f1.localVariableName)
+	luaUnit.assertNotNil(f2.localVariableName)
+
+	luaUnit.assertNotEquals(f1.localVariableName, f2.localVariableName)
+end
+
+function TestVhfHelperDatarefHandling:testTwoIndependentComFrequenciesAreDefinedCorrectly()
+	local c1 = flyWithLuaStub.datarefs[self.Constants.firstComFreq]
+	local c2 = flyWithLuaStub.datarefs[self.Constants.secondComFreq]
+
+	luaUnit.assertNotNil(c1.localVariableName)
+	luaUnit.assertNotNil(c2.localVariableName)
+
+	luaUnit.assertEquals(c1.localVariableAccessType, flyWithLuaStub.Constants.AccessTypeReadable)
+	luaUnit.assertEquals(c2.localVariableAccessType, flyWithLuaStub.Constants.AccessTypeReadable)
+
+	luaUnit.assertNotEquals(c1.localVariableName, c2.localVariableName)
+end
+
+function TestVhfHelperDatarefHandling:testInternalFrequencyChangeUpdatesBothComAndInterchange()
+	local i1 = flyWithLuaStub.datarefs[self.Constants.firstInterchangeFreq]
+	local c1 = flyWithLuaStub.datarefs[self.Constants.firstComFreq]
+
+	luaUnit.assertEquals(c1.data, i1.data)
+	oldFrequency = c1.data
+	local newFrequency = 133600
+	luaUnit.assertNotEquals(oldFrequency, newFrequency)
+
+	vhfHelperPackageExport.test.setPlaneVHFFrequency(1, newFrequency)
+
+	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+
+	luaUnit.assertEquals(i1.data, newFrequency)
+	luaUnit.assertEquals(c1.data, newFrequency)
+end
+
+function TestVhfHelperDatarefHandling:testExternalChangeViaInterchangeUpdatesLocalComFrequencies()
+	local i1 = flyWithLuaStub.datarefs[self.Constants.firstInterchangeFreq]
+	local c1 = flyWithLuaStub.datarefs[self.Constants.firstComFreq]
+
+	luaUnit.assertEquals(c1.data, i1.data)
+	oldFrequency = c1.data
+	local newFrequency = 123800
+	luaUnit.assertNotEquals(oldFrequency, newFrequency)
+
+	i1.data = newFrequency
+	flyWithLuaStub:writeDatarefValueToLocalVariable(self.Constants.firstInterchangeFreq)
+
+	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+
+	luaUnit.assertEquals(i1.data, newFrequency)
+	luaUnit.assertEquals(c1.data, newFrequency)
 end
 
 local runner = luaUnit.LuaUnit.new()

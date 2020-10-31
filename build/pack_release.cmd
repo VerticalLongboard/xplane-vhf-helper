@@ -1,3 +1,5 @@
+@echo off
+
 for /F "tokens=*" %%h in ('git tag --points-at HEAD') do (SET TAG=%%h)
 if not defined TAG (set tag=TAGLESS)
 

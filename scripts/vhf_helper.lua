@@ -650,10 +650,10 @@ local function initializeOnce()
 		windowVisibilityToInitialMacroState(windowIsSupposedToBeVisible)
 	)
 
-	InterchangeVHF1Frequency = define_shared_DataRef(interchangeFrequencyNames[1], "Int")
+	define_shared_DataRef(interchangeFrequencyNames[1], "Int")
 	dataref("InterchangeVHF1Frequency", interchangeFrequencyNames[1], "writable")
 
-	InterchangeVHF2Frequency = define_shared_DataRef(interchangeFrequencyNames[2], "Int")
+	define_shared_DataRef(interchangeFrequencyNames[2], "Int")
 	dataref("InterchangeVHF2Frequency", interchangeFrequencyNames[2], "writable")
 
 	do_often("tryInitLoopFunction()")
@@ -671,6 +671,8 @@ vhfHelperPackageExport.test.deactivatePublicInterface = deactivatePublicInterfac
 vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscore = getValidNumberCharacterOrUnderscore
 vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband =
 	getValidNumberCharacterOrUnderscoreInDefaultAirband
+
+vhfHelperPackageExport.test.setPlaneVHFFrequency = setPlaneVHFFrequency
 
 -- When returning anything besides nothing, FlyWithLua does not expose global fields
 return
