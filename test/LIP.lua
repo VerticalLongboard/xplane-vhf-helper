@@ -23,13 +23,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 --]]
-local LuaIniParserStub = {};
+local LuaIniParserStub = {}
 
 function LuaIniParserStub.load(fileName)
-	return nil
+	return {}
 end
 
 function LuaIniParserStub.save(fileName, data)
 end
 
-return LuaIniParserStub;
+return LuaIniParserStub
