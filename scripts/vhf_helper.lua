@@ -187,11 +187,6 @@ end
 
 local LuaIniParser = require("LIP")
 
-local Configuration = {
-	Path = SCRIPT_DIRECTORY .. "vhf_helper.ini",
-	Content = {}
-}
-
 local function fileExists(filePath)
 	local file = io.open(filePath, "r")
 	if file == nil then
@@ -202,45 +197,56 @@ local function fileExists(filePath)
 	return true
 end
 
-local function loadConfiguration()
-	if (not fileExists(Configuration.Path)) then
-		return
+local ConfigurationClass
+do
+	Configuration = {}
+
+	function Configuration:new(iniFilePath)
+		local newInstanceWithState = {
+			Path = iniFilePath,
+			Content = {}
+		}
+		setmetatable(newInstanceWithState, self)
+		self.__index = self
+		return newInstanceWithState
 	end
 
-	Configuration.Content = LuaIniParser.load(Configuration.Path)
+	function Configuration:load()
+		if (not fileExists(self.Path)) then
+			return
+		end
+
+		self.Content = LuaIniParser.load(self.Path)
+	end
+
+	function Configuration:save()
+		LuaIniParser.save(self.Path, self.Content)
+	end
+
+	function Configuration:setValue(section, key, value)
+		if (self.Content[section] == nil) then
+			self.Content[section] = {}
+		end
+		if (type(value) == "string") then
+			value = trim(value)
+		end
+
+		self.Content[section][key] = value
+	end
+
+	function Configuration:getValue(section, key, defaultValue)
+		if (self.Content[section] == nil) then
+			self.Content[section] = {}
+		end
+		if (self.Content[section][key]) == nil then
+			self.Content[section][key] = defaultValue
+		end
+
+		return self.Content[section][key]
+	end
 end
 
-local function saveConfiguration()
-	LuaIniParser.save(Configuration.Path, Configuration.Content)
-end
-
-local function setConfigurationValue(section, key, value)
-	if Configuration.Content == nil then
-		Configuration.Content = {}
-	end
-	if Configuration.Content[section] == nil then
-		Configuration.Content[section] = {}
-	end
-	if type(value) == "string" then
-		value = trim(value)
-	end
-
-	Configuration.Content[section][key] = value
-end
-
-local function getConfigurationValue(section, key, defaultValue)
-	if Configuration.Content == nil then
-		Configuration.Content = {}
-	end
-	if Configuration.Content[section] == nil then
-		Configuration.Content[section] = {}
-	end
-	if Configuration.Content[section][key] == nil then
-		Configuration.Content[section][key] = defaultValue
-	end
-
-	return Configuration.Content[section][key]
-end
+local Config = Configuration:new(SCRIPT_DIRECTORY .. "vhf_helper.ini")
 
 local windowVisibilityVisible = "visible"
 local windowVisibilityHidden = "hidden"
@@ -553,7 +559,7 @@ function createVhfHelperWindow()
 	local minWidthWithoutScrollbars = nil
 	local minHeightWithoutScrollbars = nil
 
-	globalFontScaleDescriptor = trim(getConfigurationValue("Windows", "GlobalFontScale", "big"))
+	globalFontScaleDescriptor = trim(Config:getValue("Windows", "GlobalFontScale", "big"))
 	if (globalFontScaleDescriptor == "huge") then
 		globalFontScale = 3.0
 		minWidthWithoutScrollbars = 375
@@ -575,8 +581,8 @@ function createVhfHelperWindow()
 	float_wnd_set_imgui_builder(vhfHelperWindow, "buildVhfHelperWindow")
 	float_wnd_set_onclose(vhfHelperWindow, "destroyVhfHelperWindow")
 
-	setConfigurationValue("Windows", "MainWindowVisibility", windowVisibilityVisible)
-	saveConfiguration()
+	Config:setValue("Windows", "MainWindowVisibility", windowVisibilityVisible)
+	Config:save()
 
 	activatePublicInterface()
 end
@@ -636,10 +642,10 @@ end
 local function initializeOnce()
 	create_command("FlyWithLua/VHF Helper/ToggleWindow", "Toggle VHF Helper Window", "toggleVhfHelperWindow()", "", "")
 
-	loadConfiguration()
+	Config:load()
 
 	windowIsSupposedToBeVisible = false
-	if (trim(getConfigurationValue("Windows", "MainWindowVisibility", windowVisibilityVisible)) == windowVisibilityVisible) then
+	if (trim(Config:getValue("Windows", "MainWindowVisibility", windowVisibilityVisible)) == windowVisibilityVisible) then
 		windowIsSupposedToBeVisible = true
 	end
 
