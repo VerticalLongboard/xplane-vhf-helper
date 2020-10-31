@@ -1,7 +1,5 @@
 # VHF Helper
-
 ## Overview
-
 VHF Helper is a FlyWithLua plugin for X-Plane 11. It allows to change the two main COM frequencies of any X-Plane airplane in **VR** via convenient touch pad number buttons in a **multicrew** environment.
 
 Flying multicrew in X-Plane with ATC is a blast! Yet, the default X-Plane 11 VR knobs are horrible when trying to monitor/fly and dial in a new ATC frequency at the same time (takes up to 2 minutes for a 2-hour flight, just turning the knob and making sure that no turn got lost when using SmartCopilot).
@@ -16,7 +14,6 @@ VHF Helper:
 ![VHF Helper Video](screenshots/VHFHelperUsageVideo.gif "VHF Helper Video")
 
 ## Installation
-
 * Install FlyWithLua: https://forums.x-plane.org/index.php?/files/file/38445-flywithlua-ng-next-generation-edition-for-x-plane-11-win-lin-mac/
 * Download [latest VHF Helper release](https://github.com/VerticalLongboard/xplane-vhf-helper/releases/latest)
 * Move dependencies to `<X-Plane 11 Folder>/Resources/plugins/FlyWithLua/Modules`
@@ -33,7 +30,6 @@ VHFHelper/InterchangeVHF2Frequency = 0
 ```
 
 ## Usage
-
 * Go to `Plugins/FlyWithLua/FlyWithLua Macros/VHF Helper`
 * Place and scale the window wherever you like (in 2D and VR)
 * Use the number buttons to enter the new VHF frequency. The last two digits are subject to auto completion.
@@ -41,9 +37,11 @@ VHFHelper/InterchangeVHF2Frequency = 0
 * **Chat with ATC! :-)**
 
 ## Dependencies
-
 Additional dependencies besides X-Plane 11, SmartCopilot and FlyWithLua:
 - LUA INI Parser
 - LUA Event Bus
 
 (All dependencies are bundled with each release)
+
+## Developer notes
+You want to integrate VHF into other plugins or write FlyWithLua plugins? Have a look in the [Developer Notes](DEVELOPER.md)
