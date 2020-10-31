@@ -29,6 +29,8 @@ local imguiStub = require("imgui_stub")
 
 local vhfHelper = dofile("scripts/vhf_helper.lua")
 
+flyWithLuaStub:suppressLogMessagesBeginningWith("VHF Helper using '")
+
 TestVhfHelperFrequencyValidation = {}
 
 function TestVhfHelperFrequencyValidation:testAlmostValidFrequencyIsConsideredValid()

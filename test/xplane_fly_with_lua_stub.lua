@@ -26,13 +26,6 @@ SOFTWARE.
 local luaUnit = require("luaunit")
 local imguiStub = require("imgui_stub")
 
-function logMsg(stringToLog)
-    local licsenseLogStringBegin = "VHF Helper using '"
-    if (stringToLog:sub(1, #licsenseLogStringBegin) ~= licsenseLogStringBegin) then
-        print("TEST LOG: " .. stringToLog)
-    end
-end
-
 SCRIPT_DIRECTORY = "."
 
 flyWithLuaStub = {
@@ -45,8 +38,24 @@ flyWithLuaStub = {
     },
     datarefs = {},
     windows = {},
-    userInterfaceIsActive = false
+    userInterfaceIsActive = false,
+    suppressLogMessageString = nil
 }
+
+function logMsg(stringToLog)
+    if
+        (flyWithLuaStub.suppressLogMessageString ~= nil and
+            stringToLog:sub(1, #flyWithLuaStub.suppressLogMessageString) == flyWithLuaStub.suppressLogMessageString)
+     then
+        return
+    end
+
+    print("TEST LOG: " .. stringToLog)
+end
+
+function flyWithLuaStub:suppressLogMessagesBeginningWith(stringBeginning)
+    flyWithLuaStub.suppressLogMessageString = stringBeginning
+end
 
 function flyWithLuaStub:reset()
     self.datarefs = {}
