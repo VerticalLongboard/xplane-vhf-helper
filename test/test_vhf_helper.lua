@@ -209,12 +209,14 @@ end
 
 TestVhfHelperConfiguration = {}
 
-function TestVhfHelperConfiguration:testConfigurationIsSavedAndLoadedAgain()
+function TestVhfHelperConfiguration:testConfigurationValuesAreSetAndRetrievedCorrectly()
 	local testConfig = Configuration:new(SCRIPT_DIRECTORY .. "test_vhf_helper.ini")
 
 	local section = "GeneralTest"
 	local key = "MajorFailureReason"
 	local value = "Random"
+
+	luaUnit.assertIsNil(testConfig:getValue(section, key, nil))
 
 	testConfig:setValue(section, key, value)
 
