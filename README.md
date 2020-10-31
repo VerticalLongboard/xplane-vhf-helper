@@ -44,4 +44,4 @@ Additional dependencies besides X-Plane 11, SmartCopilot and FlyWithLua:
 (All dependencies are bundled with each release)
 
 ## Developer notes
-You want to integrate VHF into other plugins or write FlyWithLua plugins? Have a look in the [Developer Notes](DEVELOPER.md)
+You want to integrate VHF into other plugins or write FlyWithLua plugins? Have a look at the [Developer Notes](DEVELOPER.md)
