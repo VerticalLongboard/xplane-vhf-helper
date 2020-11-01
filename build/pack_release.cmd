@@ -1,4 +1,5 @@
 @echo off
+call .\build\configure_environment.cmd
 
 for /F "tokens=*" %%h in ('git tag --points-at HEAD') do (SET TAG=%%h)
 if not defined TAG (set tag=TAGLESS)
@@ -16,4 +17,4 @@ copy /a modules\*.* RELEASE_PACKAGE\Modules
 
 cd RELEASE_PACKAGE
 
-7z.exe a -r %1-%TAG%-%COMMIT_HASH%.zip Modules Scripts
+"%SEVEN_ZIP_EXECUTABLE_PATH%\7z.exe" a -r %1-%TAG%-%COMMIT_HASH%.zip Modules Scripts

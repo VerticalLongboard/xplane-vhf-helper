@@ -13,16 +13,17 @@ Perks:
 Required:
 * Vanilla Windows 10
 * Visual Studio Code: https://code.visualstudio.com/
-* Install Lua and add executable to PATH: https://github.com/rjpcomputing/luaforwindows
+* Install Lua: https://github.com/rjpcomputing/luaforwindows
+* Update paths in `build/configure_environment.cmd`
 
 Optional:
 * git: https://git-scm.com/
-* Install 7zip and add executable to PATH: https://www.7-zip.org/
-* Install Packetsender and add executable to PATH: https://packetsender.com/
-* Update `tasks.json` to refer to your local X-Plane installation: tasks/copyToXPlane
+* Install 7zip: https://www.7-zip.org/
+* Install Packetsender: https://packetsender.com/
 * Install VS Code extensions:
   * vscode-lua (linting)
   * Code Runner (lets you run selected snippets of code)
+* Update paths in `build/configure_environment.cmd`
 
 Clone the VHF Helper repository and open the workspace in VS Code!
 
