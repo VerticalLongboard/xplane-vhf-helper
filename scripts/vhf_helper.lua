@@ -400,10 +400,15 @@ local function createNumberButtonAndReactToClicks(number)
 	end
 end
 
-local a320Orange = 0xFF00AAFF
-local a320Blue = 0xFFFFDDAA
-local a320Green = 0xFF00AA00
-local whiteColor = 0xFFFFFFFF
+local Colors = {
+	a320Orange = 0xFF00AAFF,
+	a320Blue = 0xFFFFDDAA,
+	a320Green = 0xFF00AA00,
+	white = 0xFFFFFFFF,
+	black = 0xFF000000,
+	defaultImguiBackground = 0xFF121110
+}
+
 local fullyPaddedFreqString = "___.___"
 
 local function buildCurrentVhfLine(comNumber, nextVhfFrequencyIsSettable)
@@ -412,19 +417,17 @@ local function buildCurrentVhfLine(comNumber, nextVhfFrequencyIsSettable)
 	imgui.TextUnformatted("COM" .. tonumber(comNumber) .. ": ")
 
 	imgui.SameLine()
-	imgui.PushStyleColor(imgui.constant.Col.Text, a320Orange)
+	imgui.PushStyleColor(imgui.constant.Col.Text, Colors.a320Orange)
 	currentVhfString = tostring(currentVhfFrequencies[comNumber])
 	imgui.TextUnformatted(currentVhfString:sub(1, 3) .. decimalCharacter .. currentVhfString:sub(4, 7))
 	imgui.PopStyleColor()
 
-	local colorDefaultImguiBackground = 0xFF121110
-
-	imgui.PushStyleColor(imgui.constant.Col.Button, colorDefaultImguiBackground)
+	imgui.PushStyleColor(imgui.constant.Col.Button, Colors.a320Green)
 
 	if (nextVhfFrequencyIsSettable) then
-		imgui.PushStyleColor(imgui.constant.Col.Text, a320Green)
+		imgui.PushStyleColor(imgui.constant.Col.Text, Colors.black)
 	else
-		imgui.PushStyleColor(imgui.constant.Col.Text, whiteColor)
+		imgui.PushStyleColor(imgui.constant.Col.Text, Colors.white)
 	end
 
 	imgui.SameLine()
@@ -459,9 +462,9 @@ function buildVhfHelperWindow()
 	imgui.TextUnformatted("Next VHF: ")
 
 	if (nextVhfFrequencyCanBeSetNow()) then
-		imgui.PushStyleColor(imgui.constant.Col.Text, a320Orange)
+		imgui.PushStyleColor(imgui.constant.Col.Text, Colors.a320Orange)
 	else
-		imgui.PushStyleColor(imgui.constant.Col.Text, a320Blue)
+		imgui.PushStyleColor(imgui.constant.Col.Text, Colors.a320Blue)
 	end
 
 	imgui.SameLine()
@@ -491,7 +494,7 @@ function buildVhfHelperWindow()
 
 	imgui.SetWindowFontScale(1.3 * globalFontScale)
 
-	imgui.PushStyleColor(imgui.constant.Col.Text, a320Blue)
+	imgui.PushStyleColor(imgui.constant.Col.Text, Colors.a320Blue)
 
 	for i = 1, 9 do
 		createNumberButtonAndReactToClicks(i)

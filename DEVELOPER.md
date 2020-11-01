@@ -43,7 +43,7 @@ Programmatically set the `Next VHF` frequency in VHF Helper's panel (returns `ni
 VHFHelperPublicInterface.enterFrequencyProgrammaticallyAsString("124.800")
 ```
 
-Find out if a frequency is currently tuned in (returns `true/false`):
+Find out if a frequency is currently tuned in, in either `COM1` or `COM2` (returns `true/false`):
 ```text
 VHFHelperPublicInterface.isCurrentlyTunedIn("120.500")
 ```

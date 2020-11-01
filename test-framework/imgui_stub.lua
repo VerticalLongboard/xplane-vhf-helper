@@ -37,7 +37,9 @@ imgui = {
     },
     SetWindowFontScale = function(value)
     end,
-    PushStyleVar_2 = function(value, value2)
+    PushStyleVar_2 = function(value, value2, value3)
+        luaUnit.assertNotNil(value2)
+        luaUnit.assertNotNil(value3)
         imgui.styleVarStackSize = imgui.styleVarStackSize + 1
     end,
     PopStyleVar = function()
@@ -46,7 +48,8 @@ imgui = {
     TextUnformatted = function(value)
         imgui:checkStringForWatchStrings(value)
     end,
-    PushStyleColor = function(value)
+    PushStyleColor = function(const, value)
+        luaUnit.assertNotNil(value)
         imgui.styleColorStackSize = imgui.styleColorStackSize + 1
     end,
     SameLine = function()
