@@ -7,7 +7,7 @@ Perks:
 * Linting and colors while coding
 * Testing as you're used to
 * Pressing "Build" runs all tests, copies the script to X-Plane and triggers a running X-Plane instance to reload all scripts
-* Building a release package is only one button away
+* Building a release package is only one button away (ZIP + Installer)
 
 ### Setup
 Required:
@@ -19,6 +19,7 @@ Required:
 Optional:
 * git: https://git-scm.com/
 * Install 7zip: https://www.7-zip.org/
+* Install NSIS: https://nsis.sourceforge.io/
 * Install Packetsender: https://packetsender.com/
 * Install VS Code extensions:
   * vscode-lua (linting)

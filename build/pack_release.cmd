@@ -13,6 +13,9 @@ if exist %RELEASE_PACKAGE_FOLDER_PATH% (
 )
 
 mkdir %RELEASE_PACKAGE_FOLDER_PATH%
+
+"%NSIS_EXECUTABLE_PATH%\makensis.exe" "/XOutFile ..\%RELEASE_PACKAGE_FOLDER_PATH%\%1-%TAG%-%COMMIT_HASH%.exe" build\generate-installer.nsi
+
 mkdir %RELEASE_PACKAGE_FOLDER_PATH%\Modules
 mkdir %RELEASE_PACKAGE_FOLDER_PATH%\Scripts
 
