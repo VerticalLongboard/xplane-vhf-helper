@@ -293,7 +293,6 @@ function TestVhfHelperHighLevelBehaviour:setUp()
 	vhfHelper = dofile("scripts/vhf_helper.lua")
 	flyWithLuaStub:bootstrapScriptUserInterface()
 	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
-	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
 end
 
 function TestVhfHelperHighLevelBehaviour:testClosingThePanelChangesPanelConfigurationAccordingly()
