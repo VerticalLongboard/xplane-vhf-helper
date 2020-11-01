@@ -21,8 +21,8 @@ Optional:
 * Install 7zip: https://www.7-zip.org/
 * Install Packetsender: https://packetsender.com/
 * Install VS Code extensions:
-  * vscode-lua (linting)
-  * Code Runner (lets you run selected snippets of code)
+  * vscode-lua (linting): https://marketplace.visualstudio.com/items?itemName=trixnz.vscode-lua
+  * Code Runner (lets you run selected snippets of code): https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner
 * Update paths in `build/configure_environment.cmd`
 
 Clone the VHF Helper repository and open the workspace in VS Code!
