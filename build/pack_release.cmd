@@ -9,7 +9,7 @@ for /F "tokens=*" %%h in ('git rev-parse --short HEAD') do (SET COMMIT_HASH=%%h)
 set RELEASE_PACKAGE_FOLDER_PATH=RELEASE_PACKAGE
 
 if exist %RELEASE_PACKAGE_FOLDER_PATH% (
-    rmdir /S /Q RELEASE_PACKAGE_FOLDER_PATH
+    rmdir /S /Q %RELEASE_PACKAGE_FOLDER_PATH%
 )
 
 mkdir %RELEASE_PACKAGE_FOLDER_PATH%
