@@ -64,12 +64,6 @@
             "windows": {
                 "command": ".\\build\\copy_to_xplane.cmd"
             },
-            "args": [
-                {
-                    "quoting": "escape",
-                    "value": "scripts\\vhf_helper.lua"
-                },
-            ],
             "presentation": {
                 "echo": true,
                 "reveal": "always",
@@ -95,7 +89,7 @@
                 },
                 {
                     "quoting": "escape",
-                    "value": "test\\test_vhf_helper.lua"
+                    "value": "test\\test_suite.lua"
                 }
             ],
             "presentation": {

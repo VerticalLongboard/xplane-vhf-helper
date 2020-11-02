@@ -11,12 +11,11 @@ Section "VHF Helper Main Script (required)"
 	SectionIn RO
 	SetOutPath $INSTDIR\Resources\plugins\FlyWithLua\Scripts
 	
-	File ..\scripts\vhf_helper.lua  
+	File ..\scripts\*.*
 SectionEnd
 
 Section "VHF Helper Dependencies"
 	SetOutPath $INSTDIR\Resources\plugins\FlyWithLua\Modules
 	
-	File ..\modules\LIP.lua
-	File ..\modules\eventbus.lua
+	File ..\modules\*.*
 SectionEnd
