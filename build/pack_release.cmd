@@ -14,7 +14,7 @@ if exist %RELEASE_PACKAGE_FOLDER_PATH% (
 
 mkdir %RELEASE_PACKAGE_FOLDER_PATH%
 
-"%NSIS_EXECUTABLE_PATH%\makensis.exe" "/XOutFile ..\%RELEASE_PACKAGE_FOLDER_PATH%\%1-%TAG%-%COMMIT_HASH%.exe" build\generate-installer.nsi
+%NSIS_EXECUTABLE% "/XOutFile ..\%RELEASE_PACKAGE_FOLDER_PATH%\%1-%TAG%-%COMMIT_HASH%.exe" build\generate-installer.nsi
 
 mkdir %RELEASE_PACKAGE_FOLDER_PATH%\Modules
 mkdir %RELEASE_PACKAGE_FOLDER_PATH%\Scripts
@@ -24,4 +24,4 @@ copy /a modules\*.* %RELEASE_PACKAGE_FOLDER_PATH%\Modules
 
 cd %RELEASE_PACKAGE_FOLDER_PATH%
 
-"%SEVEN_ZIP_EXECUTABLE_PATH%\7z.exe" a -r %1-%TAG%-%COMMIT_HASH%.zip Modules Scripts
+%SEVEN_ZIP_EXECUTABLE% a -r %1-%TAG%-%COMMIT_HASH%.zip Modules Scripts

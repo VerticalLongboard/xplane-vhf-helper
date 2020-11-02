@@ -14,7 +14,7 @@ Required:
 * Vanilla Windows 10
 * Visual Studio Code: https://code.visualstudio.com/
 * Install Lua: https://github.com/rjpcomputing/luaforwindows
-* Update paths in `build/configure_environment.cmd`
+* Run at least one task and update paths in `<repository root>/LOCAL_ENVIRONMENT_CONFIGURATION.cmd`
 
 Optional:
 * git: https://git-scm.com/
@@ -25,7 +25,7 @@ Optional:
   * vscode-lua (linting): https://marketplace.visualstudio.com/items?itemName=trixnz.vscode-lua
   * Code Runner (lets you run selected snippets of code): https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner
   * NSIS (linting): https://marketplace.visualstudio.com/items?itemName=idleberg.nsis
-* Update paths in `build/configure_environment.cmd`
+* Run at least one task and update paths in `<repository root>/LOCAL_ENVIRONMENT_CONFIGURATION.cmd`
 
 Clone the VHF Helper repository and open the workspace in VS Code!
 
@@ -40,7 +40,7 @@ end
 
 Programmatically set the `Next VHF` frequency in VHF Helper's panel (returns `nil` if invalid):
 ```text
-VHFHelperPublicInterface.enterFrequencyProgrammaticallyAsString("124.800")
+VHFHel1erPublicInterface.enterFrequencyProgrammaticallyAsString("124.800")
 ```
 
 Find out if a frequency is currently tuned in, in either `COM1` or `COM2` (returns `true/false`):
