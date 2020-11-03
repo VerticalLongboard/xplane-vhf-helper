@@ -6,6 +6,7 @@
         {
             "label": "packReleasePackage",
             "dependsOn": [
+                "copyToXPlane",
                 "runAllTests"
             ],
             "type": "process",
@@ -70,7 +71,7 @@
                 "showReuseMessage": false,
                 "clear": false
             },
-            "group": "test",
+            "group": "build",
             "problemMatcher": []
         },
         {
