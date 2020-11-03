@@ -1,5 +1,5 @@
 @echo off
 call .\build\configure_environment.cmd
 
-copy /Y .\scripts\*.* "%XPLANE_PATH%\Resources\plugins\FlyWithLua\Scripts"
-copy /Y .\modules\*.* "%XPLANE_PATH%\Resources\plugins\FlyWithLua\Modules"
+xcopy /Y /S /E scripts\* "%XPLANE_PATH%\Resources\plugins\FlyWithLua\Scripts"
+xcopy /Y /S /E modules\* "%XPLANE_PATH%\Resources\plugins\FlyWithLua\Modules"
