@@ -28,7 +28,7 @@ local flyWithLuaStub = require("xplane_fly_with_lua_stub")
 local imguiStub = require("imgui_stub")
 
 local vhfHelper = dofile("scripts/vhf_helper.lua")
-flyWithLuaStub:suppressLogMessagesBeginningWith("VHF Helper using '")
+flyWithLuaStub:suppressLogMessagesBeginningWith("VHF Helper: VHF Helper using '")
 
 require("test_vhf_helper_public_interface")
 require("test_vhf_helper_dataref_handling")

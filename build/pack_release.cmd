@@ -26,8 +26,8 @@ if %ERRORLEVEL% GTR 0 (
 mkdir %RELEASE_PACKAGE_FOLDER_PATH%\Modules
 mkdir %RELEASE_PACKAGE_FOLDER_PATH%\Scripts
 
-copy /a scripts\*.* %RELEASE_PACKAGE_FOLDER_PATH%\Scripts
-copy /a modules\*.* %RELEASE_PACKAGE_FOLDER_PATH%\Modules
+copy /Y scripts\*.* %RELEASE_PACKAGE_FOLDER_PATH%\Scripts
+copy /Y modules\*.* %RELEASE_PACKAGE_FOLDER_PATH%\Modules
 
 cd %RELEASE_PACKAGE_FOLDER_PATH%
 

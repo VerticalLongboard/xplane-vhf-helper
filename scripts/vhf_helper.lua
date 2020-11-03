@@ -27,6 +27,10 @@ local emptyString = ""
 local decimalCharacter = "."
 local underscoreCharacter = "_"
 
+local function printLogMessage(messageString)
+	logMsg(("VHF Helper: %s"):format(messageString or "NIL"))
+end
+
 local licensesOfDependencies = {
 	{"Lua INI Parser", "MIT License", "https://github.com/Dynodzzo/Lua_INI_Parser"},
 	{"Lua Event Bus", "MIT License", "https://github.com/prabirshrestha/lua-eventbus"},
@@ -35,7 +39,7 @@ local licensesOfDependencies = {
 }
 
 for i = 1, #licensesOfDependencies do
-	logMsg(
+	printLogMessage(
 		("VHF Helper using '%s' with license '%s'. Project homepage: %s"):format(
 			licensesOfDependencies[i][1],
 			licensesOfDependencies[i][2],
@@ -529,36 +533,139 @@ function destroyVhfHelperWindow()
 	deactivatePublicInterface()
 end
 
-function everyFrameLoopFunction()
-	updateCurrentVhfFrequenciesFromPlane()
+VHFHelperIsInitialized = false
 
-	local currentInterchangeFrequencies = {
-		InterchangeVHF1Frequency,
-		InterchangeVHF2Frequency
+local comVhfFrequencyDataRefNames = {
+	"sim/cockpit2/radios/actuators/com1_frequency_hz_833",
+	"sim/cockpit2/radios/actuators/com2_frequency_hz_833"
+}
+
+local interchangeFrequencyNames = {
+	"VHFHelper/InterchangeVHF1Frequency",
+	"VHFHelper/InterchangeVHF2Frequency"
+}
+
+local vhfHelperLoopSingleton
+do
+	vhfHelperLoop = {
+		Constants = {
+			DatarefTypeInteger = "Int",
+			DatarefAccessTypeWritable = "writable",
+			DatarefAccessTypeReadable = "readable"
+		}
 	}
 
-	for c = 1, 2 do
-		if (currentInterchangeFrequencies[c] ~= lastInterchangeFrequencies[c]) then
-			setPlaneVHFFrequency(c, currentInterchangeFrequencies[c])
-		end
-	end
+	function vhfHelperLoop:initializeOnce()
+		create_command("FlyWithLua/VHF Helper/ToggleWindow", "Toggle VHF Helper Window", "toggleVhfHelperWindow()", "", "")
 
-	local localFrequenciesHaveChanged = false
-	for c = 1, 2 do
-		if (currentVhfFrequencies[c] ~= lastVhfFrequencies[c]) then
-			localFrequenciesHaveChanged = true
+		Config:load()
+
+		local windowIsSupposedToBeVisible = false
+		if (trim(Config:getValue("Windows", "MainWindowVisibility", windowVisibilityVisible)) == windowVisibilityVisible) then
+			windowIsSupposedToBeVisible = true
 		end
 
-		lastVhfFrequencies[c] = currentVhfFrequencies[c]
+		add_macro(
+			"VHF Helper",
+			"createVhfHelperWindow()",
+			"destroyVhfHelperWindow()",
+			windowVisibilityToInitialMacroState(windowIsSupposedToBeVisible)
+		)
+
+		define_shared_DataRef(interchangeFrequencyNames[1], self.Constants.DatarefTypeInteger)
+		dataref("InterchangeVHF1Frequency", interchangeFrequencyNames[1], self.Constants.DatarefAccessTypeWritable)
+
+		define_shared_DataRef(interchangeFrequencyNames[2], self.Constants.DatarefTypeInteger)
+		dataref("InterchangeVHF2Frequency", interchangeFrequencyNames[2], self.Constants.DatarefAccessTypeWritable)
+
+		do_often("vhfHelperLoop:tryInitLoopFunction()")
 	end
 
-	if (localFrequenciesHaveChanged) then
-		VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
+	function vhfHelperLoop:tryInitLoopFunction()
+		if (VHFHelperIsInitialized) then
+			return
+		end
+
+		if (not XPLMFindDataRef(comVhfFrequencyDataRefNames[1]) or not XPLMFindDataRef(comVhfFrequencyDataRefNames[2])) then
+			return
+		end
+
+		dataref("CurrentVHF1FrequencyRead", comVhfFrequencyDataRefNames[1], self.Constants.DatarefAccessTypeReadable)
+		vhfFrequencyWriteHandles[1] = XPLMFindDataRef(comVhfFrequencyDataRefNames[1])
+
+		dataref("CurrentVHF2FrequencyRead", comVhfFrequencyDataRefNames[2], self.Constants.DatarefAccessTypeReadable)
+		vhfFrequencyWriteHandles[2] = XPLMFindDataRef(comVhfFrequencyDataRefNames[2])
+
+		updateCurrentVhfFrequenciesFromPlane()
+
+		lastInterchangeFrequencies[1] = currentVhfFrequencies[1]
+		InterchangeVHF1Frequency = currentVhfFrequencies[1]
+
+		lastInterchangeFrequencies[2] = currentVhfFrequencies[2]
+		InterchangeVHF2Frequency = currentVhfFrequencies[2]
+
+		do_every_frame("vhfHelperLoop:everyFrameLoopFunction()")
+
+		VHFHelperIsInitialized = true
+	end
+
+	function vhfHelperLoop:everyFrameLoopFunction()
+		updateCurrentVhfFrequenciesFromPlane()
+
+		if (not VHFHelperIsInitialized) then
+			return
+		end
+
+		local currentInterchangeFrequencies = {
+			InterchangeVHF1Frequency,
+			InterchangeVHF2Frequency
+		}
+
+		for c = 1, 2 do
+			if (currentInterchangeFrequencies[c] ~= lastInterchangeFrequencies[c]) then
+				-- Workaround FlyWithLua/X-Plane bug:
+				-- After creating a shared new dataref (and setting its inital value) the writable dataref variable is being assigned a
+				-- random value (very likely directly from memory) after waiting a few frames.
+				-- To workaround, ignore invalid values and continue using local com frequency values (which are supposed to be valid at this time).
+				local freqString = tostring(currentInterchangeFrequencies[c])
+				local freqFullString = freqString:sub(1, 3) .. decimalCharacter .. freqString:sub(4, 6)
+				if (not validateFullFrequencyString(freqFullString)) then
+					printLogMessage(
+						("Warning: Interchange frequency#%d has been externally assigned an invalid value=%s. " ..
+							"This is very likely happening during initialization and is a known issue in FlyWithLua/X-Plane dataref handling. " ..
+								"If this happens during flight, something is seriously wrong."):format(c, freqFullString)
+					)
+					currentInterchangeFrequencies[c] = currentVhfFrequencies[c]
+					if (c == 1) then
+						InterchangeVHF1Frequency = currentInterchangeFrequencies[c]
+					else
+						InterchangeVHF2Frequency = currentInterchangeFrequencies[c]
+					end
+				end
+
+				setPlaneVHFFrequency(c, currentInterchangeFrequencies[c])
+			end
+		end
+
+		local lastFreqs = {lastVhfFrequencies[1], lastVhfFrequencies[2]}
+
+		local localFrequenciesHaveChanged = false
+		for c = 1, 2 do
+			if (currentVhfFrequencies[c] ~= lastVhfFrequencies[c]) then
+				localFrequenciesHaveChanged = true
+			end
+
+			lastVhfFrequencies[c] = currentVhfFrequencies[c]
+		end
+
+		if (localFrequenciesHaveChanged) then
+			VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
+		end
 	end
 end
 
 function createVhfHelperWindow()
-	tryInitLoopFunction()
+	vhfHelperLoop:tryInitLoopFunction()
 
 	local minWidthWithoutScrollbars = nil
 	local minHeightWithoutScrollbars = nil
@@ -591,46 +698,6 @@ function createVhfHelperWindow()
 	activatePublicInterface()
 end
 
-VHFHelperIsInitialized = false
-
-local comVhfFrequencyDataRefNames = {
-	"sim/cockpit2/radios/actuators/com1_frequency_hz_833",
-	"sim/cockpit2/radios/actuators/com2_frequency_hz_833"
-}
-
-local interchangeFrequencyNames = {
-	"VHFHelper/InterchangeVHF1Frequency",
-	"VHFHelper/InterchangeVHF2Frequency"
-}
-
-function tryInitLoopFunction()
-	if (VHFHelperIsInitialized) then
-		return
-	end
-
-	if (not XPLMFindDataRef(comVhfFrequencyDataRefNames[1]) or not XPLMFindDataRef(comVhfFrequencyDataRefNames[2])) then
-		return
-	end
-
-	dataref("CurrentVHF1FrequencyRead", comVhfFrequencyDataRefNames[1], "readable")
-	vhfFrequencyWriteHandles[1] = XPLMFindDataRef(comVhfFrequencyDataRefNames[1])
-
-	dataref("CurrentVHF2FrequencyRead", comVhfFrequencyDataRefNames[2], "readable")
-	vhfFrequencyWriteHandles[2] = XPLMFindDataRef(comVhfFrequencyDataRefNames[2])
-
-	do_every_frame("everyFrameLoopFunction()")
-
-	updateCurrentVhfFrequenciesFromPlane()
-
-	lastInterchangeFrequencies[1] = CurrentVHF1FrequencyRead
-	InterchangeVHF1Frequency = CurrentVHF1FrequencyRead
-
-	lastInterchangeFrequencies[2] = CurrentVHF2FrequencyRead
-	InterchangeVHF2Frequency = CurrentVHF2FrequencyRead
-
-	VHFHelperIsInitialized = true
-end
-
 local function showVhfHelperWindow(value)
 	if (vhfHelperWindow == nil and value) then
 		createVhfHelperWindow()
@@ -643,33 +710,7 @@ local function toggleVhfHelperWindow()
 	showVhfHelperWindow(vhfHelperWindow and true or false)
 end
 
-local function initializeOnce()
-	create_command("FlyWithLua/VHF Helper/ToggleWindow", "Toggle VHF Helper Window", "toggleVhfHelperWindow()", "", "")
-
-	Config:load()
-
-	windowIsSupposedToBeVisible = false
-	if (trim(Config:getValue("Windows", "MainWindowVisibility", windowVisibilityVisible)) == windowVisibilityVisible) then
-		windowIsSupposedToBeVisible = true
-	end
-
-	add_macro(
-		"VHF Helper",
-		"createVhfHelperWindow()",
-		"destroyVhfHelperWindow()",
-		windowVisibilityToInitialMacroState(windowIsSupposedToBeVisible)
-	)
-
-	define_shared_DataRef(interchangeFrequencyNames[1], "Int")
-	dataref("InterchangeVHF1Frequency", interchangeFrequencyNames[1], "writable")
-
-	define_shared_DataRef(interchangeFrequencyNames[2], "Int")
-	dataref("InterchangeVHF2Frequency", interchangeFrequencyNames[2], "writable")
-
-	do_often("tryInitLoopFunction()")
-end
-
-initializeOnce()
+vhfHelperLoop:initializeOnce()
 
 vhfHelperPackageExport = {}
 

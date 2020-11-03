@@ -31,9 +31,10 @@
             "problemMatcher": []
         },
         {
-            "label": "updateAndReloadFlyWithLua",
+            "label": "buildAndReloadFlyWithLua",
             "dependsOn": [
-                "copyToXPlane"
+                "copyToXPlane",
+                "runAllTests"
             ],
             "type": "process",
             "command": "No non-windows command available.",
@@ -56,9 +57,6 @@
         },
         {
             "label": "copyToXPlane",
-            "dependsOn": [
-                "runAllTests"
-            ],
             "type": "process",
             "command": "No non-windows command available.",
             "windows": {
@@ -72,7 +70,7 @@
                 "showReuseMessage": false,
                 "clear": false
             },
-            "group": "build",
+            "group": "test",
             "problemMatcher": []
         },
         {

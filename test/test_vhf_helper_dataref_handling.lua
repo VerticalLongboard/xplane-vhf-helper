@@ -84,6 +84,24 @@ function TestVhfHelperDatarefHandling:testTwoIndependentComFrequenciesAreDefined
 	self:_assertDifferentLocalVariablesDeclaredForTwoDatarefs(c1, c2, flyWithLuaStub.Constants.AccessTypeReadable)
 end
 
+function TestVhfHelperDatarefHandling:testExternalChangeViaInterchangeIgnoresInvalidFrequencies()
+	local i1 = flyWithLuaStub.datarefs[self.Constants.firstInterchangeFreq]
+	local c1 = flyWithLuaStub.datarefs[self.Constants.firstComFreq]
+
+	luaUnit.assertEquals(c1.data, i1.data)
+	oldFrequency = c1.data
+	local newFrequency = -12999994
+	luaUnit.assertNotEquals(oldFrequency, newFrequency)
+
+	i1.data = newFrequency
+	flyWithLuaStub:writeDatarefValueToLocalVariables(self.Constants.firstInterchangeFreq)
+
+	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+
+	luaUnit.assertEquals(i1.data, oldFrequency)
+	luaUnit.assertEquals(c1.data, oldFrequency)
+end
+
 function TestVhfHelperDatarefHandling:testInternalFrequencyChangeUpdatesBothComAndInterchange()
 	local i1 = flyWithLuaStub.datarefs[self.Constants.firstInterchangeFreq]
 	local c1 = flyWithLuaStub.datarefs[self.Constants.firstComFreq]
