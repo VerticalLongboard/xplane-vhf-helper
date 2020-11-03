@@ -14,12 +14,6 @@
             "windows": {
                 "command": ".\\build\\pack_release.cmd"
             },
-            "args": [
-                {
-                    "quoting": "escape",
-                    "value": "xplane-vhf-helper"
-                }
-            ],
             "presentation": {
                 "echo": true,
                 "reveal": "always",
