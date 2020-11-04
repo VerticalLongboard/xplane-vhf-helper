@@ -35,6 +35,16 @@ imgui = {
             Button
         }
     },
+    Constants = {
+        ButtonTitleWithIdMatcherPattern = "^(.*)[##.*]-$",
+        Button = "Button",
+        SmallButton = "SmallButton",
+        TextUnformatted = "TextUnformatted",
+        SameLine = "SameLine",
+        PushStyleColor = "PushStyleColor",
+        PopStyleColor = "PopStyleColor"
+    },
+    LastFrameCommandList = {},
     SetWindowFontScale = function(value)
     end,
     PushStyleVar_2 = function(value, value2, value3)
@@ -47,21 +57,42 @@ imgui = {
     end,
     TextUnformatted = function(value)
         imgui:checkStringForWatchStrings(value)
+        table.insert(imgui.LastFrameCommandList, {type = imgui.Constants.TextUnformatted, textString = value})
     end,
     PushStyleColor = function(const, value)
         luaUnit.assertNotNil(value)
         imgui.styleColorStackSize = imgui.styleColorStackSize + 1
+        table.insert(imgui.LastFrameCommandList, {type = imgui.Constants.PushStyleColor, color = value})
     end,
     SameLine = function()
+        table.insert(imgui.LastFrameCommandList, {type = imgui.Constants.SameLine})
     end,
     PopStyleColor = function()
         imgui.styleColorStackSize = imgui.styleColorStackSize - 1
+        table.insert(imgui.LastFrameCommandList, {type = imgui.Constants.PopStyleColor, color = value})
     end,
     Dummy = function(value1, value2)
     end,
+    SmallButton = function(value)
+        imgui:checkStringForWatchStrings(value)
+        table.insert(imgui.LastFrameCommandList, {type = imgui.Constants.SmallButton, title = value})
+        if
+            (value:match(imgui.Constants.ButtonTitleWithIdMatcherPattern) ==
+                imgui.pressButtonWithThisTitleProgrammatically)
+         then
+            imgui.buttonPressed = true
+            return true
+        end
+
+        return false
+    end,
     Button = function(value)
         imgui:checkStringForWatchStrings(value)
-        if (value == imgui.pressButtonWithThisTitleProgrammatically) then
+        table.insert(imgui.LastFrameCommandList, {type = imgui.Constants.Button, title = value})
+        if
+            (value:match(imgui.Constants.ButtonTitleWithIdMatcherPattern) ==
+                imgui.pressButtonWithThisTitleProgrammatically)
+         then
             imgui.buttonPressed = true
             return true
         end
@@ -69,6 +100,40 @@ imgui = {
         return false
     end
 }
+
+function imgui:findNextMatch(startIndex, commandType, textString)
+    local nextIndex = self:findCommandInList(startIndex, commandType)
+    if (nextIndex == nil) then
+        return nil
+    end
+    local cmd = self.LastFrameCommandList[nextIndex]
+
+    if (commandType == self.Constants.Button or commandType == self.Constants.SmallButton) then
+        luaUnit.assertEquals(self:matchButtonTitle(cmd.title), textString)
+    elseif (commandType == self.Constants.TextUnformatted) then
+        luaUnit.assertEquals(cmd.textString, textString)
+    end
+
+    return nextIndex
+end
+
+function imgui:matchButtonTitle(title)
+    return title:match(self.Constants.ButtonTitleWithIdMatcherPattern)
+end
+
+function imgui:getCommandFromList(commandIndex)
+    return self.LastFrameCommandList[commandIndex]
+end
+
+function imgui:findCommandInList(startIndex, commandType)
+    for i = startIndex, #self.LastFrameCommandList do
+        if (self.LastFrameCommandList[i].type == commandType) then
+            return i
+        end
+    end
+
+    return nil
+end
 
 function imgui:checkStringForWatchStrings(value)
     if (imgui.watchString ~= nil and value:find(imgui.watchString)) then
@@ -86,6 +151,7 @@ function imgui:startFrame()
     self.buttonPressed = false
     self.styleVarStackSize = 0
     self.styleColorStackSize = 0
+    self.LastFrameCommandList = {}
 end
 
 function imgui:pressButtonProgrammaticallyOnce(buttonTitle)

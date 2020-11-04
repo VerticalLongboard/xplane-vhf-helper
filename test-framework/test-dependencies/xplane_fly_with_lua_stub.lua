@@ -105,8 +105,16 @@ function flyWithLuaStub:closeWindow(window)
 end
 
 function flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
-    self.doOftenFunction()
-    self.doEveryFrameFunction()
+    if (self.doSometimesFunction ~= nil) then
+        self.doSometimesFunction()
+    end
+    if (self.doOftenFunction ~= nil) then
+        self.doOftenFunction()
+    end
+    if (self.doEveryFrameFunction ~= nil) then
+        self.doEveryFrameFunction()
+    end
+
     self:readbackAllWritableDatarefs()
 
     if (not flyWithLuaStub.userInterfaceIsActive) then
@@ -186,6 +194,10 @@ function dataref(localDatarefVariable, globalDatarefIdName, accessType)
     if (accessType == flyWithLuaStub.Constants.AccessTypeReadable) then
         flyWithLuaStub:writeDatarefValueToLocalVariables(globalDatarefIdName)
     end
+end
+
+function do_sometimes(doSometimesExpression)
+    flyWithLuaStub.doSometimesFunction = loadstring(doSometimesExpression)
 end
 
 function do_often(doOftenExpression)
