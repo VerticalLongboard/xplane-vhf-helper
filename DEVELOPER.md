@@ -10,13 +10,13 @@ Perks:
 * Building a release package is only one button away (ZIP + Installer)
 
 ### Setup
-Required:
+Required (Coding + Testing):
 * Vanilla Windows 10
 * Visual Studio Code: https://code.visualstudio.com/
 * Install Lua: https://github.com/rjpcomputing/luaforwindows
 * Run at least one task and update paths in `<repository root>/LOCAL_ENVIRONMENT_CONFIGURATION.cmd`
 
-Optional:
+Optional (Versioning, Release Packaging, On-the-fly Script Reloading):
 * git: https://git-scm.com/
 * Install 7zip: https://www.7-zip.org/
 * Install NSIS: https://nsis.sourceforge.io/
