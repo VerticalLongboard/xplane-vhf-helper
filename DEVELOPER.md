@@ -16,7 +16,7 @@ Required (Coding + Testing):
 * Install Lua: https://github.com/rjpcomputing/luaforwindows
 * Run at least one task and update paths in `<repository root>/LOCAL_ENVIRONMENT_CONFIGURATION.cmd`
 
-Optional (Versioning, Release Packaging, On-the-fly reloading):
+Optional (Versioning, Release Packaging, On-the-fly Script Reloading):
 * git: https://git-scm.com/
 * Install 7zip: https://www.7-zip.org/
 * Install NSIS: https://nsis.sourceforge.io/
