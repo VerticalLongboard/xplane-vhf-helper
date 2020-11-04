@@ -56,20 +56,24 @@ function TestVhfHelperFrequencyValidation:testFourDigitFrequencyIsAutocompleted(
 end
 
 function TestVhfHelperFrequencyValidation:testLessThanFourDigitFrequencyIsNotAutocompleted()
-	luaUnit.assertEquals(vhfHelperPackageExport.test.autocompleteFrequencyString("123."), "123.")
-	luaUnit.assertEquals(vhfHelperPackageExport.test.autocompleteFrequencyString("123"), "123")
-	luaUnit.assertEquals(vhfHelperPackageExport.test.autocompleteFrequencyString("12"), "12")
-	luaUnit.assertEquals(vhfHelperPackageExport.test.autocompleteFrequencyString("1"), "1")
-	luaUnit.assertEquals(vhfHelperPackageExport.test.autocompleteFrequencyString(""), "")
+	local f = vhfHelperPackageExport.test.autocompleteFrequencyString
+	local e = luaUnit.assertEquals
+	e(f("123."), "123.")
+	e(f("123"), "123")
+	e(f("12"), "12")
+	e(f("1"), "1")
+	e(f(""), "")
 end
 
 function TestVhfHelperFrequencyValidation:testValidFrequencyCanBeEntered()
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("", 1), "1")
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("1", 2), "2")
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("12", 4), "4")
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("124", 5), "5")
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("124.5", 7), "7")
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("124.57", 5), "5")
+	local f = vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband
+	local e = luaUnit.assertEquals
+	e(f("", 1), "1")
+	e(f("1", 2), "2")
+	e(f("12", 4), "4")
+	e(f("124", 5), "5")
+	e(f("124.5", 7), "7")
+	e(f("124.57", 5), "5")
 end
 
 function TestVhfHelperFrequencyValidation:testInvalidFrequencyFirstDigitsCanNotBeEntered()
@@ -78,9 +82,11 @@ function TestVhfHelperFrequencyValidation:testInvalidFrequencyFirstDigitsCanNotB
 end
 
 function TestVhfHelperFrequencyValidation:testInvalidFrequencyLastDigitsCanNotBeEntered()
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("", 1), "1")
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("1", 3), "3")
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("13", 6), "6")
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("136", 9), "9")
-	luaUnit.assertEquals(vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband("136.9", 8), "_")
+	local f = vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband
+	local e = luaUnit.assertEquals
+	e(f("", 1), "1")
+	e(f("1", 3), "3")
+	e(f("13", 6), "6")
+	e(f("136", 9), "9")
+	e(f("136.9", 8), "_")
 end
