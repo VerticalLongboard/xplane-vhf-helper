@@ -22,7 +22,7 @@ function ColorTextOutput:endTest(node)
         if self.verbosity > luaUnit.VERBOSITY_DEFAULT then
             io.stdout:write("Ok\n")
         else
-            io.stdout:write("[92m[0m")
+            io.stdout:write("[92m.[0m")
             io.stdout:flush()
         end
     else
@@ -46,10 +46,8 @@ function ColorTextOutput:endTest(node)
 end
 function ColorTextOutput:displayOneFailedTest(index, fail)
     print(index .. ") " .. fail.testName)
-    print("[91m")
-    print(fail.msg)
-    print("[0m")
-    print(fail.stackTrace)
+    print("[91m" .. fail.msg .. "[0m")
+    print("[94m" .. fail.stackTrace .. "[0m")
     print()
 end
 function ColorTextOutput:displayErroredTests()

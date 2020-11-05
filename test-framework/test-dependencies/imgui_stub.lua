@@ -36,13 +36,14 @@ imgui = {
         }
     },
     Constants = {
-        ButtonTitleWithIdMatcherPattern = "^(.*)[##.*]-$",
+        ButtonTitleWithIdMatcherPattern = "^(.*)[#][#].*$",
         Button = "Button",
         SmallButton = "SmallButton",
         TextUnformatted = "TextUnformatted",
         SameLine = "SameLine",
         PushStyleColor = "PushStyleColor",
-        PopStyleColor = "PopStyleColor"
+        PopStyleColor = "PopStyleColor",
+        Separator = "Separator"
     },
     LastFrameCommandList = {},
     SetWindowFontScale = function(value)
@@ -98,23 +99,40 @@ imgui = {
         end
 
         return false
+    end,
+    PushID = function(value)
+        imgui.idStackSize = imgui.idStackSize + 1
+    end,
+    PopID = function()
+        imgui.idStackSize = imgui.idStackSize - 1
+    end,
+    Separator = function(value)
+        table.insert(imgui.LastFrameCommandList, {type = imgui.Constants.Separator, title = value})
     end
 }
 
 function imgui:findNextMatch(startIndex, commandType, textString)
-    local nextIndex = self:findCommandInList(startIndex, commandType)
-    if (nextIndex == nil) then
-        return nil
-    end
-    local cmd = self.LastFrameCommandList[nextIndex]
+    local i = startIndex - 1
+    while true do
+        i = self:findCommandInList(i + 1, commandType)
+        if (i == nil) then
+            return nil
+        end
 
-    if (commandType == self.Constants.Button or commandType == self.Constants.SmallButton) then
-        luaUnit.assertEquals(self:matchButtonTitle(cmd.title), textString)
-    elseif (commandType == self.Constants.TextUnformatted) then
-        luaUnit.assertEquals(cmd.textString, textString)
-    end
+        local cmd = self.LastFrameCommandList[i]
 
-    return nextIndex
+        if (commandType == self.Constants.Button or commandType == self.Constants.SmallButton) then
+            if (self:matchButtonTitle(cmd.title) == textString) then
+                return i
+            end
+        elseif (commandType == self.Constants.TextUnformatted) then
+            if (cmd.textString == textString) then
+                return i
+            end
+        else
+            return i
+        end
+    end
 end
 
 function imgui:matchButtonTitle(title)
@@ -151,6 +169,7 @@ function imgui:startFrame()
     self.buttonPressed = false
     self.styleVarStackSize = 0
     self.styleColorStackSize = 0
+    self.idStackSize = 0
     self.LastFrameCommandList = {}
 end
 
@@ -171,6 +190,7 @@ function imgui:endFrame()
 
     luaUnit.assertEquals(self.styleVarStackSize, 0)
     luaUnit.assertEquals(self.styleColorStackSize, 0)
+    luaUnit.assertEquals(self.idStackSize, 0)
 end
 
 function imgui:wasWatchStringFound()
