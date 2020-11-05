@@ -1,8 +1,0 @@
-Files copied by task copyToXPlane: 
-scripts\vhf_helper.lua
-1 File(s) copied
-modules\eventbus-LICENSE
-modules\eventbus.lua
-modules\LIP-LICENSE
-modules\LIP.lua
-4 File(s) copied

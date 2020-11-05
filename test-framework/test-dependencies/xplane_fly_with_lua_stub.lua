@@ -118,7 +118,7 @@ function flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
         functionCount = functionCount + 1
         f()
     end
-    logMsg(("FlyWithLua STUB: Called num=%d doSometimes functions"):format(functionCount))
+    -- logMsg(("FlyWithLua STUB: Called num=%d doSometimes functions"):format(functionCount))
 
     functionCount = 0
     for _, f in pairs(self.doOftenFunctions) do
@@ -127,13 +127,13 @@ function flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
     end
 
     functionCount = 0
-    logMsg(("FlyWithLua STUB: Called num=%d doOften functions"):format(functionCount))
+    -- logMsg(("FlyWithLua STUB: Called num=%d doOften functions"):format(functionCount))
 
     for _, f in pairs(self.doEveryFrameFunctions) do
         functionCount = functionCount + 1
         f()
     end
-    logMsg(("FlyWithLua STUB: Called num=%d doEveryFrame functions"):format(functionCount))
+    -- logMsg(("FlyWithLua STUB: Called num=%d doEveryFrame functions"):format(functionCount))
 
     self:readbackAllWritableDatarefs()
 
