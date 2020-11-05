@@ -26,14 +26,14 @@ for /F "tokens=*" %%A in ('type %FWL_PREFS_INI_PATH%') do (
     echo !line: =! >> %FILTERED_INI_PATH%
 )
 
-for /F "tokens=1,2 delims==" %%A in ('type TASK_OUTPUT\copyToXPlane_filtered_fwl_prefs.ini') do (
+for /F "tokens=1,2 delims==" %%A in ('type !TASK_OUTPUT_FOLDER_PATH!\copyToXPlane_filtered_fwl_prefs.ini') do (
     if %%A==DeveloperMode set DEV_MODE_SETTING=%%B
 )
 
 if %DEV_MODE_SETTING%==0 (
     echo.
-    echo Your FlyWithLua installation has [93mdeveloper mode disabled[0m and moves erroneous scripts to Quarantine.
-    echo To remove yourself from the burden of moving them back back manually from Quarantine, consider enabling developer mode in %FWL_PREFS_INI_PATH:"=%
+    echo Your FlyWithLua installation has [93mdeveloper mode disabled[0m and moves erroneous scripts to Quarantine automatically.
+    echo To remove yourself from the burden of moving them back back manually from Quarantine, consider enabling developer mode in [94m%FWL_PREFS_INI_PATH:"=%[0m
 )
 
 set ERRORLEVEL=0
