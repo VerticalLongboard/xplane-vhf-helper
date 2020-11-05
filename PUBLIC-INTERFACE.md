@@ -1,35 +1,4 @@
-# VHF Helper Developer Notes
-
-## Development Environment
-If you happen to develop FlyWithLua plugins and are crossing the threshold from "coding a bit and pressing buttons to see if my plugin works" to "I don't like LUA too much, but it's doing its job and I like to code a bit more", feel free to use and adapt the VS Code / LuaUnit environment boilerplate from VHF Helper.
-
-Perks:
-* Linting and colors while coding
-* Testing as you're used to
-* Pressing "Build" runs all tests, copies the script to X-Plane and triggers a running X-Plane instance to reload all scripts
-* Building a release package is only one button away (ZIP + Installer)
-
-### Setup
-Required (Coding + Testing):
-* Vanilla Windows 10
-* Visual Studio Code: https://code.visualstudio.com/
-* Install Lua: https://github.com/rjpcomputing/luaforwindows
-* Run at least one task and update paths in `<repository root>/LOCAL_ENVIRONMENT_CONFIGURATION.cmd`
-
-Optional (Versioning, Release Packaging, On-the-fly Script Reloading):
-* git: https://git-scm.com/
-* Install 7zip: https://www.7-zip.org/
-* Install NSIS: https://nsis.sourceforge.io/
-* Install Packetsender: https://packetsender.com/
-* Install VS Code extensions:
-  * vscode-lua (linting): https://marketplace.visualstudio.com/items?itemName=trixnz.vscode-lua
-  * Code Runner (lets you run selected snippets of code): https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner
-  * NSIS (linting): https://marketplace.visualstudio.com/items?itemName=idleberg.nsis
-* Run at least one task and update paths in `<repository root>/LOCAL_ENVIRONMENT_CONFIGURATION.cmd`
-
-Clone the VHF Helper repository and open the workspace in VS Code!
-
-## Public API
+## VHF Helper Public Interface
 VHF Helper offers a public API via a global `VHFHelperPublicInterface` while its panel is visible:
 ```text
 if (VHFHelperPublicInterface ~= nil) then
