@@ -55,12 +55,12 @@ function TestVhfHelperHighLevelBehaviour:setUp()
 	)
 
 	vhfHelper = dofile("scripts/vhf_helper.lua")
-	flyWithLuaStub:bootstrapScriptUserInterface()
+	flyWithLuaStub:bootstrapAllMacros()
 	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
 end
 
 function TestVhfHelperHighLevelBehaviour:testClosingThePanelChangesPanelConfigurationAccordingly()
-	luaUnit.assertIsTrue(flyWithLuaStub.userInterfaceIsActive)
+	luaUnit.assertIsTrue(flyWithLuaStub:isMacroActive(vhfHelperPackageExport.test.defaultMacroName))
 
 	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowVisibility, "visible")
 
@@ -72,17 +72,17 @@ function TestVhfHelperHighLevelBehaviour:testClosingThePanelChangesPanelConfigur
 end
 
 function TestVhfHelperHighLevelBehaviour:testDeactivatingTheScriptChangesPanelConfigurationAccordingly()
-	luaUnit.assertIsTrue(flyWithLuaStub.userInterfaceIsActive)
+	luaUnit.assertIsTrue(flyWithLuaStub:isMacroActive(vhfHelperPackageExport.test.defaultMacroName))
 
 	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowVisibility, "visible")
 
-	flyWithLuaStub:shutdownScriptUserInterface()
+	flyWithLuaStub:activateAllMacros(false)
 
 	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowVisibility, "hidden")
 end
 
 function TestVhfHelperHighLevelBehaviour:testPanelIsVisibleByDefault()
-	luaUnit.assertIsTrue(flyWithLuaStub.userInterfaceIsActive)
+	luaUnit.assertIsTrue(flyWithLuaStub:isMacroActive(vhfHelperPackageExport.test.defaultMacroName))
 end
 
 function TestVhfHelperHighLevelBehaviour:testCurrentComFrequenciesAreShownSomewhere()
