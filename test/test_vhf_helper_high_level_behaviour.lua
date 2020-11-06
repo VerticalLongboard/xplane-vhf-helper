@@ -63,11 +63,7 @@ function TestVhfHelperHighLevelBehaviour:testClosingThePanelChangesPanelConfigur
 	luaUnit.assertIsTrue(flyWithLuaStub:isMacroActive(vhfHelperPackageExport.test.defaultMacroName))
 
 	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowVisibility, "visible")
-
-	for _, window in pairs(flyWithLuaStub.windows) do
-		flyWithLuaStub:closeWindow(window)
-	end
-
+	flyWithLuaStub:closeWindowByTitle(vhfHelperPackageExport.test.defaultWindowName)
 	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowVisibility, "hidden")
 end
 

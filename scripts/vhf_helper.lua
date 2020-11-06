@@ -665,6 +665,7 @@ do
 end
 
 local defaultMacroName = "VHF Helper"
+local defaultWindowName = "VHF Helper"
 
 function createVhfHelperWindow()
 	vhfHelperLoop:tryInitLoopFunction()
@@ -690,7 +691,7 @@ function createVhfHelperWindow()
 	defaultDummySize = 20.0 * globalFontScale
 
 	vhfHelperWindow = float_wnd_create(minWidthWithoutScrollbars, minHeightWithoutScrollbars, 1, true)
-	float_wnd_set_title(vhfHelperWindow, defaultMacroName)
+	float_wnd_set_title(vhfHelperWindow, defaultWindowName)
 	float_wnd_set_imgui_builder(vhfHelperWindow, "buildVhfHelperWindow")
 	float_wnd_set_onclose(vhfHelperWindow, "destroyVhfHelperWindow")
 
@@ -728,6 +729,7 @@ vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscoreInDefaultAirband 
 vhfHelperPackageExport.test.setPlaneVHFFrequency = setPlaneVHFFrequency
 vhfHelperPackageExport.test.Config = Config
 vhfHelperPackageExport.test.defaultMacroName = defaultMacroName
+vhfHelperPackageExport.test.defaultWindowName = defaultWindowName
 
 -- When returning anything besides nothing, FlyWithLua does not expose global fields
 return
