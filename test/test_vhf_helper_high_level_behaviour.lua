@@ -36,7 +36,7 @@ TestVhfHelperHighLevelBehaviour = {
 function TestVhfHelperHighLevelBehaviour:_enterFrequencyViaUserInterface(freqString)
 	for i = 1, #freqString do
 		imguiStub:pressButtonProgrammaticallyOnce(freqString:sub(i, i))
-		flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+		flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
 		luaUnit.assertTrue(imguiStub:wasButtonPressed())
 	end
 end
@@ -56,7 +56,7 @@ function TestVhfHelperHighLevelBehaviour:setUp()
 
 	vhfHelper = dofile("scripts/vhf_helper.lua")
 	flyWithLuaStub:bootstrapAllMacros()
-	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
 end
 
 function TestVhfHelperHighLevelBehaviour:testClosingThePanelChangesPanelConfigurationAccordingly()
@@ -85,13 +85,13 @@ function TestVhfHelperHighLevelBehaviour:testCurrentComFrequenciesAreShownSomewh
 	local freqAsString = tostring(self.Constants.initialCom1Frequency)
 	local fullFrequencyString = freqAsString:sub(1, 3) .. "." .. freqAsString:sub(4, 6)
 	imguiStub:keepALookOutForString(fullFrequencyString)
-	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
 	luaUnit.assertTrue(imguiStub:wasWatchStringFound())
 
 	freqAsString = tostring(self.Constants.initialCom2Frequency)
 	fullFrequencyString = freqAsString:sub(1, 3) .. "." .. freqAsString:sub(4, 6)
 	imguiStub:keepALookOutForString(fullFrequencyString)
-	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
 	luaUnit.assertTrue(imguiStub:wasWatchStringFound())
 end
 
@@ -100,7 +100,7 @@ function TestVhfHelperHighLevelBehaviour:testEnteredStringIsShownSomewhere()
 	self:_enterFrequencyViaUserInterface(freqString)
 
 	imguiStub:keepALookOutForString(freqString:sub(1, 3) .. "." .. freqString:sub(4, 6))
-	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
 	luaUnit.assertTrue(imguiStub:wasWatchStringFound())
 end
 
@@ -113,7 +113,7 @@ function TestVhfHelperHighLevelBehaviour:testSwitchingToAFrequencyDoesSwitch()
 	luaUnit.assertNotEquals(c2.data, tonumber(freq))
 
 	imguiStub:pressButtonProgrammaticallyOnce("<2>")
-	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
 	luaUnit.assertTrue(imguiStub:wasButtonPressed())
 
 	luaUnit.assertEquals(c2.data, tonumber(freqString))

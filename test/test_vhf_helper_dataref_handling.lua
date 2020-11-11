@@ -47,8 +47,8 @@ function TestVhfHelperDatarefHandling:setUp()
 	)
 
 	vhfHelper = dofile("scripts/vhf_helper.lua")
-	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
-	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
+	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
 end
 
 function TestVhfHelperDatarefHandling:_assertDifferentLocalVariablesDeclaredForTwoDatarefs(d1, d2, expectedAccessType)
@@ -96,7 +96,7 @@ function TestVhfHelperDatarefHandling:testExternalChangeViaInterchangeIgnoresInv
 	i1.data = newFrequency
 	flyWithLuaStub:writeDatarefValueToLocalVariables(self.Constants.firstInterchangeFreq)
 
-	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
 
 	luaUnit.assertEquals(i1.data, oldFrequency)
 	luaUnit.assertEquals(c1.data, oldFrequency)
@@ -113,7 +113,7 @@ function TestVhfHelperDatarefHandling:testInternalFrequencyChangeUpdatesBothComA
 
 	vhfHelperPackageExport.test.setPlaneVHFFrequency(1, newFrequency)
 
-	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
 
 	luaUnit.assertEquals(i1.data, newFrequency)
 	luaUnit.assertEquals(c1.data, newFrequency)
@@ -131,7 +131,7 @@ function TestVhfHelperDatarefHandling:testExternalChangeViaInterchangeUpdatesLoc
 	i1.data = newFrequency
 	flyWithLuaStub:writeDatarefValueToLocalVariables(self.Constants.firstInterchangeFreq)
 
-	flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
 
 	luaUnit.assertEquals(i1.data, newFrequency)
 	luaUnit.assertEquals(c1.data, newFrequency)
@@ -145,7 +145,7 @@ function TestVhfHelperDatarefHandling:testInternalChangeLeadsToStableFrequencyAc
 	vhfHelperPackageExport.test.setPlaneVHFFrequency(2, newFrequency)
 
 	for f = 1, 10 do
-		flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+		flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
 		luaUnit.assertEquals(i2.data, newFrequency)
 		luaUnit.assertEquals(c2.data, newFrequency)
 	end
@@ -160,7 +160,7 @@ function TestVhfHelperDatarefHandling:testExternalChangeLeadsToStableFrequencyAc
 	flyWithLuaStub:writeDatarefValueToLocalVariables(self.Constants.secondInterchangeFreq)
 
 	for f = 1, 10 do
-		flyWithLuaStub:runNextFrameAfterExternalWritesToDatarefs()
+		flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
 		luaUnit.assertEquals(i2.data, newFrequency)
 		luaUnit.assertEquals(c2.data, newFrequency)
 	end
