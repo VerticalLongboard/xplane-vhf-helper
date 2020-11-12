@@ -23,7 +23,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 --]]
-TestVhfHelperPublicInterface = {}
+TestVhfHelperPublicInterface = {
+	Constants = {
+		initialCom1Frequency = 131200,
+		initialCom2Frequency = 119500
+	}
+}
 
 function TestVhfHelperPublicInterface:setUp()
 	vhfHelperPackageExport.test.activatePublicInterface()
@@ -50,4 +55,30 @@ function TestVhfHelperPublicInterface:testEnteringProgrammaticallyReportsEntered
 	luaUnit.assertIsTrue(self.activeInterface.isCurrentlyEntered(enterFreq))
 end
 
--- TODO: Add test for isCurrentlyTunedIn
+function TestVhfHelperPublicInterface:testValidationWorks()
+	local someValidFreq = "124.225"
+	luaUnit.assertIsTrue(self.activeInterface.isValidFrequency(someValidFreq))
+
+	local someInvalidFreq = "199.228"
+	luaUnit.assertIsFalse(self.activeInterface.isValidFrequency(someInvalidFreq))
+end
+
+function TestVhfHelperPublicInterface:testTuningInAFrequencyIsReportedAsTunedIn()
+	flyWithLuaStub:reset()
+	flyWithLuaStub:createSharedDatarefHandle(
+		TestVhfHelperDatarefHandling.Constants.firstComFreq,
+		flyWithLuaStub.Constants.DatarefTypeInteger,
+		self.Constants.initialCom1Frequency
+	)
+	flyWithLuaStub:createSharedDatarefHandle(
+		TestVhfHelperDatarefHandling.Constants.secondComFreq,
+		flyWithLuaStub.Constants.DatarefTypeInteger,
+		self.Constants.initialCom2Frequency
+	)
+
+	vhfHelper = dofile("scripts/vhf_helper.lua")
+	flyWithLuaStub:bootstrapAllMacros()
+	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
+
+	luaUnit.assertIsTrue(self.activeInterface.isCurrentlyTunedIn("119.500"))
+end

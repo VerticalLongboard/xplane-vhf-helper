@@ -57,56 +57,142 @@ end
 
 local nextVhfFrequency = emptyString
 
-local function validateFullFrequencyString(fullFrequencyString)
-	if (fullFrequencyString == nil) then
-		return nil
-	end
-	if (fullFrequencyString:len() ~= 7) then
-		return nil
-	end
-	if (fullFrequencyString:sub(4, 4) ~= decimalCharacter) then
-		return nil
+local FrequencyValidatorClass
+do
+	FrequencyValidator = {}
+
+	function FrequencyValidator:new()
+		local newInstanceWithState = {}
+
+		setmetatable(newInstanceWithState, self)
+		self.__index = self
+		return newInstanceWithState
 	end
 
-	cleanFrequencyString = fullFrequencyString:sub(1, 3) .. fullFrequencyString:sub(5, 7)
-
-	frequencyNumber = tonumber(cleanFrequencyString)
-	minVhfFrequency = 118000
-	maxVhfFrequency = 136975
-	if (frequencyNumber < minVhfFrequency or frequencyNumber > maxVhfFrequency) then
+	function FrequencyValidator:validate(fullFrequencyString)
 		return nil
 	end
 
-	minorOneDigit = cleanFrequencyString:sub(6, 6)
-	minorTenDigit = cleanFrequencyString:sub(5, 5)
-	if (minorOneDigit ~= "0" and minorOneDigit ~= "5") then
-		minorOneDigit = "0"
-		cleanFrequencyString = replaceCharacter(cleanFrequencyString, 6, minorOneDigit)
+	function FrequencyValidator:autocomplete(partialFrequencyString)
+		return nil
 	end
 
-	if (minorTenDigit == "2" or minorTenDigit == "7") then
-		minorOneDigit = "5"
-		cleanFrequencyString = replaceCharacter(cleanFrequencyString, 6, minorOneDigit)
+	function FrequencyValidator:getValidNumberCharacterOrUnderscore(frequencyEnteredSoFar, number)
+		return nil
 	end
-
-	return cleanFrequencyString:sub(1, 3) .. decimalCharacter .. cleanFrequencyString:sub(4, 7)
 end
 
-local function autocompleteFrequencyString(fullFrequencyString)
-	nextStringLength = fullFrequencyString:len()
-	if (nextStringLength == 5) then
-		fullFrequencyString = fullFrequencyString .. "00"
-	elseif (nextStringLength == 6) then
-		minorTenDigit = fullFrequencyString:sub(6, 6)
-		if (minorTenDigit == "2" or minorTenDigit == "7") then
-			fullFrequencyString = fullFrequencyString .. "5"
-		else
-			fullFrequencyString = fullFrequencyString .. "0"
+local COMFrequencyValidatorClass
+do
+	COMFrequencyValidator = FrequencyValidator:new()
+
+	-- Override
+	function COMFrequencyValidator:validate(fullFrequencyString)
+		if (fullFrequencyString == nil) then
+			return nil
 		end
+		if (fullFrequencyString:len() ~= 7) then
+			return nil
+		end
+		if (fullFrequencyString:sub(4, 4) ~= decimalCharacter) then
+			return nil
+		end
+
+		cleanFrequencyString = fullFrequencyString:sub(1, 3) .. fullFrequencyString:sub(5, 7)
+
+		frequencyNumber = tonumber(cleanFrequencyString)
+		minVhfFrequency = 118000
+		maxVhfFrequency = 136975
+		if (frequencyNumber < minVhfFrequency or frequencyNumber > maxVhfFrequency) then
+			return nil
+		end
+
+		minorOneDigit = cleanFrequencyString:sub(6, 6)
+		minorTenDigit = cleanFrequencyString:sub(5, 5)
+		if (minorOneDigit ~= "0" and minorOneDigit ~= "5") then
+			minorOneDigit = "0"
+			cleanFrequencyString = replaceCharacter(cleanFrequencyString, 6, minorOneDigit)
+		end
+
+		if (minorTenDigit == "2" or minorTenDigit == "7") then
+			minorOneDigit = "5"
+			cleanFrequencyString = replaceCharacter(cleanFrequencyString, 6, minorOneDigit)
+		end
+
+		return cleanFrequencyString:sub(1, 3) .. decimalCharacter .. cleanFrequencyString:sub(4, 7)
 	end
 
-	return fullFrequencyString
+	-- Override
+	function COMFrequencyValidator:autocomplete(partialFrequencyString)
+		nextStringLength = partialFrequencyString:len()
+		if (nextStringLength == 5) then
+			partialFrequencyString = partialFrequencyString .. "00"
+		elseif (nextStringLength == 6) then
+			minorTenDigit = partialFrequencyString:sub(6, 6)
+			if (minorTenDigit == "2" or minorTenDigit == "7") then
+				partialFrequencyString = partialFrequencyString .. "5"
+			else
+				partialFrequencyString = partialFrequencyString .. "0"
+			end
+		end
+
+		return partialFrequencyString
+	end
+
+	-- Override
+	function COMFrequencyValidator:getValidNumberCharacterOrUnderscore(frequencyEnteredSoFar, number)
+		if (string.len(frequencyEnteredSoFar) == 7) then
+			return underscoreCharacter
+		end
+
+		character = tostring(number)
+		freqStringLength = string.len(frequencyEnteredSoFar)
+
+		if (freqStringLength == 0) then
+			if (number ~= 1) then
+				character = underscoreCharacter
+			end
+		elseif (freqStringLength == 1) then
+			if (number < 1 or number > 3) then
+				character = underscoreCharacter
+			end
+		elseif (freqStringLength == 2) then
+			majorTenDigit = frequencyEnteredSoFar:sub(2, 2)
+			if (majorTenDigit == "1") then
+				if (number < 8) then
+					character = underscoreCharacter
+				end
+			elseif (majorTenDigit == "3") then
+				if (number > 6) then
+					character = underscoreCharacter
+				end
+			end
+		elseif (freqStringLength == 5) then
+			minorHundredDigit = frequencyEnteredSoFar:sub(5, 5)
+			if (minorHundredDigit == "9") then
+				if (number > 7) then
+					character = underscoreCharacter
+				end
+			end
+		elseif (freqStringLength == 6) then
+			if (number ~= 0 and number ~= 5) then
+				character = underscoreCharacter
+			end
+
+			minorTenDigit = frequencyEnteredSoFar:sub(6, 6)
+
+			if ((minorTenDigit == "2" or minorTenDigit == "7") and number == 0) then
+				character = underscoreCharacter
+			elseif ((minorTenDigit == "4" or minorTenDigit == "9") and number == 5) then
+				character = underscoreCharacter
+			end
+		end
+
+		return character
+	end
 end
+
+local comFrequencyValidator = COMFrequencyValidator:new()
 
 local InterchangeLinkedDatarefClass
 do
@@ -223,7 +309,7 @@ local isNewComFrequencyValid = function(ild, newValue)
 	-- To workaround, ignore invalid values and continue using local com frequency values (which are supposed to be valid at this time).
 	local freqString = tostring(newValue)
 	local freqFullString = freqString:sub(1, 3) .. decimalCharacter .. freqString:sub(4, 6)
-	if (not validateFullFrequencyString(freqFullString)) then
+	if (not comFrequencyValidator:validate(freqFullString)) then
 		printLogMessage(
 			("Warning: Interchange frequency %s has been externally assigned an invalid value=%s. " ..
 				"This is very likely happening during initialization and is a known issue in FlyWithLua/X-Plane dataref handling. " ..
@@ -273,7 +359,7 @@ VHFHelperEventOnFrequencyChanged = "EventBus_EventName_VHFHelperEventOnFrequency
 local function activatePublicInterface()
 	VHFHelperPublicInterface = {
 		enterFrequencyProgrammaticallyAsString = function(newFullString)
-			newFullString = validateFullFrequencyString(newFullString)
+			newFullString = comFrequencyValidator:validate(newFullString)
 			if (newFullString ~= nil) then
 				nextVhfFrequency = newFullString
 			else
@@ -285,7 +371,7 @@ local function activatePublicInterface()
 			return nextVhfFrequency
 		end,
 		isCurrentlyTunedIn = function(fullFrequencyString)
-			newFullString = validateFullFrequencyString(fullFrequencyString)
+			newFullString = comFrequencyValidator:validate(fullFrequencyString)
 			if (newFullString == nil) then
 				return false
 			end
@@ -301,12 +387,12 @@ local function activatePublicInterface()
 			return false
 		end,
 		isCurrentlyEntered = function(fullFrequencyString)
-			newFullString = validateFullFrequencyString(fullFrequencyString)
+			newFullString = comFrequencyValidator:validate(fullFrequencyString)
 			if (newFullString == nil) then
 				return false
 			end
 
-			autocompletedNextVhf = autocompleteFrequencyString(nextVhfFrequency)
+			autocompletedNextVhf = comFrequencyValidator:autocomplete(nextVhfFrequency)
 
 			if (newFullString == autocompletedNextVhf) then
 				return true
@@ -315,7 +401,7 @@ local function activatePublicInterface()
 			return false
 		end,
 		isValidFrequency = function(fullFrequencyString)
-			if (validateFullFrequencyString(fullFrequencyString) == nil) then
+			if (comFrequencyValidator:validate(fullFrequencyString) == nil) then
 				return false
 			else
 				return true
@@ -437,7 +523,7 @@ local function validateAndSetNextVHFFrequency(comNumber)
 		return
 	end
 
-	local cleanVhfFrequency = autocompleteFrequencyString(nextVhfFrequency):gsub("%.", "")
+	local cleanVhfFrequency = comFrequencyValidator:autocomplete(nextVhfFrequency):gsub("%.", "")
 	local nextFrequencyAsNumber = tonumber(cleanVhfFrequency)
 
 	COMLinkedDatarefs[comNumber]:emitNewValue(nextFrequencyAsNumber)
@@ -451,59 +537,8 @@ local function validateAndSetNextVHFFrequency(comNumber)
 	nextVhfFrequency = emptyString
 end
 
-local function getValidNumberCharacterOrUnderscoreInDefaultAirband(frequencyEnteredSoFar, number)
-	if (string.len(frequencyEnteredSoFar) == 7) then
-		return underscoreCharacter
-	end
-
-	character = tostring(number)
-	freqStringLength = string.len(frequencyEnteredSoFar)
-
-	if (freqStringLength == 0) then
-		if (number ~= 1) then
-			character = underscoreCharacter
-		end
-	elseif (freqStringLength == 1) then
-		if (number < 1 or number > 3) then
-			character = underscoreCharacter
-		end
-	elseif (freqStringLength == 2) then
-		majorTenDigit = frequencyEnteredSoFar:sub(2, 2)
-		if (majorTenDigit == "1") then
-			if (number < 8) then
-				character = underscoreCharacter
-			end
-		elseif (majorTenDigit == "3") then
-			if (number > 6) then
-				character = underscoreCharacter
-			end
-		end
-	elseif (freqStringLength == 5) then
-		minorHundredDigit = frequencyEnteredSoFar:sub(5, 5)
-		if (minorHundredDigit == "9") then
-			if (number > 7) then
-				character = underscoreCharacter
-			end
-		end
-	elseif (freqStringLength == 6) then
-		if (number ~= 0 and number ~= 5) then
-			character = underscoreCharacter
-		end
-
-		minorTenDigit = frequencyEnteredSoFar:sub(6, 6)
-
-		if ((minorTenDigit == "2" or minorTenDigit == "7") and number == 0) then
-			character = underscoreCharacter
-		elseif ((minorTenDigit == "4" or minorTenDigit == "9") and number == 5) then
-			character = underscoreCharacter
-		end
-	end
-
-	return character
-end
-
 local function getValidNumberCharacterOrUnderscore(number)
-	return getValidNumberCharacterOrUnderscoreInDefaultAirband(nextVhfFrequency, number)
+	return comFrequencyValidator:getValidNumberCharacterOrUnderscore(nextVhfFrequency, number)
 end
 
 local globalFontScale = nil
@@ -671,10 +706,10 @@ do
 			windowVisibilityToInitialMacroState(windowIsSupposedToBeVisible)
 		)
 
-		do_often("vhfHelperLoop:tryInitLoopFunction()")
+		do_often("vhfHelperLoop:tryInitialize()")
 	end
 
-	function vhfHelperLoop:tryInitLoopFunction()
+	function vhfHelperLoop:tryInitialize()
 		if (VHFHelperIsInitialized) then
 			return
 		end
@@ -707,7 +742,7 @@ local defaultMacroName = "VHF Helper"
 local defaultWindowName = "VHF Helper"
 
 function createVhfHelperWindow()
-	vhfHelperLoop:tryInitLoopFunction()
+	vhfHelperLoop:tryInitialize()
 
 	local minWidthWithoutScrollbars = nil
 	local minHeightWithoutScrollbars = nil
@@ -757,8 +792,7 @@ vhfHelperLoop:initializeOnce()
 vhfHelperPackageExport = {}
 
 vhfHelperPackageExport.test = {}
-vhfHelperPackageExport.test.validateFullFrequencyString = validateFullFrequencyString
-vhfHelperPackageExport.test.autocompleteFrequencyString = autocompleteFrequencyString
+vhfHelperPackageExport.test.comFrequencyValidator = comFrequencyValidator
 vhfHelperPackageExport.test.activatePublicInterface = activatePublicInterface
 vhfHelperPackageExport.test.deactivatePublicInterface = deactivatePublicInterface
 vhfHelperPackageExport.test.getValidNumberCharacterOrUnderscore = getValidNumberCharacterOrUnderscore
