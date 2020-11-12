@@ -108,6 +108,163 @@ local function autocompleteFrequencyString(fullFrequencyString)
 	return fullFrequencyString
 end
 
+local InterchangeLinkedDatarefClass
+do
+	InterchangeLinkedDataref = {
+		Constants = {
+			DatarefTypeInteger = "Int",
+			DatarefAccessTypeWritable = "writable",
+			DatarefAccessTypeReadable = "readable"
+		}
+	}
+	function InterchangeLinkedDataref:new(
+		newDataType,
+		newInterchangeDatarefName,
+		newInterchangeVariableName,
+		newLinkedDatarefName,
+		newLinkedReadVariableName,
+		newOnInterchangeChangeFunction,
+		newOnLinkedChangeFunction,
+		newIsNewValueValidFunction)
+		local newValue = nil
+
+		local newInstanceWithState = {
+			dataType = newDataType,
+			interchangeDatarefName = newInterchangeDatarefName,
+			interchangeVariableName = newInterchangeVariableName,
+			linkedDatarefName = newLinkedDatarefName,
+			linkedReadVariableName = newLinkedReadVariableName,
+			getInterchangeValueFunction = loadstring("return " .. newInterchangeVariableName),
+			getLinkedValueFunction = loadstring("return " .. newLinkedReadVariableName),
+			onInterchangeChangeFunction = newOnInterchangeChangeFunction,
+			onLinkedChangeFunction = newOnLinkedChangeFunction,
+			isNewValueValidFunction = newIsNewValueValidFunction,
+			lastLinkedValue = nil,
+			lastInterchangeValue = nil,
+			linkedDatarefWriteHandle = nil
+		}
+
+		setmetatable(newInstanceWithState, self)
+		self.__index = self
+		return newInstanceWithState
+	end
+
+	function InterchangeLinkedDataref:initialize()
+		define_shared_DataRef(self.interchangeDatarefName, self.dataType)
+		dataref(self.interchangeVariableName, self.interchangeDatarefName, self.Constants.DatarefAccessTypeWritable)
+
+		dataref(self.linkedReadVariableName, self.linkedDatarefName, self.Constants.DatarefAccessTypeReadable)
+		self.linkedDatarefWriteHandle = XPLMFindDataRef(self.linkedDatarefName)
+
+		local linkedValue = self.getLinkedValueFunction()
+		self.lastLinkedValue = linkedValue
+		self.lastInterchangeValue = linkedValue
+		self:_setInterchangeValue(linkedValue)
+	end
+
+	function InterchangeLinkedDataref:loopUpdate()
+		local currentInterchangeValue = self:getInterchangeValue()
+		if (currentInterchangeValue ~= self.lastInterchangeValue) then
+			if (not self.isNewValueValidFunction(self, currentInterchangeValue)) then
+				currentInterchangeValue = self:getLinkedValue()
+				self:_setInterchangeValue(currentInterchangeValue)
+			end
+
+			self.onInterchangeChangeFunction(self, currentInterchangeValue)
+			self:_setLinkedValue(currentInterchangeValue)
+			self.lastInterchangeValue = currentInterchangeValue
+		end
+
+		local currentLinkedValue = self:getLinkedValue()
+		if (currentLinkedValue ~= self.lastLinkedValue) then
+			self.onLinkedChangeFunction(self, currentLinkedValue)
+			self.lastLinkedValue = currentLinkedValue
+		end
+	end
+
+	function InterchangeLinkedDataref:emitNewValue(value)
+		self:_setInterchangeValue(value)
+		self:_setLinkedValue(value)
+	end
+
+	function InterchangeLinkedDataref:getLinkedValue()
+		return self.getLinkedValueFunction()
+	end
+
+	function InterchangeLinkedDataref:getInterchangeValue()
+		return self.getInterchangeValueFunction()
+	end
+
+	function InterchangeLinkedDataref:isLocalLinkedDatarefAvailable()
+		return XPLMFindDataRef(self.linkedDatarefName)
+	end
+
+	function InterchangeLinkedDataref:_setInterchangeValue(value)
+		local setInterchangeValueFunction = loadstring(self.interchangeVariableName .. " = " .. value)
+		setInterchangeValueFunction()
+	end
+
+	function InterchangeLinkedDataref:_setLinkedValue(value)
+		XPLMSetDatai(self.linkedDatarefWriteHandle, value)
+	end
+end
+
+local onComInterchangeChange = function(ild, newInterchangeValue)
+end
+
+local onComLinkedChanged = function(ild, newLinkedValue)
+	VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
+end
+
+local isNewComFrequencyValid = function(ild, newValue)
+	-- Workaround FlyWithLua/X-Plane bug:
+	-- After creating a shared new dataref (and setting its inital value) the writable dataref variable is being assigned a
+	-- random value (very likely straight from memory) after waiting a few frames.
+	-- To workaround, ignore invalid values and continue using local com frequency values (which are supposed to be valid at this time).
+	local freqString = tostring(newValue)
+	local freqFullString = freqString:sub(1, 3) .. decimalCharacter .. freqString:sub(4, 6)
+	if (not validateFullFrequencyString(freqFullString)) then
+		printLogMessage(
+			("Warning: Interchange frequency %s has been externally assigned an invalid value=%s. " ..
+				"This is very likely happening during initialization and is a known issue in FlyWithLua/X-Plane dataref handling. " ..
+					"If this happens during flight, something is seriously wrong."):format(ild.interchangeDatarefName, freqFullString)
+		)
+		return false
+	end
+
+	return true
+end
+
+-- Pre-defined dataref handles cannot be in a table :-/
+InterchangeCOM1Frequency = 0
+InterchangeCOM2Frequency = 0
+
+COM1FrequencyRead = 0
+COM2FrequencyRead = 0
+
+local COMLinkedDatarefs = {
+	InterchangeLinkedDataref:new(
+		InterchangeLinkedDataref.Constants.DatarefTypeInteger,
+		"VHFHelper/InterchangeCOM1Frequency",
+		"InterchangeCOM1Frequency",
+		"sim/cockpit2/radios/actuators/com1_frequency_hz_833",
+		"COM1FrequencyRead",
+		onComInterchangeChange,
+		onComLinkedChanged,
+		isNewComFrequencyValid
+	),
+	InterchangeLinkedDataref:new(
+		InterchangeLinkedDataref.Constants.DatarefTypeInteger,
+		"VHFHelper/InterchangeCOM2Frequency",
+		"InterchangeCOM2Frequency",
+		"sim/cockpit2/radios/actuators/com2_frequency_hz_833",
+		"COM2FrequencyRead",
+		onComInterchangeChange,
+		onComLinkedChanged,
+		isNewComFrequencyValid
+	)
+}
+
 VHFHelperPublicInterface = nil
 local EventBus = require("eventbus")
 VHFHelperEventBus = EventBus.new()
@@ -134,7 +291,7 @@ local function activatePublicInterface()
 			end
 
 			for c = 1, 2 do
-				currentComString = tostring(currentVhfFrequencies[c])
+				currentComString = tostring(COMLinkedDatarefs[c]:getLinkedValue())
 				currentComString = currentComString:sub(1, 3) .. decimalCharacter .. currentComString:sub(4, 7)
 				if (newFullString == currentComString) then
 					return true
@@ -245,169 +402,6 @@ local Config = Configuration:new(SCRIPT_DIRECTORY .. "vhf_helper.ini")
 local windowVisibilityVisible = "visible"
 local windowVisibilityHidden = "hidden"
 
-local InterchangeLinkedDatarefClass
-do
-	InterchangeLinkedDataref = {
-		Constants = {
-			DatarefTypeInteger = "Int",
-			DatarefAccessTypeWritable = "writable",
-			DatarefAccessTypeReadable = "readable"
-		}
-	}
-	function InterchangeLinkedDataref:new(
-		newDataType,
-		newInterchangeDatarefName,
-		newInterchangeVariableName,
-		newLinkedDatarefName,
-		newLinkedReadVariableName,
-		newOnInterchangeChangeFunction,
-		newOnLinkedChangeFunction,
-		newIsNewValueValidFunction)
-		local newValue = nil
-
-		local newInstanceWithState = {
-			dataType = newDataType,
-			interchangeDatarefName = newInterchangeDatarefName,
-			interchangeVariableName = newInterchangeVariableName,
-			linkedDatarefName = newLinkedDatarefName,
-			linkedReadVariableName = newLinkedReadVariableName,
-			getInterchangeValueFunction = loadstring("return " .. newInterchangeVariableName),
-			getLinkedValueFunction = loadstring("return " .. newLinkedReadVariableName),
-			onInterchangeChangeFunction = newOnInterchangeChangeFunction,
-			onLinkedChangeFunction = newOnLinkedChangeFunction,
-			isNewValueValidFunction = newIsNewValueValidFunction,
-			lastLinkedValue = nil,
-			lastInterchangeValue = nil,
-			linkedDatarefWriteHandle = nil
-		}
-
-		setmetatable(newInstanceWithState, self)
-		self.__index = self
-		return newInstanceWithState
-	end
-
-	function InterchangeLinkedDataref:initialize()
-		define_shared_DataRef(self.interchangeDatarefName, self.dataType)
-		dataref(self.interchangeVariableName, self.interchangeDatarefName, self.Constants.DatarefAccessTypeWritable)
-
-		dataref(self.linkedReadVariableName, self.linkedDatarefName, self.Constants.DatarefAccessTypeReadable)
-		self.linkedDatarefWriteHandle = XPLMFindDataRef(self.linkedDatarefName)
-
-		local linkedValue = self.getLinkedValueFunction()
-		self.lastLinkedValue = linkedValue
-		self.lastInterchangeValue = linkedValue
-		self:_setInterchangeValue(linkedValue)
-	end
-
-	function InterchangeLinkedDataref:loopUpdate()
-		local currentInterchangeValue = self:getInterchangeValue()
-		if (currentInterchangeValue ~= self.lastInterchangeValue) then
-			if (not self.isNewValueValidFunction(self, currentInterchangeValue)) then
-				currentInterchangeValue = self:getLinkedValue()
-				self:_setInterchangeValue(currentInterchangeValue)
-			end
-
-			self.onInterchangeChangeFunction(self, currentInterchangeValue)
-			self:_setLinkedValue(currentInterchangeValue)
-			self.lastInterchangeValue = currentInterchangeValue
-		end
-
-		local currentLinkedValue = self:getLinkedValue()
-		if (currentLinkedValue ~= self.lastLinkedValue) then
-			self.onLinkedChangeFunction(self, currentLinkedValue)
-			self.lastLinkedValue = currentLinkedValue
-		end
-	end
-
-	function InterchangeLinkedDataref:emitNewValue(value)
-		self:_setInterchangeValue(value)
-		self:_setLinkedValue(value)
-	end
-
-	function InterchangeLinkedDataref:getLinkedValue()
-		return self.getLinkedValueFunction()
-	end
-
-	function InterchangeLinkedDataref:getInterchangeValue()
-		return self.getInterchangeValueFunction()
-	end
-
-	function InterchangeLinkedDataref:isLocalLinkedDatarefAvailable()
-		return XPLMFindDataRef(self.linkedDatarefName)
-	end
-
-	function InterchangeLinkedDataref:_setInterchangeValue(value)
-		local setInterchangeValueFunction = loadstring(self.interchangeVariableName .. " = " .. value)
-		setInterchangeValueFunction()
-	end
-
-	function InterchangeLinkedDataref:_setLinkedValue(value)
-		XPLMSetDatai(self.linkedDatarefWriteHandle, value)
-	end
-end
-
-local onComInterchangeChange = function(ild, newInterchangeValue)
-	-- TODO: Find out if this works as expected:
-	-- Emit change solely based on the user having pressed a button, especially if the new frequency is equal.
-	-- Any real change will emit an event later anyway.
-	-- if (ild:getLinkedValue() == newInterchangeValue) then
-	-- 	VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
-	-- end
-end
-
-local onComLinkedChanged = function(ild, newLinkedValue)
-	VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
-end
-
-local isNewComFrequencyValid = function(ild, newValue)
-	-- Workaround FlyWithLua/X-Plane bug:
-	-- After creating a shared new dataref (and setting its inital value) the writable dataref variable is being assigned a
-	-- random value (very likely straight from memory) after waiting a few frames.
-	-- To workaround, ignore invalid values and continue using local com frequency values (which are supposed to be valid at this time).
-	local freqString = tostring(newValue)
-	local freqFullString = freqString:sub(1, 3) .. decimalCharacter .. freqString:sub(4, 6)
-	if (not validateFullFrequencyString(freqFullString)) then
-		printLogMessage(
-			("Warning: Interchange frequency %s has been externally assigned an invalid value=%s. " ..
-				"This is very likely happening during initialization and is a known issue in FlyWithLua/X-Plane dataref handling. " ..
-					"If this happens during flight, something is seriously wrong."):format(ild.interchangeDatarefName, freqFullString)
-		)
-		return false
-	end
-
-	return true
-end
-
--- Pre-defined dataref handles cannot be in a table :-/
-InterchangeCOM1Frequency = 0
-InterchangeCOM2Frequency = 0
-
-COM1FrequencyRead = 0
-COM2FrequencyRead = 0
-
-local COMLinkedDatarefs = {
-	InterchangeLinkedDataref:new(
-		InterchangeLinkedDataref.Constants.DatarefTypeInteger,
-		"VHFHelper/InterchangeCOM1Frequency",
-		"InterchangeCOM1Frequency",
-		"sim/cockpit2/radios/actuators/com1_frequency_hz_833",
-		"COM1FrequencyRead",
-		onComInterchangeChange,
-		onComLinkedChanged,
-		isNewComFrequencyValid
-	),
-	InterchangeLinkedDataref:new(
-		InterchangeLinkedDataref.Constants.DatarefTypeInteger,
-		"VHFHelper/InterchangeCOM2Frequency",
-		"InterchangeCOM2Frequency",
-		"sim/cockpit2/radios/actuators/com2_frequency_hz_833",
-		"COM2FrequencyRead",
-		onComInterchangeChange,
-		onComLinkedChanged,
-		isNewComFrequencyValid
-	)
-}
-
 local function addToNextVhfFrequency(nextCharacter)
 	if (string.len(nextVhfFrequency) == 7) then
 		return
@@ -438,27 +432,6 @@ local function resetNextFrequency()
 	VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
 end
 
--- local function updateCurrentVhfFrequenciesFromPlane()
--- 	currentVhfFrequencies[1] = COM1FrequencyRead
--- 	currentVhfFrequencies[2] = COM2FrequencyRead
--- end
-
--- local function setPlaneVHFFrequency(comNumber, newFrequency)
--- 	XPLMSetDatai(vhfFrequencyWriteHandles[comNumber], newFrequency)
-
--- 	if (comNumber == 1) then
--- 		InterchangeCOM1Frequency = newFrequency
--- 	elseif (comNumber == 2) then
--- 		InterchangeCOM2Frequency = newFrequency
--- 	end
-
--- 	lastInterchangeFrequencies[comNumber] = newFrequency
-
--- 	if (currentVhfFrequencies[comNumber] == newFrequency) then
--- 		VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
--- 	end
--- end
-
 local function validateAndSetNextVHFFrequency(comNumber)
 	if (not nextVhfFrequencyCanBeSetNow()) then
 		return
@@ -469,12 +442,9 @@ local function validateAndSetNextVHFFrequency(comNumber)
 
 	COMLinkedDatarefs[comNumber]:emitNewValue(nextFrequencyAsNumber)
 
-	-- TODO: Check if that works as expected in real FlyWithLua.
-	-- setPlaneVHFFrequency(comNumber, nextFrequencyAsNumber)
-
 	-- Emit change solely based on the user having pressed a button, especially if the new frequency is equal.
 	-- Any real change will emit an event later anyway.
-	if (COMLinkedDatarefs[comNumber]:getLinkedValue() == newFrequency) then
+	if (COMLinkedDatarefs[comNumber]:getLinkedValue() == nextFrequencyAsNumber) then
 		VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
 	end
 

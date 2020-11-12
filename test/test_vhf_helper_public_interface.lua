@@ -49,3 +49,5 @@ function TestVhfHelperPublicInterface:testEnteringProgrammaticallyReportsEntered
 	luaUnit.assertEquals(self.activeInterface.enterFrequencyProgrammaticallyAsString(enterFreq), enterFreq)
 	luaUnit.assertIsTrue(self.activeInterface.isCurrentlyEntered(enterFreq))
 end
+
+-- TODO: Add test for isCurrentlyTunedIn
