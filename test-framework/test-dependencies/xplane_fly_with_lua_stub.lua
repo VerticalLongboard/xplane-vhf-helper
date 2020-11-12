@@ -108,6 +108,8 @@ function flyWithLuaStub:bootstrapAllMacros()
             macro.isActiveNow = true
         end
     end
+
+    flyWithLuaStub:readbackAllWritableDatarefs()
 end
 
 function flyWithLuaStub:activateAllMacros(activate)
@@ -186,6 +188,8 @@ function flyWithLuaStub:runImguiFrame()
 end
 
 function flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
+    self:writeAllDatarefValuesToLocalVariables()
+
     self:runAllDoSometimesFunctions()
     self:runAllDoOftenFunctions()
     self:runAllDoEveryFrameFunctions()
@@ -205,10 +209,21 @@ function flyWithLuaStub:readbackAllWritableDatarefs()
     end
 end
 
+function flyWithLuaStub:writeAllDatarefValuesToLocalVariables()
+    for n, d in pairs(self.datarefs) do
+        self:writeDatarefValueToLocalVariables(n)
+    end
+end
+
 function flyWithLuaStub:writeDatarefValueToLocalVariables(globalDatarefIdName)
     local d = self.datarefs[globalDatarefIdName]
     for localVariableName, localVariable in pairs(d.localVariables) do
-        localVariable.writeFunction = loadstring(localVariableName .. " = " .. d.data)
+        local actualNewData = "nil"
+        if (d.data ~= nil) then
+            actualNewData = tostring(d.data)
+        end
+        localVariable.writeFunction = loadstring(localVariableName .. " = " .. actualNewData)
+        luaUnit.assertNotNil(localVariable.writeFunction)
         localVariable.writeFunction()
     end
 end
@@ -250,6 +265,8 @@ function add_macro(macroName, activateExpression, deactivateExpression, activate
 end
 
 function define_shared_DataRef(globalDatarefIdName, datarefType)
+    luaUnit.assertNotNil(globalDatarefIdName)
+    luaUnit.assertNotNil(datarefType)
     local d = {}
     d.type = datarefType
     d.localVariables = {}
@@ -274,6 +291,7 @@ function dataref(localDatarefVariable, globalDatarefIdName, accessType)
     end
 
     variable.readFunction = loadstring("return " .. localDatarefVariable)
+    luaUnit.assertNotNil(variable.readFunction)
     variable.accessType = accessType
 
     if (accessType == flyWithLuaStub.Constants.AccessTypeReadable) then
@@ -295,6 +313,7 @@ end
 
 function XPLMFindDataRef(datarefName)
     luaUnit.assertNotNil(datarefName)
+
     local d = flyWithLuaStub.datarefs[datarefName]
     if (d == nil) then
         return nil
@@ -306,6 +325,9 @@ function XPLMFindDataRef(datarefName)
 end
 
 function XPLMSetDatai(datarefName, newDataAsInteger)
+    luaUnit.assertNotNil(datarefName)
+    luaUnit.assertNotNil(newDataAsInteger)
+
     local d = flyWithLuaStub.datarefs[datarefName]
     luaUnit.assertNotNil(d)
     luaUnit.assertEquals(d.type, flyWithLuaStub.Constants.DatarefTypeInteger)

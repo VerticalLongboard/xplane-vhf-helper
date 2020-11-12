@@ -265,9 +265,110 @@ vhfFrequencyWriteHandles = {
 	nil
 }
 
+local InterchangeLinkedDatarefClass
+do
+	InterchangeLinkedDataref = {
+		Constants = {
+			DatarefTypeInteger = "Int",
+			DatarefAccessTypeWritable = "writable",
+			DatarefAccessTypeReadable = "readable"
+		}
+	}
+	function InterchangeLinkedDataref:new(
+		newDataType,
+		newInterchangeDatarefName,
+		newInterchangeVariableName,
+		newLinkedDatarefName,
+		newLinkedReadVariableName,
+		newOnInterchangeChangeFunction,
+		newOnLinkedChangeFunction)
+		local newValue = nil
+
+		local newInstanceWithState = {
+			dataType = newDataType,
+			interchangeDatarefName = newInterchangeDatarefName,
+			interchangeVariableName = newInterchangeVariableName,
+			linkedDatarefName = newLinkedDatarefName,
+			linkedReadVariableName = newLinkedReadVariableName,
+			getInterchangeValueFunction = loadstring("return " .. newInterchangeVariableName),
+			getLinkedValueFunction = loadstring("return " .. newLinkedReadVariableName),
+			-- isNewInterchangeValueValidFunction = newIsNewInterchangeValueValidFunction,
+			onInterchangeChangeFunction = newOnInterchangeChangeFunction,
+			onLinkedChangeFunction = newOnLinkedChangeFunction,
+			lastLinkedValue = nil,
+			lastInterchangeValue = nil,
+			linkedDatarefWriteHandle = nil
+		}
+
+		setmetatable(newInstanceWithState, self)
+		self.__index = self
+		return newInstanceWithState
+	end
+
+	function InterchangeLinkedDataref:initialize()
+		define_shared_DataRef(self.interchangeDatarefName, self.dataType)
+		dataref(self.interchangeVariableName, self.interchangeDatarefName, self.Constants.DatarefAccessTypeWritable)
+
+		dataref(self.linkedReadVariableName, self.linkedDatarefName, self.Constants.DatarefAccessTypeReadable)
+		self.linkedDatarefWriteHandle = XPLMFindDataRef(self.linkedDatarefName)
+
+		local linkedValue = self.getLinkedValueFunction()
+		self.lastLinkedValue = linkedValue
+		self.lastInterchangeValue = linkedValue
+		self:setInterchangeValue(linkedValue)
+	end
+
+	function InterchangeLinkedDataref:setInterchangeValue(value)
+		local setInterchangeValueFunction = loadstring(self.interchangeVariableName .. " = " .. value)
+		setInterchangeValueFunction()
+	end
+
+	function InterchangeLinkedDataref:setLinkedValue(value)
+		print(self.linkedDatarefWriteHandle)
+		XPLMSetDatai(self.linkedDatarefWriteHandle, value)
+	end
+
+	function InterchangeLinkedDataref:getLinkedValue()
+		return self.getLinkedValueFunction()
+	end
+
+	function InterchangeLinkedDataref:getInterchangeValue()
+		return self.getInterchangeValueFunction()
+	end
+
+	function InterchangeLinkedDataref:getLastInterchangeValue()
+		return self.lastInterchangeValue
+	end
+
+	function InterchangeLinkedDataref:getLastLinkedValue()
+		return self.lastLinkedValue
+	end
+
+	function InterchangeLinkedDataref:loopUpdate()
+		local currentInterchangeValue = self:getInterchangeValue()
+		if (currentInterchangeValue ~= self.lastInterchangeValue) then
+			-- TODO: Validate this before setting
+			self.onInterchangeChangeFunction(self)
+			self:setLinkedValue(currentInterchangeValue)
+			self.lastInterchangeValue = currentInterchangeValue
+		end
+
+		local currentLinkedValue = self:getLinkedValue()
+		if (currentLinkedValue ~= self.lastLinkedValue) then
+			self.onLinkedChangeFunction(self)
+			self.lastLinkedValue = currentLinkedValue
+		end
+	end
+end
+
 -- Pre-defined dataref handles cannot be in a table :-/
-InterchangeVHF1Frequency = 0
-InterchangeVHF2Frequency = 0
+InterchangeCOM1Frequency = 0
+InterchangeCOM2Frequency = 0
+
+local interchangeFrequencyNames = {
+	"VHFHelper/InterchangeCOM1Frequency",
+	"VHFHelper/InterchangeCOM2Frequency"
+}
 
 CurrentVHF1FrequencyRead = 0
 CurrentVHF2FrequencyRead = 0
@@ -311,14 +412,14 @@ local function setPlaneVHFFrequency(comNumber, newFrequency)
 	XPLMSetDatai(vhfFrequencyWriteHandles[comNumber], newFrequency)
 
 	if (comNumber == 1) then
-		InterchangeVHF1Frequency = newFrequency
+		InterchangeCOM1Frequency = newFrequency
 	elseif (comNumber == 2) then
-		InterchangeVHF2Frequency = newFrequency
+		InterchangeCOM2Frequency = newFrequency
 	end
 
 	lastInterchangeFrequencies[comNumber] = newFrequency
 
-	-- Emit change based on the user having pressed a button, even if the new frequency is equal.
+	-- Emit change solely based on the user having pressed a button, especially if the new frequency is equal.
 	-- Any real change will emit an event later anyway.
 	if (currentVhfFrequencies[comNumber] == newFrequency) then
 		VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
@@ -519,12 +620,12 @@ function buildVhfHelperWindow()
 	imgui.PopStyleColor()
 end
 
-vhfHelperWindow = nil
+vhfHelperMainWindow = nil
 
 function destroyVhfHelperWindow()
-	if (vhfHelperWindow) then
-		float_wnd_destroy(vhfHelperWindow)
-		vhfHelperWindow = nil
+	if (vhfHelperMainWindow) then
+		float_wnd_destroy(vhfHelperMainWindow)
+		vhfHelperMainWindow = nil
 	end
 
 	Config:setValue("Windows", "MainWindowVisibility", windowVisibilityHidden)
@@ -538,11 +639,6 @@ VHFHelperIsInitialized = false
 local comVhfFrequencyDataRefNames = {
 	"sim/cockpit2/radios/actuators/com1_frequency_hz_833",
 	"sim/cockpit2/radios/actuators/com2_frequency_hz_833"
-}
-
-local interchangeFrequencyNames = {
-	"VHFHelper/InterchangeVHF1Frequency",
-	"VHFHelper/InterchangeVHF2Frequency"
 }
 
 local vhfHelperLoopSingleton
@@ -572,12 +668,6 @@ do
 			windowVisibilityToInitialMacroState(windowIsSupposedToBeVisible)
 		)
 
-		define_shared_DataRef(interchangeFrequencyNames[1], self.Constants.DatarefTypeInteger)
-		dataref("InterchangeVHF1Frequency", interchangeFrequencyNames[1], self.Constants.DatarefAccessTypeWritable)
-
-		define_shared_DataRef(interchangeFrequencyNames[2], self.Constants.DatarefTypeInteger)
-		dataref("InterchangeVHF2Frequency", interchangeFrequencyNames[2], self.Constants.DatarefAccessTypeWritable)
-
 		do_often("vhfHelperLoop:tryInitLoopFunction()")
 	end
 
@@ -590,6 +680,12 @@ do
 			return
 		end
 
+		define_shared_DataRef(interchangeFrequencyNames[1], self.Constants.DatarefTypeInteger)
+		dataref("InterchangeCOM1Frequency", interchangeFrequencyNames[1], self.Constants.DatarefAccessTypeWritable)
+
+		define_shared_DataRef(interchangeFrequencyNames[2], self.Constants.DatarefTypeInteger)
+		dataref("InterchangeCOM2Frequency", interchangeFrequencyNames[2], self.Constants.DatarefAccessTypeWritable)
+
 		dataref("CurrentVHF1FrequencyRead", comVhfFrequencyDataRefNames[1], self.Constants.DatarefAccessTypeReadable)
 		vhfFrequencyWriteHandles[1] = XPLMFindDataRef(comVhfFrequencyDataRefNames[1])
 
@@ -599,10 +695,10 @@ do
 		updateCurrentVhfFrequenciesFromPlane()
 
 		lastInterchangeFrequencies[1] = currentVhfFrequencies[1]
-		InterchangeVHF1Frequency = currentVhfFrequencies[1]
+		InterchangeCOM1Frequency = currentVhfFrequencies[1]
 
 		lastInterchangeFrequencies[2] = currentVhfFrequencies[2]
-		InterchangeVHF2Frequency = currentVhfFrequencies[2]
+		InterchangeCOM2Frequency = currentVhfFrequencies[2]
 
 		do_every_frame("vhfHelperLoop:everyFrameLoopFunction()")
 
@@ -617,15 +713,15 @@ do
 		end
 
 		local currentInterchangeFrequencies = {
-			InterchangeVHF1Frequency,
-			InterchangeVHF2Frequency
+			InterchangeCOM1Frequency,
+			InterchangeCOM2Frequency
 		}
 
 		for c = 1, 2 do
 			if (currentInterchangeFrequencies[c] ~= lastInterchangeFrequencies[c]) then
 				-- Workaround FlyWithLua/X-Plane bug:
 				-- After creating a shared new dataref (and setting its inital value) the writable dataref variable is being assigned a
-				-- random value (very likely directly from memory) after waiting a few frames.
+				-- random value (very likely straight from memory) after waiting a few frames.
 				-- To workaround, ignore invalid values and continue using local com frequency values (which are supposed to be valid at this time).
 				local freqString = tostring(currentInterchangeFrequencies[c])
 				local freqFullString = freqString:sub(1, 3) .. decimalCharacter .. freqString:sub(4, 6)
@@ -637,9 +733,9 @@ do
 					)
 					currentInterchangeFrequencies[c] = currentVhfFrequencies[c]
 					if (c == 1) then
-						InterchangeVHF1Frequency = currentInterchangeFrequencies[c]
+						InterchangeCOM1Frequency = currentInterchangeFrequencies[c]
 					else
-						InterchangeVHF2Frequency = currentInterchangeFrequencies[c]
+						InterchangeCOM2Frequency = currentInterchangeFrequencies[c]
 					end
 				end
 
@@ -690,10 +786,10 @@ function createVhfHelperWindow()
 
 	defaultDummySize = 20.0 * globalFontScale
 
-	vhfHelperWindow = float_wnd_create(minWidthWithoutScrollbars, minHeightWithoutScrollbars, 1, true)
-	float_wnd_set_title(vhfHelperWindow, defaultWindowName)
-	float_wnd_set_imgui_builder(vhfHelperWindow, "buildVhfHelperWindow")
-	float_wnd_set_onclose(vhfHelperWindow, "destroyVhfHelperWindow")
+	vhfHelperMainWindow = float_wnd_create(minWidthWithoutScrollbars, minHeightWithoutScrollbars, 1, true)
+	float_wnd_set_title(vhfHelperMainWindow, defaultWindowName)
+	float_wnd_set_imgui_builder(vhfHelperMainWindow, "buildVhfHelperWindow")
+	float_wnd_set_onclose(vhfHelperMainWindow, "destroyVhfHelperWindow")
 
 	Config:setValue("Windows", "MainWindowVisibility", windowVisibilityVisible)
 	Config:save()
@@ -702,15 +798,15 @@ function createVhfHelperWindow()
 end
 
 local function showVhfHelperWindow(value)
-	if (vhfHelperWindow == nil and value) then
+	if (vhfHelperMainWindow == nil and value) then
 		createVhfHelperWindow()
-	elseif (vhfHelperWindow ~= nil and not value) then
+	elseif (vhfHelperMainWindow ~= nil and not value) then
 		destroyVhfHelperWindow()
 	end
 end
 
 local function toggleVhfHelperWindow()
-	showVhfHelperWindow(vhfHelperWindow and true or false)
+	showVhfHelperWindow(vhfHelperMainWindow and true or false)
 end
 
 vhfHelperLoop:initializeOnce()
