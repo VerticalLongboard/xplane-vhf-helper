@@ -100,23 +100,6 @@ function TestVhfHelperDatarefHandling:testExternalChangeViaInterchangeIgnoresInv
 	luaUnit.assertEquals(c1.data, oldFrequency)
 end
 
-function TestVhfHelperDatarefHandling:testInternalFrequencyChangeUpdatesBothComAndInterchange()
-	local i1 = flyWithLuaStub.datarefs[self.Constants.firstInterchangeFreq]
-	local c1 = flyWithLuaStub.datarefs[self.Constants.firstComFreq]
-
-	luaUnit.assertEquals(c1.data, i1.data)
-	oldFrequency = c1.data
-	local newFrequency = 133600
-	luaUnit.assertNotEquals(oldFrequency, newFrequency)
-
-	vhfHelperPackageExport.test.setPlaneVHFFrequency(1, newFrequency)
-	flyWithLuaStub:readbackAllWritableDatarefs()
-	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
-
-	luaUnit.assertEquals(i1.data, newFrequency)
-	luaUnit.assertEquals(c1.data, newFrequency)
-end
-
 function TestVhfHelperDatarefHandling:testExternalChangeViaInterchangeUpdatesLocalComFrequencies()
 	local i1 = flyWithLuaStub.datarefs[self.Constants.firstInterchangeFreq]
 	local c1 = flyWithLuaStub.datarefs[self.Constants.firstComFreq]
@@ -138,7 +121,8 @@ function TestVhfHelperDatarefHandling:testInternalChangeLeadsToStableFrequencyAc
 	local c2 = flyWithLuaStub.datarefs[self.Constants.secondComFreq]
 
 	local newFrequency = 129225
-	vhfHelperPackageExport.test.setPlaneVHFFrequency(2, newFrequency)
+
+	vhfHelperPackageExport.test.COMLinkedDatarefs[2]:emitNewValue(newFrequency)
 	flyWithLuaStub:readbackAllWritableDatarefs()
 
 	for f = 1, 10 do

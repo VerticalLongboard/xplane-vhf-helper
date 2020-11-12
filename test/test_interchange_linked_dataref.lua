@@ -24,6 +24,7 @@ function TestInterchangeLinkedDataref:setUp()
         self.Constants.InternalDatarefId,
         "LinkedReadVariable",
         nil,
+        nil,
         nil
     )
 
@@ -40,7 +41,20 @@ function TestInterchangeLinkedDataref:testGettingExternallyDefinedVariablesWorks
     luaUnit.assertEquals(self.object:getInterchangeValue(), self.Constants.InitialDatarefValue)
 end
 
-function TestInterchangeLinkedDataref:testLoopUpdateDetectsAndAppliesChangesWhenTheyHappen()
+function TestInterchangeLinkedDataref:testEmittingNewValueUpdatesBothLinkedAndInterchange()
+    luaUnit.assertEquals(self.object:getLinkedValue(), self.Constants.InitialDatarefValue)
+    luaUnit.assertEquals(self.object:getInterchangeValue(), self.Constants.InitialDatarefValue)
+
+    local newValue = self.Constants.InitialDatarefValue * 2
+    self.object:emitNewValue(newValue)
+    flyWithLuaStub:readbackAllWritableDatarefs()
+    flyWithLuaStub:writeAllDatarefValuesToLocalVariables()
+
+    luaUnit.assertEquals(self.object:getInterchangeValue(), newValue)
+    luaUnit.assertEquals(self.object:getLinkedValue(), newValue)
+end
+
+function TestInterchangeLinkedDataref:testLoopUpdateDetectsAndAppliesChanges()
     local calledInterchange = false
     local calledLinked = false
 
@@ -51,13 +65,16 @@ function TestInterchangeLinkedDataref:testLoopUpdateDetectsAndAppliesChangesWhen
         "InterchangeTestVariable",
         self.Constants.InternalDatarefId,
         "LinkedReadVariable",
-        function(ild)
+        function(ild, newInterchangeValue)
             luaUnit.assertEquals(ild, self.object)
             calledInterchange = true
         end,
-        function(ild)
+        function(ild, newLinkedValue)
             luaUnit.assertEquals(ild, self.object)
             calledLinked = true
+        end,
+        function(ild, newValue)
+            return true
         end
     )
 
