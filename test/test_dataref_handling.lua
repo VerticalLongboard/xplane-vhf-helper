@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 --]]
-TestVhfHelperDatarefHandling = {
+TestDatarefHandling = {
 	Constants = {
 		firstComFreq = "sim/cockpit2/radios/actuators/com1_frequency_hz_833",
 		secondComFreq = "sim/cockpit2/radios/actuators/com2_frequency_hz_833",
@@ -33,16 +33,16 @@ TestVhfHelperDatarefHandling = {
 	}
 }
 
-function TestVhfHelperDatarefHandling:setUp()
+function TestDatarefHandling:setUp()
 	flyWithLuaStub:reset()
 	flyWithLuaStub:createSharedDatarefHandle(
-		TestVhfHelperDatarefHandling.Constants.firstComFreq,
+		TestDatarefHandling.Constants.firstComFreq,
 		flyWithLuaStub.Constants.DatarefTypeInteger,
 		self.Constants.initialComFrequency
 	)
 
 	flyWithLuaStub:createSharedDatarefHandle(
-		TestVhfHelperDatarefHandling.Constants.secondComFreq,
+		TestDatarefHandling.Constants.secondComFreq,
 		flyWithLuaStub.Constants.DatarefTypeInteger,
 		self.Constants.initialComFrequency
 	)
@@ -51,7 +51,7 @@ function TestVhfHelperDatarefHandling:setUp()
 	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
 end
 
-function TestVhfHelperDatarefHandling:_assertDifferentLocalVariablesDeclaredForTwoDatarefs(d1, d2, expectedAccessType)
+function TestDatarefHandling:_assertDifferentLocalVariablesDeclaredForTwoDatarefs(d1, d2, expectedAccessType)
 	local variableCount = 0
 	local lastVariableName = nil
 	for localVariableName, localVariable in pairs(d1.localVariables) do
@@ -70,21 +70,21 @@ function TestVhfHelperDatarefHandling:_assertDifferentLocalVariablesDeclaredForT
 	luaUnit.assertTrue(variableCount == 2)
 end
 
-function TestVhfHelperDatarefHandling:testTwoIndependentInterchangeFrequenciesAreDefinedCorrectly()
+function TestDatarefHandling:testTwoIndependentInterchangeFrequenciesAreDefinedCorrectly()
 	local f1 = flyWithLuaStub.datarefs[self.Constants.firstInterchangeFreq]
 	local f2 = flyWithLuaStub.datarefs[self.Constants.secondInterchangeFreq]
 
 	self:_assertDifferentLocalVariablesDeclaredForTwoDatarefs(f1, f2, flyWithLuaStub.Constants.AccessTypeWritable)
 end
 
-function TestVhfHelperDatarefHandling:testTwoIndependentComFrequenciesAreDefinedCorrectly()
+function TestDatarefHandling:testTwoIndependentComFrequenciesAreDefinedCorrectly()
 	local c1 = flyWithLuaStub.datarefs[self.Constants.firstComFreq]
 	local c2 = flyWithLuaStub.datarefs[self.Constants.secondComFreq]
 
 	self:_assertDifferentLocalVariablesDeclaredForTwoDatarefs(c1, c2, flyWithLuaStub.Constants.AccessTypeReadable)
 end
 
-function TestVhfHelperDatarefHandling:testExternalChangeViaInterchangeIgnoresInvalidFrequencies()
+function TestDatarefHandling:testExternalChangeViaInterchangeIgnoresInvalidFrequencies()
 	local i1 = flyWithLuaStub.datarefs[self.Constants.firstInterchangeFreq]
 	local c1 = flyWithLuaStub.datarefs[self.Constants.firstComFreq]
 
@@ -100,7 +100,7 @@ function TestVhfHelperDatarefHandling:testExternalChangeViaInterchangeIgnoresInv
 	luaUnit.assertEquals(c1.data, oldFrequency)
 end
 
-function TestVhfHelperDatarefHandling:testExternalChangeViaInterchangeUpdatesLocalComFrequencies()
+function TestDatarefHandling:testExternalChangeViaInterchangeUpdatesLocalComFrequencies()
 	local i1 = flyWithLuaStub.datarefs[self.Constants.firstInterchangeFreq]
 	local c1 = flyWithLuaStub.datarefs[self.Constants.firstComFreq]
 
@@ -116,7 +116,7 @@ function TestVhfHelperDatarefHandling:testExternalChangeViaInterchangeUpdatesLoc
 	luaUnit.assertEquals(c1.data, newFrequency)
 end
 
-function TestVhfHelperDatarefHandling:testInternalChangeLeadsToStableFrequencyAcrossMultipleFrames()
+function TestDatarefHandling:testInternalChangeLeadsToStableFrequencyAcrossMultipleFrames()
 	local i2 = flyWithLuaStub.datarefs[self.Constants.secondInterchangeFreq]
 	local c2 = flyWithLuaStub.datarefs[self.Constants.secondComFreq]
 
@@ -132,7 +132,7 @@ function TestVhfHelperDatarefHandling:testInternalChangeLeadsToStableFrequencyAc
 	end
 end
 
-function TestVhfHelperDatarefHandling:testExternalChangeLeadsToStableFrequencyAcrossMultipleFrames()
+function TestDatarefHandling:testExternalChangeLeadsToStableFrequencyAcrossMultipleFrames()
 	local i2 = flyWithLuaStub.datarefs[self.Constants.secondInterchangeFreq]
 	local c2 = flyWithLuaStub.datarefs[self.Constants.secondComFreq]
 

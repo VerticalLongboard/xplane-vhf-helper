@@ -373,14 +373,15 @@ local function activatePublicInterface()
 	VHFHelperPublicInterface = {
 		enterFrequencyProgrammaticallyAsString = function(newFullString)
 			newFullString = comFrequencyValidator:validate(newFullString)
+
+			local nextVhfFrequency = nil
 			if (newFullString ~= nil) then
 				nextVhfFrequency = newFullString
 			else
 				nextVhfFrequency = emptyString
 			end
 
-			VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
-
+			ComFrequencyPanel:overrideEnteredValue(nextVhfFrequency)
 			return nextVhfFrequency
 		end,
 		isCurrentlyTunedIn = function(fullFrequencyString)
@@ -391,6 +392,7 @@ local function activatePublicInterface()
 
 			for c = 1, 2 do
 				currentComString = tostring(COMLinkedDatarefs[c]:getLinkedValue())
+				print(currentComString)
 				currentComString = currentComString:sub(1, 3) .. decimalCharacter .. currentComString:sub(4, 7)
 				if (newFullString == currentComString) then
 					return true
@@ -405,7 +407,7 @@ local function activatePublicInterface()
 				return false
 			end
 
-			autocompletedNextVhf = comFrequencyValidator:autocomplete(nextVhfFrequency)
+			autocompletedNextVhf = comFrequencyValidator:autocomplete(ComFrequencyPanel:getEnteredValue())
 
 			if (newFullString == autocompletedNextVhf) then
 				return true
@@ -515,6 +517,10 @@ do
 		return newInstanceWithState
 	end
 
+	function NumberSubPanel:getEnteredValue()
+		return self.enteredValue
+	end
+
 	function NumberSubPanel:addCharacter(character)
 		assert(nil)
 	end
@@ -527,7 +533,7 @@ do
 		assert(nil)
 	end
 
-	function NumberSubPanel:reset()
+	function NumberSubPanel:clear()
 		self.enteredValue = emptyString
 	end
 
@@ -553,15 +559,18 @@ do
 	VhfFrequencySubPanel = NumberSubPanel:new()
 
 	OVERRIDE(VhfFrequencySubPanel.new)
-	function VhfFrequencySubPanel:new(newValidator, firstVhfLinkedDataref, secondVhfLinkedDataref)
+	function VhfFrequencySubPanel:new(newValidator, newFirstVhfLinkedDataref, newSecondVhfLinkedDataref, newDescriptor)
 		local newInstanceWithState = NumberSubPanel:new(newValidator)
+
 		newInstanceWithState.Constants = {
 			FullyPaddedFreqString = "___.___"
 		}
 		newInstanceWithState.linkedDatarefs = {
-			firstVhfLinkedDataref,
-			secondVhfLinkedDataref
+			newFirstVhfLinkedDataref,
+			newSecondVhfLinkedDataref
 		}
+		newInstanceWithState.descriptor = newDescriptor
+
 		setmetatable(newInstanceWithState, self)
 		self.__index = self
 		return newInstanceWithState
@@ -596,12 +605,12 @@ do
 	function VhfFrequencySubPanel:buildCurrentVhfLine(comNumber, nextVhfFrequencyIsSettable)
 		imgui.PushStyleVar_2(imgui.constant.StyleVar.FramePadding, 0.0, 0.0)
 
-		imgui.TextUnformatted("COM" .. tonumber(comNumber) .. ": ")
+		imgui.TextUnformatted(self.descriptor .. tonumber(comNumber) .. ": ")
 
 		imgui.SameLine()
 		imgui.PushStyleColor(imgui.constant.Col.Text, Colors.a320Orange)
 
-		currentVhfString = tostring(COMLinkedDatarefs[comNumber]:getLinkedValue())
+		currentVhfString = tostring(self.linkedDatarefs[comNumber]:getLinkedValue())
 		imgui.TextUnformatted(currentVhfString:sub(1, 3) .. decimalCharacter .. currentVhfString:sub(4, 7))
 		imgui.PopStyleColor()
 
@@ -648,11 +657,11 @@ do
 		local cleanVhfFrequency = self.inputPanelValidator:autocomplete(self.enteredValue):gsub("%.", "")
 		local nextFrequencyAsNumber = tonumber(cleanVhfFrequency)
 
-		COMLinkedDatarefs[comNumber]:emitNewValue(nextFrequencyAsNumber)
+		self.linkedDatarefs[comNumber]:emitNewValue(nextFrequencyAsNumber)
 
 		-- Emit change solely based on the user having pressed a button, especially if the new frequency is equal.
 		-- Any real change will emit an event later anyway.
-		if (COMLinkedDatarefs[comNumber]:getLinkedValue() == nextFrequencyAsNumber) then
+		if (self.linkedDatarefs[comNumber]:getLinkedValue() == nextFrequencyAsNumber) then
 			VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
 		end
 
@@ -670,7 +679,7 @@ do
 		self:buildCurrentVhfLine(1, nextVhfFrequencyIsSettable)
 		self:buildCurrentVhfLine(2, nextVhfFrequencyIsSettable)
 
-		imgui.TextUnformatted("Next COM: ")
+		imgui.TextUnformatted("Next " .. self.descriptor .. ": ")
 
 		if (nextVhfFrequencyIsSettable) then
 			imgui.PushStyleColor(imgui.constant.Col.Text, Colors.a320Orange)
@@ -691,7 +700,7 @@ do
 		imgui.SameLine()
 
 		if (imgui.Button("Clear")) then
-			self:reset()
+			self:clear()
 		end
 
 		imgui.SameLine()
@@ -731,6 +740,11 @@ local ComFrequencySubPanelClass
 do
 	ComFrequencySubPanel = VhfFrequencySubPanel:new()
 
+	function ComFrequencySubPanel:overrideEnteredValue(newValue)
+		self.enteredValue = newValue
+		VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
+	end
+
 	OVERRIDE(ComFrequencySubPanel.addCharacter)
 	function ComFrequencySubPanel:addCharacter(character)
 		VhfFrequencySubPanel.addCharacter(self, character)
@@ -739,18 +753,21 @@ do
 
 	OVERRIDE(ComFrequencySubPanel.backspace)
 	function ComFrequencySubPanel:backspace()
+		local lenBefore = self.enteredValue:len()
 		VhfFrequencySubPanel.backspace(self)
-		VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
+		if (lenBefore ~= self.enteredValue:len()) then
+			VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
+		end
 	end
 
-	OVERRIDE(ComFrequencySubPanel.reset)
-	function ComFrequencySubPanel:reset()
-		VhfFrequencySubPanel.reset(self)
+	OVERRIDE(ComFrequencySubPanel.clear)
+	function ComFrequencySubPanel:clear()
+		VhfFrequencySubPanel.clear(self)
 		VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
 	end
 end
 
-ComFrequencyPanel = ComFrequencySubPanel:new(comFrequencyValidator)
+ComFrequencyPanel = ComFrequencySubPanel:new(comFrequencyValidator, COMLinkedDatarefs[1], COMLinkedDatarefs[2], "COM")
 
 function buildVhfHelperWindow()
 	ComFrequencyPanel:renderToCanvas()
