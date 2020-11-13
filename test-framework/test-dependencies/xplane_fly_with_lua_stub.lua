@@ -229,6 +229,8 @@ function flyWithLuaStub:writeDatarefValueToLocalVariables(globalDatarefIdName)
 end
 
 function flyWithLuaStub:closeWindowByTitle(windowTitle)
+    local wasAnyWindowClosed = false
+
     for _, window in pairs(self.windows) do
         if (window.title == nil) then
             logMsg(
@@ -239,8 +241,11 @@ function flyWithLuaStub:closeWindowByTitle(windowTitle)
             )
         elseif (window.title == windowTitle) then
             self:closeWindowByHandle(window)
+            wasAnyWindowClosed = true
         end
     end
+
+    luaUnit.assertIsTrue(wasAnyWindowClosed)
 end
 
 function create_command(commandName, readableCommandName, toggleExpressionName, something1, something2)

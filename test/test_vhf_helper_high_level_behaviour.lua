@@ -60,15 +60,19 @@ function TestVhfHelperHighLevelBehaviour:setUp()
 end
 
 function TestVhfHelperHighLevelBehaviour:testClosingThePanelChangesPanelConfigurationAccordingly()
-	luaUnit.assertIsTrue(flyWithLuaStub:isMacroActive(vhfHelperPackageExport.test.defaultMacroName))
+	luaUnit.assertIsTrue(
+		flyWithLuaStub:isMacroActive(vhfHelperPackageExport.test.vhfHelperLoop.Constants.defaultMacroName)
+	)
 
 	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowVisibility, "visible")
-	flyWithLuaStub:closeWindowByTitle(vhfHelperPackageExport.test.defaultWindowName)
+	flyWithLuaStub:closeWindowByTitle(vhfHelperPackageExport.test.vhfHelperMainWindow.Constants.defaultWindowName)
 	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowVisibility, "hidden")
 end
 
 function TestVhfHelperHighLevelBehaviour:testDeactivatingTheScriptChangesPanelConfigurationAccordingly()
-	luaUnit.assertIsTrue(flyWithLuaStub:isMacroActive(vhfHelperPackageExport.test.defaultMacroName))
+	luaUnit.assertIsTrue(
+		flyWithLuaStub:isMacroActive(vhfHelperPackageExport.test.vhfHelperLoop.Constants.defaultMacroName)
+	)
 
 	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowVisibility, "visible")
 
@@ -78,7 +82,9 @@ function TestVhfHelperHighLevelBehaviour:testDeactivatingTheScriptChangesPanelCo
 end
 
 function TestVhfHelperHighLevelBehaviour:testPanelIsVisibleByDefault()
-	luaUnit.assertIsTrue(flyWithLuaStub:isMacroActive(vhfHelperPackageExport.test.defaultMacroName))
+	luaUnit.assertIsTrue(
+		flyWithLuaStub:isMacroActive(vhfHelperPackageExport.test.vhfHelperLoop.Constants.defaultMacroName)
+	)
 end
 
 function TestVhfHelperHighLevelBehaviour:testCurrentComFrequenciesAreShownSomewhere()
@@ -110,7 +116,7 @@ function TestVhfHelperHighLevelBehaviour:testSwitchingToAFrequencyDoesSwitch()
 
 	local c2 = flyWithLuaStub.datarefs[TestVhfHelperDatarefHandling.Constants.secondComFreq]
 
-	luaUnit.assertNotEquals(c2.data, tonumber(freq))
+	luaUnit.assertNotEquals(c2.data, tonumber(freqString))
 
 	imguiStub:pressButtonProgrammaticallyOnce("<2>")
 	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
