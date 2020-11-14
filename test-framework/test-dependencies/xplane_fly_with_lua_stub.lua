@@ -85,6 +85,7 @@ function flyWithLuaStub:reset()
 end
 
 function flyWithLuaStub:createSharedDatarefHandle(datarefId, datarefType, initialData)
+    luaUnit.assertNotNil(datarefId)
     if (self.datarefs[datarefId]) then
         logMsg(("Warning: Creating new dataref handle for existing dataref=%s"):format(datarefId))
     end
@@ -289,6 +290,7 @@ function dataref(localDatarefVariable, globalDatarefIdName, accessType)
     )
 
     local d = flyWithLuaStub.datarefs[globalDatarefIdName]
+    luaUnit.assertNotNil(d)
     local variable = d.localVariables[localDatarefVariable]
     if (variable == nil) then
         variable = {}

@@ -29,7 +29,9 @@ local imguiStub = require("imgui_stub")
 TestHighLevelBehaviour = {
 	Constants = {
 		initialCom1Frequency = 119000,
-		initialCom2Frequency = 124300
+		initialCom2Frequency = 124300,
+		initialNav1Frequency = 117000,
+		initialNav2Frequency = 116600
 	}
 }
 
@@ -51,7 +53,7 @@ function TestHighLevelBehaviour:_enterFrequencyViaUserInterface(freqString)
 	end
 end
 
-function TestHighLevelBehaviour:setUp()
+function TestHighLevelBehaviour:createInternalDatarefsAndBootstrap()
 	flyWithLuaStub:reset()
 	flyWithLuaStub:createSharedDatarefHandle(
 		TestDatarefHandling.Constants.firstComFreq,
@@ -64,9 +66,24 @@ function TestHighLevelBehaviour:setUp()
 		self.Constants.initialCom2Frequency
 	)
 
+	flyWithLuaStub:createSharedDatarefHandle(
+		TestDatarefHandling.Constants.firstNavFreq,
+		flyWithLuaStub.Constants.DatarefTypeInteger,
+		self.Constants.initialNav1Frequency
+	)
+	flyWithLuaStub:createSharedDatarefHandle(
+		TestDatarefHandling.Constants.secondNavFreq,
+		flyWithLuaStub.Constants.DatarefTypeInteger,
+		self.Constants.initialNav2Frequency
+	)
+
 	vhfHelper = dofile("scripts/vhf_helper.lua")
 	flyWithLuaStub:bootstrapAllMacros()
 	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
+end
+
+function TestHighLevelBehaviour:setUp()
+	self:createInternalDatarefsAndBootstrap()
 end
 
 function TestHighLevelBehaviour:testClosingThePanelChangesPanelConfigurationAccordingly()

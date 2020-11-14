@@ -29,26 +29,20 @@ TestDatarefHandling = {
 		secondComFreq = "sim/cockpit2/radios/actuators/com2_frequency_hz_833",
 		firstInterchangeFreq = "VHFHelper/InterchangeCOM1Frequency",
 		secondInterchangeFreq = "VHFHelper/InterchangeCOM2Frequency",
-		initialComFrequency = 118000
+		firstNavFreq = "sim/cockpit2/radios/actuators/nav1_frequency_hz",
+		secondNavFreq = "sim/cockpit2/radios/actuators/nav2_frequency_hz",
+		firstNavInterchangeFreq = "VHFHelper/InterchangeNAV1Frequency",
+		secondNavInterchangeFreq = "VHFHelper/InterchangeNAV2Frequency",
+		initialComFrequency = 118000,
+		initialCom1Frequency = 131200,
+		initialCom2Frequency = 119500,
+		initialNav1Frequency = 117000,
+		initialNav2Frequency = 116600
 	}
 }
 
 function TestDatarefHandling:setUp()
-	flyWithLuaStub:reset()
-	flyWithLuaStub:createSharedDatarefHandle(
-		TestDatarefHandling.Constants.firstComFreq,
-		flyWithLuaStub.Constants.DatarefTypeInteger,
-		self.Constants.initialComFrequency
-	)
-
-	flyWithLuaStub:createSharedDatarefHandle(
-		TestDatarefHandling.Constants.secondComFreq,
-		flyWithLuaStub.Constants.DatarefTypeInteger,
-		self.Constants.initialComFrequency
-	)
-
-	vhfHelper = dofile("scripts/vhf_helper.lua")
-	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
+	TestHighLevelBehaviour:createInternalDatarefsAndBootstrap()
 end
 
 function TestDatarefHandling:_assertDifferentLocalVariablesDeclaredForTwoDatarefs(d1, d2, expectedAccessType)
@@ -67,17 +61,17 @@ function TestDatarefHandling:_assertDifferentLocalVariablesDeclaredForTwoDataref
 		luaUnit.assertNotEquals(localVariableName, lastVariableName)
 	end
 
-	luaUnit.assertTrue(variableCount == 2)
+	luaUnit.assertEquals(variableCount, 2)
 end
 
-function TestDatarefHandling:testTwoIndependentInterchangeFrequenciesAreDefinedCorrectly()
+function TestDatarefHandling:testTwoIndependentComInterchangeFrequenciesAreDefinedCorrectly()
 	local f1 = flyWithLuaStub.datarefs[self.Constants.firstInterchangeFreq]
 	local f2 = flyWithLuaStub.datarefs[self.Constants.secondInterchangeFreq]
 
 	self:_assertDifferentLocalVariablesDeclaredForTwoDatarefs(f1, f2, flyWithLuaStub.Constants.AccessTypeWritable)
 end
 
-function TestDatarefHandling:testTwoIndependentComFrequenciesAreDefinedCorrectly()
+function TestDatarefHandling:testTwoIndependentComLinkedFrequenciesAreDefinedCorrectly()
 	local c1 = flyWithLuaStub.datarefs[self.Constants.firstComFreq]
 	local c2 = flyWithLuaStub.datarefs[self.Constants.secondComFreq]
 

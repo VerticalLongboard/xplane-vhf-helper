@@ -61,35 +61,15 @@ function TestPublicInterface:testValidationWorks()
 	luaUnit.assertIsFalse(self.activeInterface.isValidFrequency(someInvalidFreq))
 end
 
-TestPublicInterfaceAndEvents = {
-	Constants = {
-		initialCom1Frequency = 131200,
-		initialCom2Frequency = 119500
-	}
-}
+TestPublicInterfaceAndEvents = {}
 
 function TestPublicInterfaceAndEvents:setUp()
 	VHFHelperEventBus.eventsEmittedSoFar = {}
-
-	flyWithLuaStub:reset()
-	flyWithLuaStub:createSharedDatarefHandle(
-		TestDatarefHandling.Constants.firstComFreq,
-		flyWithLuaStub.Constants.DatarefTypeInteger,
-		self.Constants.initialCom1Frequency
-	)
-	flyWithLuaStub:createSharedDatarefHandle(
-		TestDatarefHandling.Constants.secondComFreq,
-		flyWithLuaStub.Constants.DatarefTypeInteger,
-		self.Constants.initialCom2Frequency
-	)
-
-	vhfHelper = dofile("scripts/vhf_helper.lua")
-	flyWithLuaStub:bootstrapAllMacros()
-	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
+	TestHighLevelBehaviour:createInternalDatarefsAndBootstrap()
 end
 
 function TestPublicInterfaceAndEvents:testTuningInAFrequencyIsReportedAsTunedIn()
-	luaUnit.assertIsTrue(VHFHelperPublicInterface.isCurrentlyTunedIn("119.500"))
+	luaUnit.assertIsTrue(VHFHelperPublicInterface.isCurrentlyTunedIn("119.000"))
 end
 
 function TestPublicInterfaceAndEvents:testOpeningMainWindowActivatesPublicInterface()
@@ -148,6 +128,9 @@ function TestPublicInterfaceAndEvents:testChangeEventIsEmittedWhenBackspacingOrC
 	self:_assertNumOfEventsWithTypeWereEmitted(VHFHelperEventOnFrequencyChanged, sameWhenBackspacingAnEmptyString)
 
 	TestHighLevelBehaviour:_pressButton("Bksp")
+	self:_assertNumOfEventsWithTypeWereEmitted(VHFHelperEventOnFrequencyChanged, sameWhenBackspacingAnEmptyString)
+
+	TestHighLevelBehaviour:_pressButton("Clear")
 	self:_assertNumOfEventsWithTypeWereEmitted(VHFHelperEventOnFrequencyChanged, sameWhenBackspacingAnEmptyString)
 end
 
