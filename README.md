@@ -45,5 +45,6 @@ Additional dependencies besides X-Plane 11, SmartCopilot and FlyWithLua:
 (All dependencies are bundled with each release)
 
 ## Developer Notes
-You want to integrate VHF Helper into other plugins? See [VHF Helper Public Interface](PUBLIC-INTERFACE.md).
+You want to integrate VHF Helper into other plugins? See [VHF Helper Public Interface](PUBLIC-INTERFACE.md) or [Vatsimbrief Helper](https://github.com/RedXi/vatsimbrief-helper) to see it in action.
+
 Looking for a good starting point to write your own FlyWithLua plugins? Have a look at the [A320 NORMAL CHECKLIST](https://github.com/VerticalLongboard/xplane-a320-checklist/blob/main/DEVELOPMENT_ENVIRONMENT.md)!
