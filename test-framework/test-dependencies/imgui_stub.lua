@@ -28,7 +28,6 @@ SOFTWARE.
 imgui = {
     constant = {StyleVar = {ItemSpacing}, Col = {Text, Button}},
     Constants = {
-        ButtonTitleWithIdMatcherPattern = "^(.*)[#][#].*$",
         Button = "Button",
         SmallButton = "SmallButton",
         TextUnformatted = "TextUnformatted",

@@ -116,21 +116,23 @@ function TestPublicInterfaceAndEvents:testChangingToAnAlreadySetFrequencyStillEm
 end
 
 function TestPublicInterfaceAndEvents:testChangeEventIsEmittedWhenBackspacingOrClearingNextCOMFrequency()
+	local backspaceButton = "Del"
+	local clearButton = "Clr"
 	local freqString = "122"
 	TestHighLevelBehaviour:_enterFrequencyViaUserInterface(freqString)
 	VHFHelperEventBus.eventsEmittedSoFar = {}
 
-	TestHighLevelBehaviour:_pressButton("Bksp")
+	TestHighLevelBehaviour:_pressButton(backspaceButton)
 	self:_assertNumOfEventsWithTypeWereEmitted(VHFHelperEventOnFrequencyChanged, 1)
 
-	TestHighLevelBehaviour:_pressButton("Clear")
+	TestHighLevelBehaviour:_pressButton(clearButton)
 	local sameWhenBackspacingAnEmptyString = 2
 	self:_assertNumOfEventsWithTypeWereEmitted(VHFHelperEventOnFrequencyChanged, sameWhenBackspacingAnEmptyString)
 
-	TestHighLevelBehaviour:_pressButton("Bksp")
+	TestHighLevelBehaviour:_pressButton(backspaceButton)
 	self:_assertNumOfEventsWithTypeWereEmitted(VHFHelperEventOnFrequencyChanged, sameWhenBackspacingAnEmptyString)
 
-	TestHighLevelBehaviour:_pressButton("Clear")
+	TestHighLevelBehaviour:_pressButton(clearButton)
 	self:_assertNumOfEventsWithTypeWereEmitted(VHFHelperEventOnFrequencyChanged, sameWhenBackspacingAnEmptyString)
 end
 

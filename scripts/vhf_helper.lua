@@ -96,14 +96,8 @@ do
 	function FrequencyValidator:getValidNumberCharacterOrUnderscore(stringEnteredSoFar, number)
 		assert(nil)
 	end
-end
 
-local COMFrequencyValidatorClass
-do
-	COMFrequencyValidator = FrequencyValidator:new()
-
-	OVERRIDE(COMFrequencyValidator.validate)
-	function COMFrequencyValidator:validate(fullFrequencyString)
+	function FrequencyValidator:_checkBasicValidity(fullFrequencyString, minVhf, maxVhf)
 		if (fullFrequencyString == nil) then
 			return nil
 		end
@@ -114,12 +108,25 @@ do
 			return nil
 		end
 
-		cleanFrequencyString = fullFrequencyString:sub(1, 3) .. fullFrequencyString:sub(5, 7)
+		local cleanFrequencyString = fullFrequencyString:sub(1, 3) .. fullFrequencyString:sub(5, 7)
 
 		frequencyNumber = tonumber(cleanFrequencyString)
-		minVhfFrequency = 118000
-		maxVhfFrequency = 136975
-		if (frequencyNumber < minVhfFrequency or frequencyNumber > maxVhfFrequency) then
+		if (frequencyNumber < minVhf or frequencyNumber > maxVhf) then
+			return nil
+		end
+
+		return cleanFrequencyString
+	end
+end
+
+local COMFrequencyValidatorClass
+do
+	COMFrequencyValidator = FrequencyValidator:new()
+
+	OVERRIDE(COMFrequencyValidator.validate)
+	function COMFrequencyValidator:validate(fullFrequencyString)
+		local cleanFrequencyString = self:_checkBasicValidity(fullFrequencyString, 118000, 136975)
+		if (cleanFrequencyString == nil) then
 			return nil
 		end
 
@@ -140,7 +147,7 @@ do
 
 	OVERRIDE(COMFrequencyValidator.autocomplete)
 	function COMFrequencyValidator:autocomplete(partialFrequencyString)
-		nextStringLength = partialFrequencyString:len()
+		local nextStringLength = partialFrequencyString:len()
 		if (nextStringLength == 5) then
 			partialFrequencyString = partialFrequencyString .. "00"
 		elseif (nextStringLength == 6) then
@@ -216,22 +223,8 @@ do
 
 	OVERRIDE(NAVFrequencyValidator.validate)
 	function NAVFrequencyValidator:validate(fullFrequencyString)
-		if (fullFrequencyString == nil) then
-			return nil
-		end
-		if (fullFrequencyString:len() ~= 7) then
-			return nil
-		end
-		if (fullFrequencyString:sub(4, 4) ~= decimalCharacter) then
-			return nil
-		end
-
-		cleanFrequencyString = fullFrequencyString:sub(1, 3) .. fullFrequencyString:sub(5, 7)
-
-		frequencyNumber = tonumber(cleanFrequencyString)
-		minVhfFrequency = 108000
-		maxVhfFrequency = 117950
-		if (frequencyNumber < minVhfFrequency or frequencyNumber > maxVhfFrequency) then
+		local cleanFrequencyString = self:_checkBasicValidity(fullFrequencyString, 108000, 117950)
+		if (cleanFrequencyString == nil) then
 			return nil
 		end
 
@@ -250,7 +243,7 @@ do
 
 	OVERRIDE(NAVFrequencyValidator.autocomplete)
 	function NAVFrequencyValidator:autocomplete(partialFrequencyString)
-		nextStringLength = partialFrequencyString:len()
+		local nextStringLength = partialFrequencyString:len()
 		if (nextStringLength == 5) then
 			partialFrequencyString = partialFrequencyString .. "00"
 		elseif (nextStringLength == 6) then
@@ -289,14 +282,11 @@ do
 				end
 			end
 		elseif (freqStringLength == 5) then
-			majorTenDigit = frequencyEnteredSoFar:sub(5, 5)
-			if (majorTenDigit == "9") then
-				if (number > 5) then
-					character = underscoreCharacter
-				end
+			if (number ~= 0 and number ~= 5) then
+				character = underscoreCharacter
 			end
 		elseif (freqStringLength == 6) then
-			if (number ~= 0 and number ~= 5) then
+			if (number ~= 0) then
 				character = underscoreCharacter
 			end
 		end
@@ -401,6 +391,7 @@ do
 	function InterchangeLinkedDataref:_setInterchangeValue(value)
 		local setInterchangeValueFunction = loadstring(self.interchangeVariableName .. " = " .. value)
 		setInterchangeValueFunction()
+		self.lastInterchangeValue = value
 	end
 
 	function InterchangeLinkedDataref:_setLinkedValue(value)
@@ -499,7 +490,7 @@ local NAVLinkedDatarefs = {
 		"NAV2FrequencyRead",
 		onNavInterchangeChange,
 		onNavLinkedChanged,
-		isNavComFrequencyValid
+		isNewNavFrequencyValid
 	)
 }
 
@@ -522,7 +513,7 @@ local function activatePublicInterface()
 				nextVhfFrequency = emptyString
 			end
 
-			ComFrequencyPanel:overrideEnteredValue(nextVhfFrequency)
+			comFrequencyPanel:overrideEnteredValue(nextVhfFrequency)
 			return nextVhfFrequency
 		end,
 		isCurrentlyTunedIn = function(fullFrequencyString)
@@ -547,7 +538,7 @@ local function activatePublicInterface()
 				return false
 			end
 
-			autocompletedNextVhf = comFrequencyValidator:autocomplete(ComFrequencyPanel:getEnteredValue())
+			autocompletedNextVhf = comFrequencyValidator:autocomplete(comFrequencyPanel:getEnteredValue())
 
 			if (newFullString == autocompletedNextVhf) then
 				return true
@@ -707,7 +698,11 @@ do
 	function VhfFrequencySubPanel:new(newValidator, newFirstVhfLinkedDataref, newSecondVhfLinkedDataref, newDescriptor)
 		local newInstanceWithState = NumberSubPanel:new(newValidator)
 
-		newInstanceWithState.Constants = {FullyPaddedFreqString = "___.___"}
+		newInstanceWithState.Constants = {
+			FullyPaddedFreqString = "___.___",
+			ClearButtonTitle = "Clr",
+			BackspaceButtonTitle = "Del"
+		}
 		newInstanceWithState.linkedDatarefs = {newFirstVhfLinkedDataref, newSecondVhfLinkedDataref}
 		newInstanceWithState.descriptor = newDescriptor
 
@@ -811,6 +806,8 @@ do
 		self:_buildCurrentVhfLine(1, nextVhfFrequencyIsSettable)
 		self:_buildCurrentVhfLine(2, nextVhfFrequencyIsSettable)
 
+		imgui.Separator()
+
 		imgui.TextUnformatted("Next " .. self.descriptor .. ": ")
 
 		if (nextVhfFrequencyIsSettable) then
@@ -828,41 +825,60 @@ do
 
 		imgui.PopStyleColor()
 
+		imgui.Separator()
 		self:_renderNumberPanel()
 	end
 
 	function VhfFrequencySubPanel:_renderNumberPanel()
-		imgui.Dummy(defaultDummySize, defaultDummySize)
-		imgui.SameLine()
-
-		if (imgui.Button("Clear")) then
-			self:clear()
-		end
-
-		imgui.SameLine()
-
-		if (imgui.Button("Bksp")) then
-			self:backspace()
-		end
-
-		imgui.Dummy(defaultDummySize, defaultDummySize)
-		imgui.SameLine()
-
-		imgui.SetWindowFontScale(1.3 * globalFontScale)
+		local numberFontScale = 1.3 * globalFontScale
+		imgui.SetWindowFontScale(numberFontScale)
 
 		imgui.PushStyleColor(imgui.constant.Col.Text, Colors.a320Blue)
 
-		for i = 1, 9 do
-			self:_createNumberButtonAndReactToClicks(i)
+		imgui.Dummy(defaultDummySize * 0.8, defaultDummySize)
+		imgui.SameLine()
+		self:_createNumberButtonAndReactToClicks(1)
+		imgui.SameLine()
+		self:_createNumberButtonAndReactToClicks(2)
+		imgui.SameLine()
+		self:_createNumberButtonAndReactToClicks(3)
 
-			if (i % 3 ~= 0) then
-				imgui.SameLine()
-			else
-				imgui.Dummy(defaultDummySize, defaultDummySize)
-				imgui.SameLine()
-			end
+		imgui.SameLine()
+		imgui.Dummy(defaultDummySize * 0.1, defaultDummySize)
+		imgui.SameLine()
+		imgui.SetWindowFontScale(1.0 * globalFontScale)
+		if (imgui.Button(self.Constants.BackspaceButtonTitle)) then
+			self:backspace()
 		end
+		imgui.SetWindowFontScale(numberFontScale)
 
+		imgui.Dummy(defaultDummySize * 0.8, defaultDummySize)
+		imgui.SameLine()
+		self:_createNumberButtonAndReactToClicks(4)
+		imgui.SameLine()
+		self:_createNumberButtonAndReactToClicks(5)
+		imgui.SameLine()
+		self:_createNumberButtonAndReactToClicks(6)
+
+		imgui.SameLine()
+		imgui.Dummy(defaultDummySize * 0.1, defaultDummySize)
+		imgui.SameLine()
+		imgui.SetWindowFontScale(1.0 * globalFontScale)
+		if (imgui.Button(self.Constants.ClearButtonTitle)) then
+			self:clear()
+		end
+		imgui.SetWindowFontScale(numberFontScale)
+
+		imgui.Dummy(defaultDummySize * 0.8, defaultDummySize)
+		imgui.SameLine()
+		self:_createNumberButtonAndReactToClicks(7)
+		imgui.SameLine()
+		self:_createNumberButtonAndReactToClicks(8)
+		imgui.SameLine()
+		self:_createNumberButtonAndReactToClicks(9)
+
+		imgui.Dummy(defaultDummySize * 0.8, defaultDummySize)
+		imgui.SameLine()
 		imgui.Dummy(defaultDummySize, defaultDummySize)
 		imgui.SameLine()
 
@@ -916,7 +932,7 @@ do
 		self.linkedDatarefs[vhfNumber]:emitNewValue(nextFrequencyAsNumber)
 
 		-- Emit change solely based on the user having pressed a button, especially if the new frequency is equal.
-		-- Any real change will emit an event later anyway.
+		-- Any real change will emit an event later anyway. This helps with updating button states in external scripts.
 		if (self.linkedDatarefs[vhfNumber]:getLinkedValue() == nextFrequencyAsNumber) then
 			VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
 		end
@@ -935,13 +951,13 @@ do
 	OVERRIDE(NavFrequencySubPanel._setCleanLinkedValueString)
 	function NavFrequencySubPanel:_setCleanLinkedValueString(vhfNumber, cleanValueString)
 		cleanValueString = cleanValueString:sub(1, 5)
-		local nextFrequencyAsNumber = tonumber(cleanVhfFrequency)
+		local nextFrequencyAsNumber = tonumber(cleanValueString)
 		self.linkedDatarefs[vhfNumber]:emitNewValue(nextFrequencyAsNumber)
 	end
 end
 
-ComFrequencyPanel = ComFrequencySubPanel:new(comFrequencyValidator, COMLinkedDatarefs[1], COMLinkedDatarefs[2], "COM")
-NavFrequencyPanel = NavFrequencySubPanel:new(navFrequencyValidator, NAVLinkedDatarefs[1], NAVLinkedDatarefs[2], "NAV")
+comFrequencyPanel = ComFrequencySubPanel:new(comFrequencyValidator, COMLinkedDatarefs[1], COMLinkedDatarefs[2], "COM")
+navFrequencyPanel = NavFrequencySubPanel:new(navFrequencyValidator, NAVLinkedDatarefs[1], NAVLinkedDatarefs[2], "NAV")
 
 -- FlyWithLua Issue: Functions passed to float_wnd_set_imgui_builder can only exist outside of tables :-/
 function renderVhfHelperMainWindowToCanvas()
@@ -952,7 +968,8 @@ local vhfHelperMainWindowSingleton
 do
 	vhfHelperMainWindow = {
 		Constants = {defaultWindowName = "VHF Helper"},
-		window = nil
+		window = nil,
+		currentPanel = comFrequencyPanel
 	}
 
 	function vhfHelperMainWindow:create()
@@ -1014,9 +1031,27 @@ do
 	end
 
 	function vhfHelperMainWindow:renderToCanvas()
-		-- TODO: Add buttons to change to NAV
-		ComFrequencyPanel:renderToCanvas()
-		imgui.TextUnformatted(currentTestString)
+		self.currentPanel:renderToCanvas()
+
+		imgui.Separator()
+		imgui.SetWindowFontScale(0.88 * globalFontScale)
+		self:_renderPanelButton(comFrequencyPanel)
+		imgui.SameLine()
+		self:_renderPanelButton(navFrequencyPanel)
+		imgui.SameLine()
+		imgui.Button(" XPDR ")
+	end
+
+	function vhfHelperMainWindow:_renderPanelButton(panel)
+		if (self.currentPanel == panel) then
+			imgui.PushStyleColor(imgui.constant.Col.Text, Colors.a320Orange)
+		else
+			imgui.PushStyleColor(imgui.constant.Col.Text, Colors.white)
+		end
+		if (imgui.Button(" " .. panel.descriptor .. " ")) then
+			self.currentPanel = panel
+		end
+		imgui.PopStyleColor()
 	end
 end
 
@@ -1079,8 +1114,6 @@ do
 		for _, ldr in pairs(allLinkedDatarefs) do
 			ldr:loopUpdate()
 		end
-
-		currentTestString = tostring(NAV1FrequencyRead)
 	end
 
 	function vhfHelperLoop:_canInitializeNow()
@@ -1114,6 +1147,7 @@ vhfHelperPackageExport.test.Config = Config
 vhfHelperPackageExport.test.vhfHelperLoop = vhfHelperLoop
 vhfHelperPackageExport.test.vhfHelperMainWindow = vhfHelperMainWindow
 vhfHelperPackageExport.test.COMLinkedDatarefs = COMLinkedDatarefs
+vhfHelperPackageExport.test.NAVLinkedDatarefs = NAVLinkedDatarefs
 
 -- FlyWithLua Issue: When returning anything besides nothing, FlyWithLua does not expose global fields to other scripts
 return

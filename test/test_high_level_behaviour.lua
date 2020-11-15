@@ -31,7 +31,9 @@ TestHighLevelBehaviour = {
 		initialCom1Frequency = 119000,
 		initialCom2Frequency = 124300,
 		initialNav1Frequency = 117000,
-		initialNav2Frequency = 116600
+		initialNav2Frequency = 116600,
+		comPanelButtonTitle = " COM ",
+		navPanelButtonTitle = " NAV "
 	}
 }
 
@@ -51,6 +53,16 @@ function TestHighLevelBehaviour:_enterFrequencyViaUserInterface(freqString)
 	for i = 1, #freqString do
 		self:_pressButton(freqString:sub(i, i))
 	end
+end
+
+function TestHighLevelBehaviour:_switchToOtherFrequency(vhfNumber, linkedDatarefId, newFrequencyString)
+	self:_enterFrequencyViaUserInterface(newFrequencyString)
+
+	local d = flyWithLuaStub.datarefs[linkedDatarefId]
+
+	luaUnit.assertNotEquals(d.data, tonumber(newFrequencyString))
+	self:_pressButton("<" .. tostring(vhfNumber) .. ">")
+	luaUnit.assertEquals(d.data, tonumber(newFrequencyString))
 end
 
 function TestHighLevelBehaviour:createInternalDatarefsAndBootstrap()
@@ -115,28 +127,50 @@ end
 function TestHighLevelBehaviour:testCurrentComFrequenciesAreShownSomewhere()
 	local freqAsString = tostring(self.Constants.initialCom1Frequency)
 	local fullFrequencyString = freqAsString:sub(1, 3) .. "." .. freqAsString:sub(4, 6)
-	imguiStub:keepALookOutForString(fullFrequencyString)
-	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
-	luaUnit.assertTrue(imguiStub:wasWatchStringFound())
+	self:_assertStringShowsUp(fullFrequencyString)
 
 	freqAsString = tostring(self.Constants.initialCom2Frequency)
 	fullFrequencyString = freqAsString:sub(1, 3) .. "." .. freqAsString:sub(4, 6)
 	self:_assertStringShowsUp(fullFrequencyString)
 end
 
-function TestHighLevelBehaviour:testEnteredStringIsShownSomewhere()
+function TestHighLevelBehaviour:testEnteredComStringIsShownSomewhere()
 	local freqString = "132805"
 	self:_enterFrequencyViaUserInterface(freqString)
 	self:_assertStringShowsUp(freqString:sub(1, 3) .. "." .. freqString:sub(4, 6))
 end
 
-function TestHighLevelBehaviour:testSwitchingToAFrequencyDoesSwitch()
+function TestHighLevelBehaviour:testSwitchingComDoesSwitch()
 	local freqString = "129725"
+	self:_switchToOtherFrequency(2, TestDatarefHandling.Constants.secondComFreq, freqString)
+
+	local freqString2 = "122650"
+	self:_switchToOtherFrequency(2, TestDatarefHandling.Constants.secondComFreq, freqString2)
+end
+
+function TestHighLevelBehaviour:testCurrentNavFrequenciesAreShownSomewhere()
+	self:_pressButton(self.Constants.navPanelButtonTitle)
+	local freqAsString = tostring(self.Constants.initialNav1Frequency)
+	local fullFrequencyString = freqAsString:sub(1, 3) .. "." .. freqAsString:sub(4, 6)
+	self:_assertStringShowsUp(fullFrequencyString)
+
+	freqAsString = tostring(self.Constants.initialNav2Frequency)
+	fullFrequencyString = freqAsString:sub(1, 3) .. "." .. freqAsString:sub(4, 6)
+	self:_assertStringShowsUp(fullFrequencyString)
+end
+
+function TestHighLevelBehaviour:testEnteredNavStringIsShownSomewhere()
+	self:_pressButton(self.Constants.navPanelButtonTitle)
+	local freqString = "111800"
 	self:_enterFrequencyViaUserInterface(freqString)
+	self:_assertStringShowsUp(freqString:sub(1, 3) .. "." .. freqString:sub(4, 6))
+end
 
-	local c2 = flyWithLuaStub.datarefs[TestDatarefHandling.Constants.secondComFreq]
+function TestHighLevelBehaviour:testSwitchingNavDoesSwitch()
+	self:_pressButton(self.Constants.navPanelButtonTitle)
+	local freqString = "10965"
+	self:_switchToOtherFrequency(2, TestDatarefHandling.Constants.secondNavFreq, freqString)
 
-	luaUnit.assertNotEquals(c2.data, tonumber(freqString))
-	self:_pressButton("<2>")
-	luaUnit.assertEquals(c2.data, tonumber(freqString))
+	local freqString2 = "11535"
+	self:_switchToOtherFrequency(2, TestDatarefHandling.Constants.secondNavFreq, freqString2)
 end

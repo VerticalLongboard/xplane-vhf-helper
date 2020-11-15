@@ -95,6 +95,10 @@ function TestNavFrequencyValidation:setUp()
 	self.validator = vhfHelperPackageExport.test.navFrequencyValidator
 end
 
+function TestNavFrequencyValidation:testSlightlyInvalidFrequencyIsNotConsideredValid()
+	luaUnit.assertEquals(self.validator:validate("113.455"), nil)
+end
+
 function TestNavFrequencyValidation:testObviouslyInvalidFrequencyIsNotConsideredValid()
 	luaUnit.assertEquals(self.validator:validate("223x420"), nil)
 end
@@ -149,4 +153,12 @@ function TestNavFrequencyValidation:testInvalidFrequencyLastDigitsCanNotBeEntere
 	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("11", 7), "7")
 	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("117", 9), "9")
 	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("117.9", 6), "_")
+end
+
+function TestNavFrequencyValidation:testInvalidFrequencyOutsideOf200ChannelsCanNotBeEntered()
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("", 1), "1")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("1", 1), "1")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("11", 3), "3")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("113", 4), "4")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("113.4", 6), "_")
 end
