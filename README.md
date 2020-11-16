@@ -1,6 +1,6 @@
 # VHF Helper
 ## Overview
-VHF Helper is a FlyWithLua plugin for X-Plane 11. It allows to change the two main COM and NAV frequencies and the transponder code of any X-Plane airplane in **VR** via convenient touch pad number buttons in a **multicrew** environment.
+VHF Helper is a FlyWithLua plugin for X-Plane 11. It allows to change the two main COM frequencies of any X-Plane airplane in **VR** via convenient touch pad number buttons in a **multicrew** environment. For many default airplanes, NAV and transponder codes can be changed as well.
 
 Flying multicrew in X-Plane with ATC is a blast! Yet, the default X-Plane 11 VR knobs are horrible when trying to monitor/fly and dial in a new ATC frequency at the same time (takes up to 2 minutes for a 2-hour flight, just turning the knob and making sure that no turn got lost when using SmartCopilot).
 
@@ -40,6 +40,9 @@ VHFHelper/InterchangeTransponderCode = 0
 * Press `NAV` or `XPDR` to change to NAV and transponder panels.
 * Press the COM1/2, NAV1/2 or XPDR switch button to tune in new frequencies or transponder codes.
 * **Chat with ATC! :-)**
+
+## Plane Compatibility
+VHF Helper uses the default X-Plane way of setting COM/NAV frequencies and the transponder code. If you find that your airplane does not work out-of-the-box, please have a look at the existing [VHF Helper Github Issues](https://github.com/VerticalLongboard/xplane-vhf-helper/issues) and open a new one if you don't find a specific airplane.
 
 ## Dependencies
 Additional dependencies besides X-Plane 11, SmartCopilot and FlyWithLua:
