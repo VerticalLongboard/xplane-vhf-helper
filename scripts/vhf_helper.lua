@@ -897,7 +897,11 @@ do
 
 	_NEWFUNC(TransponderCodeSubPanel._getCurrentLinkedValueString)
 	function TransponderCodeSubPanel:_getCurrentLinkedValueString()
-		return tostring(self.linkedDataref:getLinkedValue())
+		local str = tostring(self.linkedDataref:getLinkedValue())
+		for i = str:len(), 3 do
+			str = "0" .. str
+		end
+		return str
 	end
 
 	_NEWFUNC(TransponderCodeSubPanel._buildCurrentTransponderLine)
