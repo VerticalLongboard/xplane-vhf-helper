@@ -962,7 +962,7 @@ do
 
 		imgui.TextUnformatted("Next " .. self.descriptor .. ":   ")
 
-		if (nextVhfFrequencyIsSettable) then
+		if (nextTransponderCodeIsSettable) then
 			imgui.PushStyleColor(imgui.constant.Col.Text, Colors.a320Orange)
 		else
 			imgui.PushStyleColor(imgui.constant.Col.Text, Colors.a320Blue)
@@ -1304,8 +1304,6 @@ do
 	end
 end
 
-READ_SOMETHING = nil
-
 local vhfHelperLoopSingleton
 do
 	vhfHelperLoop = {
@@ -1353,6 +1351,7 @@ do
 		end
 
 		self:_initializeNow()
+		self.alreadyInitialized = true
 
 		do_every_frame("vhfHelperLoop:everyFrameLoop()")
 	end
@@ -1381,8 +1380,6 @@ do
 		for _, ldr in pairs(allLinkedDatarefs) do
 			ldr:initialize()
 		end
-
-		self.alreadyInitialized = true
 	end
 end
 
