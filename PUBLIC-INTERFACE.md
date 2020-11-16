@@ -2,8 +2,10 @@
 VHF Helper offers a public API via a global `VHFHelperPublicInterface` while its panel is visible:
 ```text
 if (VHFHelperPublicInterface ~= nil) then
-	-- Call method on VHFHelperPublicInterface
-	...
+	if (VHFHelperPublicInterface.getInterfaceVersion() == 1) then
+		-- Call method on VHFHelperPublicInterface
+		...
+	end
 end
 ```
 

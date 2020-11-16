@@ -27,17 +27,18 @@ TestDatarefHandling = {
 	Constants = {
 		firstComFreq = "sim/cockpit2/radios/actuators/com1_frequency_hz_833",
 		secondComFreq = "sim/cockpit2/radios/actuators/com2_frequency_hz_833",
-		firstComInterchangeFreq = "VHFHelper/InterchangeCOM1Frequency",
-		secondComInterchangeFreq = "VHFHelper/InterchangeCOM2Frequency",
 		firstNavFreq = "sim/cockpit2/radios/actuators/nav1_frequency_hz",
 		secondNavFreq = "sim/cockpit2/radios/actuators/nav2_frequency_hz",
+		transponderCode = "sim/cockpit2/radios/actuators/transponder_code",
+		firstComInterchangeFreq = "VHFHelper/InterchangeCOM1Frequency",
+		secondComInterchangeFreq = "VHFHelper/InterchangeCOM2Frequency",
 		firstNavInterchangeFreq = "VHFHelper/InterchangeNAV1Frequency",
 		secondNavInterchangeFreq = "VHFHelper/InterchangeNAV2Frequency",
-		initialComFrequency = 118000,
 		initialCom1Frequency = 131200,
 		initialCom2Frequency = 119500,
 		initialNav1Frequency = 117000,
-		initialNav2Frequency = 116600
+		initialNav2Frequency = 116600,
+		initialTransponderCode = 1000
 	}
 }
 

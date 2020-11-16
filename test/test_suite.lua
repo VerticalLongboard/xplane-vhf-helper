@@ -9,6 +9,6 @@ flyWithLuaStub:suppressLogMessagesBeginningWith("VHF Helper: VHF Helper using '"
 require("test_public_interface")
 require("test_dataref_handling")
 require("test_configuration")
-require("test_frequency_validation")
+require("test_input_validation")
 require("test_high_level_behaviour")
 require("test_interchange_linked_dataref")

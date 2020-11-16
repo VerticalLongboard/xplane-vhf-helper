@@ -162,3 +162,27 @@ function TestNavFrequencyValidation:testInvalidFrequencyOutsideOf200ChannelsCanN
 	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("113", 4), "4")
 	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("113.4", 6), "_")
 end
+
+TestTransponderCodeValidation = {}
+
+function TestTransponderCodeValidation:setUp()
+	self.validator = vhfHelperPackageExport.test.transponderCodeValidator
+end
+
+function TestTransponderCodeValidation:testValidTransponderCodeIsConsideredValid()
+	luaUnit.assertEquals(self.validator:validate("6456"), "6456")
+	luaUnit.assertEquals(self.validator:validate("1000"), "1000")
+	luaUnit.assertEquals(self.validator:validate("0000"), "0000")
+end
+
+function TestTransponderCodeValidation:testInvalidTransponderCodeIsNotConsideredValid()
+	luaUnit.assertEquals(self.validator:validate("7856"), nil)
+	luaUnit.assertEquals(self.validator:validate("7778"), nil)
+end
+
+function TestTransponderCodeValidation:testAutocompletionWorks()
+	luaUnit.assertEquals(self.validator:autocomplete("7"), "7000")
+	luaUnit.assertEquals(self.validator:autocomplete("45"), "4500")
+	luaUnit.assertEquals(self.validator:autocomplete("327"), "3270")
+	luaUnit.assertEquals(self.validator:autocomplete("5612"), "5612")
+end

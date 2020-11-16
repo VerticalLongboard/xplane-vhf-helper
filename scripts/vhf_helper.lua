@@ -60,7 +60,7 @@ local function OVERRIDE(overriddenFunction)
 	assert(overriddenFunction)
 end
 
-local function NOOVRIDE(overriddenFunction)
+local function _NEWFUNC(overriddenFunction)
 	assert(overriddenFunction == nil)
 end
 
@@ -71,13 +71,11 @@ local function replaceCharacter(str, pos, newCharacter)
 	return str:sub(1, pos - 1) .. newCharacter .. str:sub(pos + 1)
 end
 
-local nextVhfFrequency = emptyString
-
-local FrequencyValidatorClass
+local NumberValidatorClass
 do
-	FrequencyValidator = {}
+	NumberValidator = {}
 
-	function FrequencyValidator:new()
+	function NumberValidator:new()
 		local newInstanceWithState = {}
 
 		setmetatable(newInstanceWithState, self)
@@ -85,18 +83,80 @@ do
 		return newInstanceWithState
 	end
 
-	function FrequencyValidator:validate(fullString)
+	function NumberValidator:validate(fullString)
 		assert(nil)
 	end
 
-	function FrequencyValidator:autocomplete(partialString)
+	function NumberValidator:autocomplete(partialString)
 		assert(nil)
 	end
 
-	function FrequencyValidator:getValidNumberCharacterOrUnderscore(stringEnteredSoFar, number)
+	function NumberValidator:getValidNumberCharacterOrUnderscore(stringEnteredSoFar, number)
 		assert(nil)
 	end
+end
 
+local TransponderValidatorClass
+do
+	TransponderValidator = NumberValidator:new()
+
+	OVERRIDE(TransponderValidator.new)
+	function TransponderValidator:new()
+		local newInstanceWithState = NumberValidator:new()
+		newInstanceWithState.Constants = {
+			MaxTransponderCode = 7777
+		}
+		setmetatable(newInstanceWithState, self)
+		self.__index = self
+		return newInstanceWithState
+	end
+
+	OVERRIDE(TransponderValidator.validate)
+	function TransponderValidator:validate(fullString)
+		if (fullString == nil) then
+			return nil
+		end
+
+		if (fullString:len() ~= 4) then
+			return nil
+		end
+
+		local number = tonumber(fullString)
+		if (number < 0 or number > self.Constants.MaxTransponderCode) then
+			return nil
+		end
+
+		return fullString
+	end
+
+	OVERRIDE(TransponderValidator.autocomplete)
+	function TransponderValidator:autocomplete(partialString)
+		for i = partialString:len(), 3 do
+			partialString = partialString .. "0"
+		end
+
+		return partialString
+	end
+
+	OVERRIDE(TransponderValidator.getValidNumberCharacterOrUnderscore)
+	function TransponderValidator:getValidNumberCharacterOrUnderscore(stringEnteredSoFar, number)
+		local afterEnteringNumber = stringEnteredSoFar .. tostring(number)
+		local autocompleted = self:autocomplete(afterEnteringNumber)
+		if (self:validate(autocompleted) == nil) then
+			return underscoreCharacter
+		end
+
+		return tostring(number)
+	end
+end
+
+local transponderCodeValidator = TransponderValidator:new()
+
+local FrequencyValidatorClass
+do
+	FrequencyValidator = NumberValidator:new()
+
+	_NEWFUNC(FrequencyValidator._checkBasicValidity)
 	function FrequencyValidator:_checkBasicValidity(fullFrequencyString, minVhf, maxVhf)
 		if (fullFrequencyString == nil) then
 			return nil
@@ -168,7 +228,7 @@ do
 			return underscoreCharacter
 		end
 
-		character = tostring(number)
+		local character = tostring(number)
 		freqStringLength = string.len(frequencyEnteredSoFar)
 
 		if (freqStringLength == 0) then
@@ -259,7 +319,7 @@ do
 			return underscoreCharacter
 		end
 
-		character = tostring(number)
+		local character = tostring(number)
 		freqStringLength = string.len(frequencyEnteredSoFar)
 
 		if (freqStringLength == 0) then
@@ -399,6 +459,25 @@ do
 	end
 end
 
+local function isFrequencyValueValid(ild, validator, newValue)
+	-- FlyWithLua Issue:
+	-- After creating a shared new dataref (and setting its inital value) the writable dataref variable is being assigned a
+	-- random value (very likely straight from memory) after waiting a few frames.
+	-- To workaround, ignore invalid values and continue using local COM frequency values (which are supposed to be valid at this time).
+	local freqString = tostring(newValue)
+	local freqFullString = freqString:sub(1, 3) .. decimalCharacter .. freqString:sub(4, 6)
+	if (not validator:validate(freqFullString)) then
+		printLogMessage(
+			("Warning: Interchange variable %s has been externally assigned an invalid value=%s. " ..
+				"This is very likely happening during initialization and is a known issue in FlyWithLua/X-Plane dataref handling. " ..
+					"If this happens during flight, something is seriously wrong."):format(ild.interchangeDatarefName, freqFullString)
+		)
+		return false
+	end
+
+	return true
+end
+
 local onComInterchangeChange = function(ild, newInterchangeValue)
 end
 
@@ -407,22 +486,7 @@ local onComLinkedChanged = function(ild, newLinkedValue)
 end
 
 local isNewComFrequencyValid = function(ild, newValue)
-	-- FlyWithLua Issue:
-	-- After creating a shared new dataref (and setting its inital value) the writable dataref variable is being assigned a
-	-- random value (very likely straight from memory) after waiting a few frames.
-	-- To workaround, ignore invalid values and continue using local COM frequency values (which are supposed to be valid at this time).
-	local freqString = tostring(newValue)
-	local freqFullString = freqString:sub(1, 3) .. decimalCharacter .. freqString:sub(4, 6)
-	if (not comFrequencyValidator:validate(freqFullString)) then
-		printLogMessage(
-			("Warning: Interchange frequency %s has been externally assigned an invalid value=%s. " ..
-				"This is very likely happening during initialization and is a known issue in FlyWithLua/X-Plane dataref handling. " ..
-					"If this happens during flight, something is seriously wrong."):format(ild.interchangeDatarefName, freqFullString)
-		)
-		return false
-	end
-
-	return true
+	return isFrequencyValueValid(ild, comFrequencyValidator, newValue)
 end
 
 -- FlyWithLua Issue: Pre-defined dataref handles cannot be in a table :-/
@@ -462,7 +526,7 @@ local onNavLinkedChanged = function(ild, newLinkedValue)
 end
 
 local isNewNavFrequencyValid = function(ild, newValue)
-	return true
+	return isFrequencyValueValid(ild, navFrequencyValidator, newValue)
 end
 
 InterchangeNAV1Frequency = 0
@@ -494,7 +558,41 @@ local NAVLinkedDatarefs = {
 	)
 }
 
-local allLinkedDatarefs = {COMLinkedDatarefs[1], COMLinkedDatarefs[2], NAVLinkedDatarefs[1], NAVLinkedDatarefs[2]}
+InterchangeTransponderCode = 0
+
+TransponderCodeRead = 0
+
+local onTransponderInterchangeChange = function(ild, newInterchangeValue)
+end
+
+local onTransponderLinkedChanged = function(ild, newLinkedValue)
+end
+
+local isNewTransponderCodeValid = function(ild, newValue)
+	if (newValue < 0 or newValue > transponderCodeValidator.Constants.MaxTransponderCode) then
+		return false
+	end
+end
+
+local TransponderLinkedDataref =
+	InterchangeLinkedDataref:new(
+	InterchangeLinkedDataref.Constants.DatarefTypeInteger,
+	"VHFHelper/InterchangeTransponderCode",
+	"InterchangeTransponderCode",
+	"sim/cockpit2/radios/actuators/transponder_code",
+	"TransponderCodeRead",
+	onTransponderInterchangeChange,
+	onTransponderLinkedChanged,
+	isNewTransponderCodeValid
+)
+
+local allLinkedDatarefs = {
+	COMLinkedDatarefs[1],
+	COMLinkedDatarefs[2],
+	NAVLinkedDatarefs[1],
+	NAVLinkedDatarefs[2],
+	TransponderLinkedDataref
+}
 
 VHFHelperPublicInterface = nil
 local EventBus = require("eventbus")
@@ -503,6 +601,9 @@ VHFHelperEventOnFrequencyChanged = "EventBus_EventName_VHFHelperEventOnFrequency
 
 local function activatePublicInterface()
 	VHFHelperPublicInterface = {
+		getInterfaceVersion = function()
+			return 1
+		end,
 		enterFrequencyProgrammaticallyAsString = function(newFullString)
 			newFullString = comFrequencyValidator:validate(newFullString)
 
@@ -631,6 +732,19 @@ local Config = Configuration:new(SCRIPT_DIRECTORY .. "vhf_helper.ini")
 local windowVisibilityVisible = "visible"
 local windowVisibilityHidden = "hidden"
 
+local globalFontScale = nil
+local defaultDummySize = nil
+
+local Colors = {
+	a320Orange = 0xFF00AAFF,
+	a320Blue = 0xFFFFDDAA,
+	a320Green = 0xFF00AA00,
+	white = 0xFFFFFFFF,
+	black = 0xFF000000,
+	defaultImguiBackground = 0xFF121110,
+	defaultImguiButtonBackground = 0xFF6F4624
+}
+
 local NumberSubPanelClass
 do
 	NumberSubPanel = {}
@@ -638,7 +752,11 @@ do
 	function NumberSubPanel:new(newValidator)
 		local newInstanceWithState = {
 			enteredValue = emptyString,
-			inputPanelValidator = newValidator
+			inputPanelValidator = newValidator,
+			Constants = {
+				ClearButtonTitle = "Clr",
+				BackspaceButtonTitle = "Del"
+			}
 		}
 		setmetatable(newInstanceWithState, self)
 		self.__index = self
@@ -658,7 +776,7 @@ do
 	end
 
 	function NumberSubPanel:backspace()
-		assert(nil)
+		self.enteredValue = self.enteredValue:sub(1, -2)
 	end
 
 	function NumberSubPanel:clear()
@@ -668,19 +786,195 @@ do
 	function NumberSubPanel:renderToCanvas()
 		assert(nil)
 	end
+
+	function NumberSubPanel:_renderNumberButtonsInSameLine(fromIndex, toIndex)
+		for i = fromIndex, toIndex do
+			imgui.SameLine()
+			self:_createNumberButtonAndReactToClicks(i)
+		end
+	end
+
+	function NumberSubPanel:_renderNumberPanel()
+		local numberFontScale = 1.3 * globalFontScale
+		imgui.SetWindowFontScale(numberFontScale)
+
+		imgui.PushStyleColor(imgui.constant.Col.Text, Colors.a320Blue)
+
+		local leftSideDummyScale = 0.3 * globalFontScale
+		local rightSideDummyScale = 0.1 * globalFontScale
+
+		imgui.Dummy(defaultDummySize * leftSideDummyScale, defaultDummySize)
+
+		self:_renderNumberButtonsInSameLine(1, 3)
+
+		imgui.SameLine()
+		imgui.Dummy(defaultDummySize * rightSideDummyScale, defaultDummySize)
+		imgui.SameLine()
+		imgui.SetWindowFontScale(1.0 * globalFontScale)
+		if (imgui.Button(self.Constants.BackspaceButtonTitle)) then
+			self:backspace()
+		end
+		imgui.SetWindowFontScale(numberFontScale)
+
+		imgui.Dummy(defaultDummySize * leftSideDummyScale, defaultDummySize)
+
+		self:_renderNumberButtonsInSameLine(4, 6)
+
+		imgui.SameLine()
+		imgui.Dummy(defaultDummySize * rightSideDummyScale, defaultDummySize)
+		imgui.SameLine()
+		imgui.SetWindowFontScale(1.0 * globalFontScale)
+		if (imgui.Button(self.Constants.ClearButtonTitle)) then
+			self:clear()
+		end
+		imgui.SetWindowFontScale(numberFontScale)
+
+		imgui.Dummy(defaultDummySize * leftSideDummyScale, defaultDummySize)
+
+		self:_renderNumberButtonsInSameLine(7, 9)
+
+		imgui.Dummy(defaultDummySize * leftSideDummyScale, defaultDummySize)
+		imgui.SameLine()
+		imgui.Dummy(defaultDummySize, defaultDummySize)
+		imgui.SameLine()
+
+		self:_createNumberButtonAndReactToClicks(0)
+
+		imgui.PopStyleColor()
+	end
+
+	function NumberSubPanel:_createNumberButtonAndReactToClicks(number)
+		numberCharacter = self.inputPanelValidator:getValidNumberCharacterOrUnderscore(self.enteredValue, number)
+
+		if (imgui.Button(numberCharacter, defaultDummySize, defaultDummySize) and numberCharacter ~= underscoreCharacter) then
+			self:addCharacter(numberCharacter)
+		end
+	end
 end
 
-local globalFontScale = nil
-local defaultDummySize = nil
+local TransponderCodeSubPanelClass
+do
+	TransponderCodeSubPanel = NumberSubPanel:new()
 
-local Colors = {
-	a320Orange = 0xFF00AAFF,
-	a320Blue = 0xFFFFDDAA,
-	a320Green = 0xFF00AA00,
-	white = 0xFFFFFFFF,
-	black = 0xFF000000,
-	defaultImguiBackground = 0xFF121110
-}
+	OVERRIDE(TransponderCodeSubPanel.new)
+	function TransponderCodeSubPanel:new(newValidator, transponderLinkedDataref, newDescriptor)
+		local newInstanceWithState = NumberSubPanel:new(newValidator)
+
+		newInstanceWithState.Constants.FullyPaddedString = "____"
+
+		newInstanceWithState.linkedDataref = transponderLinkedDataref
+		newInstanceWithState.descriptor = newDescriptor
+
+		setmetatable(newInstanceWithState, self)
+		self.__index = self
+		return newInstanceWithState
+	end
+
+	OVERRIDE(TransponderCodeSubPanel.addCharacter)
+	function TransponderCodeSubPanel:addCharacter(character)
+		if (self.enteredValue:len() == 4) then
+			return
+		end
+
+		self.enteredValue = self.enteredValue .. character
+	end
+
+	OVERRIDE(TransponderCodeSubPanel.numberCanBeSetNow)
+	function TransponderCodeSubPanel:numberCanBeSetNow()
+		return (self.enteredValue:len() > 1)
+	end
+
+	OVERRIDE(TransponderCodeSubPanel.renderToCanvas)
+	function TransponderCodeSubPanel:renderToCanvas()
+	end
+
+	_NEWFUNC(TransponderCodeSubPanel._setLinkedValue)
+	function TransponderCodeSubPanel:_setLinkedValue()
+		local number = tonumber(self.enteredValue)
+		self.linkedDataref:emitNewValue(number)
+		self.enteredValue = emptyString
+	end
+
+	_NEWFUNC(TransponderCodeSubPanel._getCurrentLinkedValueString)
+	function TransponderCodeSubPanel:_getCurrentLinkedValueString()
+		return tostring(self.linkedDataref:getLinkedValue())
+	end
+
+	_NEWFUNC(TransponderCodeSubPanel._buildCurrentTransponderLine)
+	function TransponderCodeSubPanel:_buildCurrentTransponderLine(nextTransponderCodeIsSettable)
+		imgui.PushStyleVar_2(imgui.constant.StyleVar.FramePadding, 0.0, 0.0)
+
+		imgui.TextUnformatted(self.descriptor .. ":    ")
+
+		imgui.SameLine()
+		imgui.PushStyleColor(imgui.constant.Col.Text, Colors.a320Orange)
+
+		local currentTransponderString = self:_getCurrentLinkedValueString()
+		imgui.TextUnformatted(currentTransponderString)
+		imgui.PopStyleColor()
+
+		imgui.PushStyleColor(imgui.constant.Col.Button, Colors.a320Green)
+
+		if (nextTransponderCodeIsSettable) then
+			imgui.PushStyleColor(imgui.constant.Col.Text, Colors.black)
+		else
+			imgui.PushStyleColor(imgui.constant.Col.Text, Colors.white)
+		end
+
+		imgui.SameLine()
+		imgui.TextUnformatted(" ")
+
+		local buttonText = "   "
+		if (nextTransponderCodeIsSettable) then
+			buttonText = "<X>"
+
+			imgui.SameLine()
+			if (imgui.Button(buttonText)) then
+				self:_setLinkedValue()
+			end
+		end
+
+		imgui.TextUnformatted(" ")
+
+		imgui.PopStyleColor()
+		imgui.PopStyleColor()
+
+		imgui.PopStyleVar()
+	end
+
+	OVERRIDE(TransponderCodeSubPanel.renderToCanvas)
+	function TransponderCodeSubPanel:renderToCanvas()
+		imgui.SetWindowFontScale(1.0 * globalFontScale)
+
+		local nextTransponderCodeIsSettable = self:numberCanBeSetNow()
+
+		imgui.PushStyleVar_2(imgui.constant.StyleVar.ItemSpacing, 0.0, 2.0)
+
+		self:_buildCurrentTransponderLine(nextTransponderCodeIsSettable)
+
+		imgui.Separator()
+
+		imgui.TextUnformatted("Next " .. self.descriptor .. ":   ")
+
+		if (nextVhfFrequencyIsSettable) then
+			imgui.PushStyleColor(imgui.constant.Col.Text, Colors.a320Orange)
+		else
+			imgui.PushStyleColor(imgui.constant.Col.Text, Colors.a320Blue)
+		end
+
+		imgui.SameLine()
+
+		local paddedString = self.enteredValue .. self.Constants.FullyPaddedString:sub(string.len(self.enteredValue) + 1, 4)
+		imgui.TextUnformatted(paddedString)
+
+		imgui.PopStyleVar()
+
+		imgui.PopStyleColor()
+
+		imgui.Separator()
+		self:_renderNumberPanel()
+	end
+end
 
 local VhfFrequencySubPanelClass
 do
@@ -698,11 +992,8 @@ do
 	function VhfFrequencySubPanel:new(newValidator, newFirstVhfLinkedDataref, newSecondVhfLinkedDataref, newDescriptor)
 		local newInstanceWithState = NumberSubPanel:new(newValidator)
 
-		newInstanceWithState.Constants = {
-			FullyPaddedFreqString = "___.___",
-			ClearButtonTitle = "Clr",
-			BackspaceButtonTitle = "Del"
-		}
+		newInstanceWithState.Constants.FullyPaddedFreqString = "___.___"
+
 		newInstanceWithState.linkedDatarefs = {newFirstVhfLinkedDataref, newSecondVhfLinkedDataref}
 		newInstanceWithState.descriptor = newDescriptor
 
@@ -732,7 +1023,7 @@ do
 	OVERRIDE(VhfFrequencySubPanel.backspace)
 	function VhfFrequencySubPanel:backspace()
 		self.enteredValue = self.enteredValue:sub(1, -2)
-		if (string.len(nextVhfFrequency) == 4) then
+		if (self.enteredValue:len() == 4) then
 			self.enteredValue = self.enteredValue:sub(1, -2)
 		end
 	end
@@ -745,7 +1036,7 @@ do
 		imgui.SameLine()
 		imgui.PushStyleColor(imgui.constant.Col.Text, Colors.a320Orange)
 
-		currentVhfString = self:_getCurrentCleanLinkedValueString(vhfNumber)
+		local currentVhfString = self:_getCurrentCleanLinkedValueString(vhfNumber)
 		imgui.TextUnformatted(currentVhfString:sub(1, 3) .. decimalCharacter .. currentVhfString:sub(4, 7))
 		imgui.PopStyleColor()
 
@@ -774,14 +1065,6 @@ do
 		imgui.PopStyleColor()
 
 		imgui.PopStyleVar()
-	end
-
-	function VhfFrequencySubPanel:_createNumberButtonAndReactToClicks(number)
-		numberCharacter = self.inputPanelValidator:getValidNumberCharacterOrUnderscore(self.enteredValue, number)
-
-		if (imgui.Button(numberCharacter, defaultDummySize, defaultDummySize) and numberCharacter ~= underscoreCharacter) then
-			self:addCharacter(numberCharacter)
-		end
 	end
 
 	function VhfFrequencySubPanel:_validateAndSetNextVHFFrequency(vhfNumber)
@@ -818,7 +1101,8 @@ do
 
 		imgui.SameLine()
 
-		paddedFreqString = self.enteredValue .. self.Constants.FullyPaddedFreqString:sub(string.len(self.enteredValue) + 1, 7)
+		local paddedFreqString =
+			self.enteredValue .. self.Constants.FullyPaddedFreqString:sub(string.len(self.enteredValue) + 1, 7)
 		imgui.TextUnformatted(paddedFreqString)
 
 		imgui.PopStyleVar()
@@ -828,70 +1112,13 @@ do
 		imgui.Separator()
 		self:_renderNumberPanel()
 	end
-
-	function VhfFrequencySubPanel:_renderNumberPanel()
-		local numberFontScale = 1.3 * globalFontScale
-		imgui.SetWindowFontScale(numberFontScale)
-
-		imgui.PushStyleColor(imgui.constant.Col.Text, Colors.a320Blue)
-
-		imgui.Dummy(defaultDummySize * 0.8, defaultDummySize)
-		imgui.SameLine()
-		self:_createNumberButtonAndReactToClicks(1)
-		imgui.SameLine()
-		self:_createNumberButtonAndReactToClicks(2)
-		imgui.SameLine()
-		self:_createNumberButtonAndReactToClicks(3)
-
-		imgui.SameLine()
-		imgui.Dummy(defaultDummySize * 0.1, defaultDummySize)
-		imgui.SameLine()
-		imgui.SetWindowFontScale(1.0 * globalFontScale)
-		if (imgui.Button(self.Constants.BackspaceButtonTitle)) then
-			self:backspace()
-		end
-		imgui.SetWindowFontScale(numberFontScale)
-
-		imgui.Dummy(defaultDummySize * 0.8, defaultDummySize)
-		imgui.SameLine()
-		self:_createNumberButtonAndReactToClicks(4)
-		imgui.SameLine()
-		self:_createNumberButtonAndReactToClicks(5)
-		imgui.SameLine()
-		self:_createNumberButtonAndReactToClicks(6)
-
-		imgui.SameLine()
-		imgui.Dummy(defaultDummySize * 0.1, defaultDummySize)
-		imgui.SameLine()
-		imgui.SetWindowFontScale(1.0 * globalFontScale)
-		if (imgui.Button(self.Constants.ClearButtonTitle)) then
-			self:clear()
-		end
-		imgui.SetWindowFontScale(numberFontScale)
-
-		imgui.Dummy(defaultDummySize * 0.8, defaultDummySize)
-		imgui.SameLine()
-		self:_createNumberButtonAndReactToClicks(7)
-		imgui.SameLine()
-		self:_createNumberButtonAndReactToClicks(8)
-		imgui.SameLine()
-		self:_createNumberButtonAndReactToClicks(9)
-
-		imgui.Dummy(defaultDummySize * 0.8, defaultDummySize)
-		imgui.SameLine()
-		imgui.Dummy(defaultDummySize, defaultDummySize)
-		imgui.SameLine()
-
-		self:_createNumberButtonAndReactToClicks(0)
-
-		imgui.PopStyleColor()
-	end
 end
 
 local ComFrequencySubPanelClass
 do
 	ComFrequencySubPanel = VhfFrequencySubPanel:new()
 
+	_NEWFUNC(ComFrequencySubPanel.overrideEnteredValue)
 	function ComFrequencySubPanel:overrideEnteredValue(newValue)
 		self.enteredValue = newValue
 		VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
@@ -958,6 +1185,7 @@ end
 
 comFrequencyPanel = ComFrequencySubPanel:new(comFrequencyValidator, COMLinkedDatarefs[1], COMLinkedDatarefs[2], "COM")
 navFrequencyPanel = NavFrequencySubPanel:new(navFrequencyValidator, NAVLinkedDatarefs[1], NAVLinkedDatarefs[2], "NAV")
+transponderCodePanel = TransponderCodeSubPanel:new(transponderCodeValidator, TransponderLinkedDataref, "XPDR")
 
 -- FlyWithLua Issue: Functions passed to float_wnd_set_imgui_builder can only exist outside of tables :-/
 function renderVhfHelperMainWindowToCanvas()
@@ -981,16 +1209,16 @@ do
 		globalFontScaleDescriptor = trim(Config:getValue("Windows", "GlobalFontScale", "big"))
 		if (globalFontScaleDescriptor == "huge") then
 			globalFontScale = 3.0
-			minWidthWithoutScrollbars = 375
+			minWidthWithoutScrollbars = 380
 			minHeightWithoutScrollbars = 460
 		elseif (globalFontScaleDescriptor == "big") then
 			globalFontScale = 2.0
-			minWidthWithoutScrollbars = 255
+			minWidthWithoutScrollbars = 260
 			minHeightWithoutScrollbars = 320
 		else
 			globalFontScale = 1.0
-			minWidthWithoutScrollbars = 145
-			minHeightWithoutScrollbars = 180
+			minWidthWithoutScrollbars = 150
+			minHeightWithoutScrollbars = 190
 		end
 
 		defaultDummySize = 20.0 * globalFontScale
@@ -1031,22 +1259,31 @@ do
 	end
 
 	function vhfHelperMainWindow:renderToCanvas()
+		local slightlyBrighterDefaultButtonColor = 0xFF7F5634
+		imgui.PushStyleColor(imgui.constant.Col.ButtonActive, Colors.defaultImguiButtonBackground)
+		imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, slightlyBrighterDefaultButtonColor)
+
 		self.currentPanel:renderToCanvas()
 
 		imgui.Separator()
-		imgui.SetWindowFontScale(0.88 * globalFontScale)
+		imgui.Separator()
+		imgui.SetWindowFontScale(0.9 * globalFontScale)
 		self:_renderPanelButton(comFrequencyPanel)
 		imgui.SameLine()
 		self:_renderPanelButton(navFrequencyPanel)
 		imgui.SameLine()
-		imgui.Button(" XPDR ")
+		self:_renderPanelButton(transponderCodePanel)
+		imgui.SameLine()
+
+		imgui.PopStyleColor()
+		imgui.PopStyleColor()
 	end
 
 	function vhfHelperMainWindow:_renderPanelButton(panel)
 		if (self.currentPanel == panel) then
 			imgui.PushStyleColor(imgui.constant.Col.Text, Colors.a320Orange)
 		else
-			imgui.PushStyleColor(imgui.constant.Col.Text, Colors.white)
+			imgui.PushStyleColor(imgui.constant.Col.Text, Colors.a320Blue)
 		end
 		if (imgui.Button(" " .. panel.descriptor .. " ")) then
 			self.currentPanel = panel
@@ -1141,6 +1378,7 @@ vhfHelperPackageExport = {}
 vhfHelperPackageExport.test = {}
 vhfHelperPackageExport.test.comFrequencyValidator = comFrequencyValidator
 vhfHelperPackageExport.test.navFrequencyValidator = navFrequencyValidator
+vhfHelperPackageExport.test.transponderCodeValidator = transponderCodeValidator
 vhfHelperPackageExport.test.activatePublicInterface = activatePublicInterface
 vhfHelperPackageExport.test.deactivatePublicInterface = deactivatePublicInterface
 vhfHelperPackageExport.test.Config = Config

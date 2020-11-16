@@ -28,12 +28,9 @@ local imguiStub = require("imgui_stub")
 
 TestHighLevelBehaviour = {
 	Constants = {
-		initialCom1Frequency = 119000,
-		initialCom2Frequency = 124300,
-		initialNav1Frequency = 117000,
-		initialNav2Frequency = 116600,
 		comPanelButtonTitle = " COM ",
-		navPanelButtonTitle = " NAV "
+		navPanelButtonTitle = " NAV ",
+		transponderPanelButtonTitle = " XPDR "
 	}
 }
 
@@ -49,14 +46,14 @@ function TestHighLevelBehaviour:_assertStringShowsUp(str)
 	luaUnit.assertTrue(imguiStub:wasWatchStringFound())
 end
 
-function TestHighLevelBehaviour:_enterFrequencyViaUserInterface(freqString)
-	for i = 1, #freqString do
-		self:_pressButton(freqString:sub(i, i))
+function TestHighLevelBehaviour:_enterNumberViaUserInterface(numberString)
+	for i = 1, #numberString do
+		self:_pressButton(numberString:sub(i, i))
 	end
 end
 
 function TestHighLevelBehaviour:_switchToOtherFrequency(vhfNumber, linkedDatarefId, newFrequencyString)
-	self:_enterFrequencyViaUserInterface(newFrequencyString)
+	self:_enterNumberViaUserInterface(newFrequencyString)
 
 	local d = flyWithLuaStub.datarefs[linkedDatarefId]
 
@@ -65,28 +62,43 @@ function TestHighLevelBehaviour:_switchToOtherFrequency(vhfNumber, linkedDataref
 	luaUnit.assertEquals(d.data, tonumber(newFrequencyString))
 end
 
+function TestHighLevelBehaviour:_switchToOtherTransponder(linkedDatarefId, newTransponderString)
+	self:_enterNumberViaUserInterface(newTransponderString)
+
+	local d = flyWithLuaStub.datarefs[linkedDatarefId]
+
+	luaUnit.assertNotEquals(d.data, tonumber(newTransponderString))
+	self:_pressButton("<X>")
+	luaUnit.assertEquals(d.data, tonumber(newTransponderString))
+end
+
 function TestHighLevelBehaviour:createInternalDatarefsAndBootstrap()
 	flyWithLuaStub:reset()
 	flyWithLuaStub:createSharedDatarefHandle(
 		TestDatarefHandling.Constants.firstComFreq,
 		flyWithLuaStub.Constants.DatarefTypeInteger,
-		self.Constants.initialCom1Frequency
+		TestDatarefHandling.Constants.initialCom1Frequency
 	)
 	flyWithLuaStub:createSharedDatarefHandle(
 		TestDatarefHandling.Constants.secondComFreq,
 		flyWithLuaStub.Constants.DatarefTypeInteger,
-		self.Constants.initialCom2Frequency
+		TestDatarefHandling.Constants.initialCom2Frequency
 	)
 
 	flyWithLuaStub:createSharedDatarefHandle(
 		TestDatarefHandling.Constants.firstNavFreq,
 		flyWithLuaStub.Constants.DatarefTypeInteger,
-		self.Constants.initialNav1Frequency
+		TestDatarefHandling.Constants.initialNav1Frequency
 	)
 	flyWithLuaStub:createSharedDatarefHandle(
 		TestDatarefHandling.Constants.secondNavFreq,
 		flyWithLuaStub.Constants.DatarefTypeInteger,
-		self.Constants.initialNav2Frequency
+		TestDatarefHandling.Constants.initialNav2Frequency
+	)
+	flyWithLuaStub:createSharedDatarefHandle(
+		TestDatarefHandling.Constants.transponderCode,
+		flyWithLuaStub.Constants.DatarefTypeInteger,
+		TestDatarefHandling.Constants.initialTransponderCode
 	)
 
 	vhfHelper = dofile("scripts/vhf_helper.lua")
@@ -125,18 +137,18 @@ function TestHighLevelBehaviour:testPanelIsVisibleByDefault()
 end
 
 function TestHighLevelBehaviour:testCurrentComFrequenciesAreShownSomewhere()
-	local freqAsString = tostring(self.Constants.initialCom1Frequency)
+	local freqAsString = tostring(TestDatarefHandling.Constants.initialCom1Frequency)
 	local fullFrequencyString = freqAsString:sub(1, 3) .. "." .. freqAsString:sub(4, 6)
 	self:_assertStringShowsUp(fullFrequencyString)
 
-	freqAsString = tostring(self.Constants.initialCom2Frequency)
+	freqAsString = tostring(TestDatarefHandling.Constants.initialCom2Frequency)
 	fullFrequencyString = freqAsString:sub(1, 3) .. "." .. freqAsString:sub(4, 6)
 	self:_assertStringShowsUp(fullFrequencyString)
 end
 
 function TestHighLevelBehaviour:testEnteredComStringIsShownSomewhere()
 	local freqString = "132805"
-	self:_enterFrequencyViaUserInterface(freqString)
+	self:_enterNumberViaUserInterface(freqString)
 	self:_assertStringShowsUp(freqString:sub(1, 3) .. "." .. freqString:sub(4, 6))
 end
 
@@ -150,11 +162,11 @@ end
 
 function TestHighLevelBehaviour:testCurrentNavFrequenciesAreShownSomewhere()
 	self:_pressButton(self.Constants.navPanelButtonTitle)
-	local freqAsString = tostring(self.Constants.initialNav1Frequency)
+	local freqAsString = tostring(TestDatarefHandling.Constants.initialNav1Frequency)
 	local fullFrequencyString = freqAsString:sub(1, 3) .. "." .. freqAsString:sub(4, 6)
 	self:_assertStringShowsUp(fullFrequencyString)
 
-	freqAsString = tostring(self.Constants.initialNav2Frequency)
+	freqAsString = tostring(TestDatarefHandling.Constants.initialNav2Frequency)
 	fullFrequencyString = freqAsString:sub(1, 3) .. "." .. freqAsString:sub(4, 6)
 	self:_assertStringShowsUp(fullFrequencyString)
 end
@@ -162,7 +174,7 @@ end
 function TestHighLevelBehaviour:testEnteredNavStringIsShownSomewhere()
 	self:_pressButton(self.Constants.navPanelButtonTitle)
 	local freqString = "111800"
-	self:_enterFrequencyViaUserInterface(freqString)
+	self:_enterNumberViaUserInterface(freqString)
 	self:_assertStringShowsUp(freqString:sub(1, 3) .. "." .. freqString:sub(4, 6))
 end
 
@@ -173,4 +185,19 @@ function TestHighLevelBehaviour:testSwitchingNavDoesSwitch()
 
 	local freqString2 = "11535"
 	self:_switchToOtherFrequency(2, TestDatarefHandling.Constants.secondNavFreq, freqString2)
+end
+
+function TestHighLevelBehaviour:testSwitchingTransponderDoesSwitch()
+	self:_pressButton(self.Constants.transponderPanelButtonTitle)
+	local transponderString = "4096"
+	self:_switchToOtherTransponder(TestDatarefHandling.Constants.transponderCode, transponderString)
+
+	local transponderString2 = "1000"
+	self:_switchToOtherTransponder(TestDatarefHandling.Constants.transponderCode, transponderString2)
+end
+
+function TestHighLevelBehaviour:testCurrentTransponderCodeIsShownSomewhere()
+	self:_pressButton(self.Constants.transponderPanelButtonTitle)
+	local codeString = tostring(TestDatarefHandling.Constants.initialTransponderCode)
+	self:_assertStringShowsUp(codeString)
 end

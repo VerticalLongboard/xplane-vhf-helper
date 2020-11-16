@@ -41,6 +41,7 @@ function TestPublicInterface:tearDown()
 end
 
 function TestPublicInterface:testFixInterface()
+	luaUnit.assertEquals(self.activeInterface.getInterfaceVersion(), 1)
 	luaUnit.assertNotNil(self.activeInterface.enterFrequencyProgrammaticallyAsString)
 	luaUnit.assertNotNil(self.activeInterface.isCurrentlyTunedIn)
 	luaUnit.assertNotNil(self.activeInterface.isCurrentlyEntered)
@@ -69,7 +70,7 @@ function TestPublicInterfaceAndEvents:setUp()
 end
 
 function TestPublicInterfaceAndEvents:testTuningInAFrequencyIsReportedAsTunedIn()
-	luaUnit.assertIsTrue(VHFHelperPublicInterface.isCurrentlyTunedIn("119.000"))
+	luaUnit.assertIsTrue(VHFHelperPublicInterface.isCurrentlyTunedIn("131.200"))
 end
 
 function TestPublicInterfaceAndEvents:testOpeningMainWindowActivatesPublicInterface()
@@ -93,7 +94,7 @@ function TestPublicInterfaceAndEvents:testChangeEventIsEmittedWhenEnteringAndCha
 	VHFHelperEventBus.eventsEmittedSoFar = {}
 	local freqString = "122810"
 
-	TestHighLevelBehaviour:_enterFrequencyViaUserInterface(freqString)
+	TestHighLevelBehaviour:_enterNumberViaUserInterface(freqString)
 	self:_assertNumOfEventsWithTypeWereEmitted(VHFHelperEventOnFrequencyChanged, 6)
 
 	TestHighLevelBehaviour:_pressButton("<1>")
@@ -104,11 +105,11 @@ end
 function TestPublicInterfaceAndEvents:testChangingToAnAlreadySetFrequencyStillEmitsAnEvent()
 	local freqString = "122810"
 
-	TestHighLevelBehaviour:_enterFrequencyViaUserInterface(freqString)
+	TestHighLevelBehaviour:_enterNumberViaUserInterface(freqString)
 	TestHighLevelBehaviour:_pressButton("<2>")
 	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
 
-	TestHighLevelBehaviour:_enterFrequencyViaUserInterface(freqString)
+	TestHighLevelBehaviour:_enterNumberViaUserInterface(freqString)
 	VHFHelperEventBus.eventsEmittedSoFar = {}
 	TestHighLevelBehaviour:_pressButton("<2>")
 	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
@@ -119,7 +120,7 @@ function TestPublicInterfaceAndEvents:testChangeEventIsEmittedWhenBackspacingOrC
 	local backspaceButton = "Del"
 	local clearButton = "Clr"
 	local freqString = "122"
-	TestHighLevelBehaviour:_enterFrequencyViaUserInterface(freqString)
+	TestHighLevelBehaviour:_enterNumberViaUserInterface(freqString)
 	VHFHelperEventBus.eventsEmittedSoFar = {}
 
 	TestHighLevelBehaviour:_pressButton(backspaceButton)
