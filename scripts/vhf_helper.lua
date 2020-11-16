@@ -22,8 +22,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
---]] local emptyString =
-	""
+--]]
+local emptyString = ""
 local decimalCharacter = "."
 local underscoreCharacter = "_"
 
@@ -1191,9 +1191,13 @@ comFrequencyPanel = ComFrequencySubPanel:new(comFrequencyValidator, COMLinkedDat
 navFrequencyPanel = NavFrequencySubPanel:new(navFrequencyValidator, NAVLinkedDatarefs[1], NAVLinkedDatarefs[2], "NAV")
 transponderCodePanel = TransponderCodeSubPanel:new(transponderCodeValidator, TransponderLinkedDataref, "XPDR")
 
--- FlyWithLua Issue: Functions passed to float_wnd_set_imgui_builder can only exist outside of tables :-/
+-- FlyWithLua Issue: Functions passed to float_wnd_set_imgui_builder and float_wnd_set_onclose can only exist outside of tables :-/
 function renderVhfHelperMainWindowToCanvas()
 	vhfHelperMainWindow:renderToCanvas()
+end
+
+function closeVhfHelperMainWindow()
+	vhfHelperMainWindow:destroy()
 end
 
 local vhfHelperMainWindowSingleton
@@ -1230,7 +1234,7 @@ do
 		self.window = float_wnd_create(minWidthWithoutScrollbars, minHeightWithoutScrollbars, 1, true)
 		float_wnd_set_title(self.window, self.Constants.defaultWindowName)
 		float_wnd_set_imgui_builder(self.window, "renderVhfHelperMainWindowToCanvas")
-		float_wnd_set_onclose(self.window, "vhfHelperMainWindow:destroy")
+		float_wnd_set_onclose(self.window, "closeVhfHelperMainWindow")
 
 		Config:setValue("Windows", "MainWindowVisibility", windowVisibilityVisible)
 		Config:save()
@@ -1295,6 +1299,8 @@ do
 		imgui.PopStyleColor()
 	end
 end
+
+READ_SOMETHING = nil
 
 local vhfHelperLoopSingleton
 do
