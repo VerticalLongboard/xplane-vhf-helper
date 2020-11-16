@@ -27,8 +27,10 @@ local emptyString = ""
 local decimalCharacter = "."
 local underscoreCharacter = "_"
 
+local readableScriptName = "VHF Helper"
+
 local function printLogMessage(messageString)
-	logMsg(("VHF Helper: %s"):format(messageString or "NIL"))
+	logMsg(("%s: %s"):format(readableScriptName, messageString or "NIL"))
 end
 
 local licensesOfDependencies = {
@@ -48,7 +50,7 @@ local licensesOfDependencies = {
 
 for i = 1, #licensesOfDependencies do
 	printLogMessage(
-		("VHF Helper using '%s' with license '%s'. Project homepage: %s"):format(
+		("Using '%s' with license '%s'. Project homepage: %s"):format(
 			licensesOfDependencies[i][1],
 			licensesOfDependencies[i][2],
 			licensesOfDependencies[i][3]
@@ -1203,13 +1205,13 @@ end
 local vhfHelperMainWindowSingleton
 do
 	vhfHelperMainWindow = {
-		Constants = {defaultWindowName = "VHF Helper"},
+		Constants = {defaultWindowName = readableScriptName},
 		window = nil,
 		currentPanel = comFrequencyPanel
 	}
 
 	function vhfHelperMainWindow:create()
-		vhfHelperLoop:tryInitialize()
+		vhfHelperLoop:tryInitializeOften()
 
 		local minWidthWithoutScrollbars = nil
 		local minHeightWithoutScrollbars = nil
@@ -1243,10 +1245,12 @@ do
 	end
 
 	function vhfHelperMainWindow:destroy()
-		if (self.window) then
-			float_wnd_destroy(self.window)
-			window = nil
+		if (self.window == nil) then
+			return
 		end
+
+		float_wnd_destroy(self.window)
+		self.window = nil
 
 		Config:setValue("Windows", "MainWindowVisibility", windowVisibilityHidden)
 		Config:save()
@@ -1263,7 +1267,7 @@ do
 	end
 
 	function vhfHelperMainWindow:toggle()
-		self:show(window and true or false)
+		self:show(self.window == nil)
 	end
 
 	function vhfHelperMainWindow:renderToCanvas()
@@ -1305,7 +1309,7 @@ READ_SOMETHING = nil
 local vhfHelperLoopSingleton
 do
 	vhfHelperLoop = {
-		Constants = {defaultMacroName = "VHF Helper"},
+		Constants = {defaultMacroName = readableScriptName},
 		alreadyInitialized = false
 	}
 
@@ -1313,7 +1317,7 @@ do
 		return self.alreadyInitialized
 	end
 
-	function vhfHelperLoop:bootstrap()
+	function vhfHelperLoop:bootstrapOnce()
 		Config:load()
 
 		local windowIsSupposedToBeVisible = false
@@ -1329,17 +1333,17 @@ do
 		)
 
 		create_command(
-			"FlyWithLua/VHF Helper/ToggleWindow",
-			"Toggle VHF Helper Window",
+			"FlyWithLua/" .. readableScriptName .. "/ToggleWindow",
+			"Toggle " .. readableScriptName .. " Window",
 			"vhfHelperMainWindow:toggle()",
 			"",
 			""
 		)
 
-		do_often("vhfHelperLoop:tryInitialize()")
+		do_often("vhfHelperLoop:tryInitializeOften()")
 	end
 
-	function vhfHelperLoop:tryInitialize()
+	function vhfHelperLoop:tryInitializeOften()
 		if (self.alreadyInitialized) then
 			return
 		end
@@ -1382,7 +1386,7 @@ do
 	end
 end
 
-vhfHelperLoop:bootstrap()
+vhfHelperLoop:bootstrapOnce()
 
 vhfHelperPackageExport = {}
 vhfHelperPackageExport.test = {}

@@ -201,3 +201,16 @@ function TestHighLevelBehaviour:testCurrentTransponderCodeIsShownSomewhere()
 	local codeString = tostring(TestDatarefHandling.Constants.initialTransponderCode)
 	self:_assertStringShowsUp(codeString)
 end
+
+function TestHighLevelBehaviour:testTogglePanelCommandTogglesPanel()
+	local toggleWindowCommandName = "FlyWithLua/VHF Helper/ToggleWindow"
+	local windowTitle = vhfHelperPackageExport.test.vhfHelperMainWindow.Constants.defaultWindowName
+
+	luaUnit.assertIsTrue(flyWithLuaStub:isWindowOpen(flyWithLuaStub:getWindowByTitle(windowTitle)))
+	flyWithLuaStub:executeCommand(toggleWindowCommandName)
+	flyWithLuaStub:cleanupBeforeRunningNextFrame()
+	luaUnit.assertIsNil(flyWithLuaStub:getWindowByTitle(windowTitle))
+	flyWithLuaStub:executeCommand(toggleWindowCommandName)
+	flyWithLuaStub:cleanupBeforeRunningNextFrame()
+	luaUnit.assertIsTrue(flyWithLuaStub:isWindowOpen(flyWithLuaStub:getWindowByTitle(windowTitle)))
+end
