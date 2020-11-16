@@ -1321,7 +1321,7 @@ do
 		Config:load()
 
 		local windowIsSupposedToBeVisible = false
-		if (trim(Config:getValue("Windows", "MainWindowVisibility", windowVisibilityVisible)) == windowVisibilityVisible) then
+		if (trim(Config:getValue("Windows", "MainWindowVisibility", windowVisibilityHidden)) == windowVisibilityVisible) then
 			windowIsSupposedToBeVisible = true
 		end
 

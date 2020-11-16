@@ -108,6 +108,7 @@ end
 
 function TestHighLevelBehaviour:setUp()
 	self:createInternalDatarefsAndBootstrap()
+	flyWithLuaStub:activateMacro(vhfHelperPackageExport.test.vhfHelperLoop.Constants.defaultMacroName, true)
 end
 
 function TestHighLevelBehaviour:testClosingThePanelChangesPanelConfigurationAccordingly()
@@ -128,12 +129,6 @@ function TestHighLevelBehaviour:testDeactivatingTheScriptChangesPanelConfigurati
 	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowVisibility, "visible")
 	flyWithLuaStub:activateAllMacros(false)
 	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowVisibility, "hidden")
-end
-
-function TestHighLevelBehaviour:testPanelIsVisibleByDefault()
-	luaUnit.assertIsTrue(
-		flyWithLuaStub:isMacroActive(vhfHelperPackageExport.test.vhfHelperLoop.Constants.defaultMacroName)
-	)
 end
 
 function TestHighLevelBehaviour:testCurrentComFrequenciesAreShownSomewhere()

@@ -140,11 +140,15 @@ function flyWithLuaStub:_activateMacroByReference(macro, activate)
 end
 
 function flyWithLuaStub:activateMacro(macroName, activate)
+    local anyMacroActivated = false
     for _, macro in pairs(self.macros) do
         if (macro.name == macroName) then
-            self:_activateMacroByReference(macro)
+            self:_activateMacroByReference(macro, activate)
+            anyMacroActivated = true
         end
     end
+
+    luaUnit.assertTrue(anyMacroActivated)
 end
 
 function flyWithLuaStub:isMacroActive(macroName)
@@ -213,7 +217,7 @@ end
 
 function flyWithLuaStub:cleanupBeforeRunningNextFrame()
     for key, window in pairs(self.windows) do
-        if (not window.isOpen) then
+        if (window.wasDestroyed) then
             table.remove(self.windows, key)
         end
     end

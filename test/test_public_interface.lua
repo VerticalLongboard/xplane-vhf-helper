@@ -67,6 +67,7 @@ TestPublicInterfaceAndEvents = {}
 function TestPublicInterfaceAndEvents:setUp()
 	VHFHelperEventBus.eventsEmittedSoFar = {}
 	TestHighLevelBehaviour:createInternalDatarefsAndBootstrap()
+	flyWithLuaStub:activateMacro(vhfHelperPackageExport.test.vhfHelperLoop.Constants.defaultMacroName, true)
 end
 
 function TestPublicInterfaceAndEvents:testTuningInAFrequencyIsReportedAsTunedIn()
