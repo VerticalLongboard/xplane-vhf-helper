@@ -883,7 +883,7 @@ do
 
 	OVERRIDE(TransponderCodeSubPanel.numberCanBeSetNow)
 	function TransponderCodeSubPanel:numberCanBeSetNow()
-		return (self.enteredValue:len() > 1)
+		return (self.enteredValue:len() > 0)
 	end
 
 	OVERRIDE(TransponderCodeSubPanel.renderToCanvas)
@@ -892,7 +892,7 @@ do
 
 	_NEWFUNC(TransponderCodeSubPanel._setLinkedValue)
 	function TransponderCodeSubPanel:_setLinkedValue()
-		local number = tonumber(self.enteredValue)
+		local number = tonumber(self.inputPanelValidator:autocomplete(self.enteredValue))
 		self.linkedDataref:emitNewValue(number)
 		self.enteredValue = emptyString
 	end
