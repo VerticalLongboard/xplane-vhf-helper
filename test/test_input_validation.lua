@@ -178,6 +178,7 @@ end
 function TestTransponderCodeValidation:testInvalidTransponderCodeIsNotConsideredValid()
 	luaUnit.assertEquals(self.validator:validate("7856"), nil)
 	luaUnit.assertEquals(self.validator:validate("7778"), nil)
+	luaUnit.assertEquals(self.validator:validate("1190"), nil)
 end
 
 function TestTransponderCodeValidation:testAutocompletionWorks()

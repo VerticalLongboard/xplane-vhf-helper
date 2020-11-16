@@ -184,7 +184,7 @@ end
 
 function TestHighLevelBehaviour:testSwitchingTransponderDoesSwitch()
 	self:_pressButton(self.Constants.transponderPanelButtonTitle)
-	local transponderString = "4096"
+	local transponderString = "4066"
 	self:_switchToOtherTransponder(TestDatarefHandling.Constants.transponderCode, transponderString)
 
 	local transponderString2 = "1000"

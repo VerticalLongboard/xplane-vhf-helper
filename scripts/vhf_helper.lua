@@ -128,6 +128,12 @@ do
 			return nil
 		end
 
+		for i = 1, #fullString do
+			if (tonumber(fullString:sub(i, i)) > 7) then
+				return nil
+			end
+		end
+
 		return fullString
 	end
 
