@@ -1,8 +1,8 @@
 # VR Radio Helper (aka VHF Helper)
 ## Overview
-VR Radio Helper is a FlyWithLua plugin for X-Plane 11. It allows to change the two main COM frequencies of any X-Plane airplane in **VR** via convenient touch pad number buttons in a **multicrew** environment. For many default airplanes, NAV and transponder codes can be changed as well.
+VR Radio Helper is a FlyWithLua plugin for X-Plane 11. It allows to change the two main COM frequencies of any X-Plane airplane in **Virtual Reality** via convenient touch pad number buttons in a **multicrew** environment. For many default airplanes, NAV and transponder codes can be changed as well.
 
-Flying multicrew in X-Plane with ATC is a blast! Yet, the default X-Plane 11 VR knobs are horrible when trying to monitor/fly and dial in a new ATC frequency at the same time (takes up to 2 minutes for a 2-hour flight, just turning the knob and making sure that no turn got lost when using SmartCopilot).
+Flying VR multicrew in X-Plane with ATC is a blast! Yet, the default X-Plane 11 VR knobs are horrible when trying to monitor/fly and dial in a new ATC frequency at the same time (takes up to 2 minutes for a 2-hour flight, just turning the knob and making sure that no turn got lost when using SmartCopilot).
 
 VR Radio Helper:
 * Makes tuning in a new ATC or NAV frequency a breeze!

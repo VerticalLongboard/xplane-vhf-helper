@@ -612,7 +612,7 @@ table.insert(transponderModeToDescriptor, "ALT2")
 table.insert(transponderModeToDescriptor, "ALT3")
 
 local isNewTransponderModeValid = function(ild, newValue)
-	-- This is based on person observation in different airplanes:
+	-- This is based on personal observation in different airplanes:
 	-- 0: OFF
 	-- 1: STBY <<
 	-- 2: ON/XPDR <<
