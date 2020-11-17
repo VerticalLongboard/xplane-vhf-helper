@@ -1205,6 +1205,8 @@ function renderVhfHelperMainWindowToCanvas()
 end
 
 function closeVhfHelperMainWindow()
+	-- FlyWithLua Issue: The close function is called asynchronously so quickly closing and opening the panel will close it again quickly after.
+	-- Destroy it anyway to keep public interface in line with panel visibility.
 	vhfHelperMainWindow:destroy()
 end
 
@@ -1218,6 +1220,10 @@ do
 
 	function vhfHelperMainWindow:create()
 		vhfHelperLoop:tryInitializeOften()
+
+		if (self.window ~= nil) then
+			return
+		end
 
 		local minWidthWithoutScrollbars = nil
 		local minHeightWithoutScrollbars = nil

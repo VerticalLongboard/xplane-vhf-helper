@@ -162,10 +162,10 @@ function flyWithLuaStub:isMacroActive(macroName)
 end
 
 function flyWithLuaStub:closeWindowByReference(window)
-    luaUnit.assertTrue(window.isOpen)
+    luaUnit.assertTrue(window.isVisible)
     luaUnit.assertFalse(window.wasDestroyed)
     window.closeFunction()
-    window.isOpen = false
+    window.isVisible = false
 end
 
 function flyWithLuaStub:getWindowByTitle(windowTitle)
@@ -207,7 +207,7 @@ function flyWithLuaStub:runImguiFrame()
     imguiStub:startFrame()
 
     for _, w in pairs(flyWithLuaStub.windows) do
-        if (not w.wasDestroyed and w.isOpen) then
+        if (not w.wasDestroyed and w.isVisible) then
             w.imguiBuilderFunction()
         end
     end
@@ -280,7 +280,7 @@ function flyWithLuaStub:closeWindowByTitle(windowTitle)
 end
 
 function flyWithLuaStub:isWindowOpen(windowReference)
-    return windowReference.isOpen
+    return windowReference.isVisible
 end
 
 function flyWithLuaStub:executeCommand(commandName)
@@ -391,7 +391,7 @@ end
 function float_wnd_create(width, height, something, whatever)
     local newWindow = {
         wasDestroyed = false,
-        isOpen = true
+        isVisible = true
     }
     table.insert(flyWithLuaStub.windows, newWindow)
     return newWindow
@@ -411,9 +411,35 @@ function float_wnd_set_imgui_builder(window, newImguiBuilderFunctionName)
     window.imguiBuilderFunctionName = newImguiBuilderFunctionName
 end
 
+-- This function does not show windows in FlyWithLua when called like this: float_wnd_set_visible(window, 1), but it should.
+function float_wnd_set_visible(window, intValue)
+    luaUnit.assertEquals(intValue, 0) -- Only hiding works in FlyWithLua
+    luaUnit.assertNotNil(window)
+    luaUnit.assertTrue(intValue == 0 or intValue == 1)
+    local boolValue = nil
+    if (intValue == 0) then
+        boolValue = false
+    else
+        boolValue = true
+    end
+
+    window.isVisible = boolValue
+end
+
+-- This function is not available in FlyWithLua, but it should.
+-- function float_wnd_get_visible(window)
+--     luaUnit.assertNotNil(window)
+
+--     if (window.isVisible) then
+--         return 1
+--     else
+--         return 0
+--     end
+-- end
+
 function float_wnd_destroy(window)
     window.wasDestroyed = true
-    window.isOpen = false
+    window.isVisible = false
 end
 
 return flyWithLuaStub
