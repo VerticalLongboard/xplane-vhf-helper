@@ -31,6 +31,7 @@ VHFHelper/InterchangeCOM2Frequency = 0
 VHFHelper/InterchangeNAV1Frequency = 0
 VHFHelper/InterchangeNAV2Frequency = 0
 VHFHelper/InterchangeTransponderCode = 0
+VHFHelper/InterchangeTransponderMode = 0
 ```
 
 ## Usage
