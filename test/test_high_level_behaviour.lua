@@ -100,6 +100,11 @@ function TestHighLevelBehaviour:createInternalDatarefsAndBootstrap()
 		flyWithLuaStub.Constants.DatarefTypeInteger,
 		TestDatarefHandling.Constants.initialTransponderCode
 	)
+	flyWithLuaStub:createSharedDatarefHandle(
+		TestDatarefHandling.Constants.transponderMode,
+		flyWithLuaStub.Constants.DatarefTypeInteger,
+		TestDatarefHandling.Constants.initialTransponderMode
+	)
 
 	vhfHelper = dofile("scripts/vhf_helper.lua")
 	flyWithLuaStub:bootstrapAllMacros()
@@ -208,4 +213,18 @@ function TestHighLevelBehaviour:testTogglePanelCommandTogglesPanel()
 	flyWithLuaStub:executeCommand(toggleWindowCommandName)
 	flyWithLuaStub:cleanupBeforeRunningNextFrame()
 	luaUnit.assertIsTrue(flyWithLuaStub:isWindowOpen(flyWithLuaStub:getWindowByTitle(windowTitle)))
+end
+
+function TestHighLevelBehaviour:testTransmoderModeIsSwitched()
+	self:_pressButton(self.Constants.transponderPanelButtonTitle)
+	local tm = flyWithLuaStub.datarefs[TestDatarefHandling.Constants.transponderMode]
+	luaUnit.assertEquals(tm.data, TestDatarefHandling.Constants.initialTransponderMode)
+
+	local newMode = 0
+	self:_pressButton(vhfHelperPackageExport.test.transponderModeToDescriptor[newMode + 1])
+	luaUnit.assertEquals(tm.data, newMode)
+
+	local newMode2 = 3
+	self:_pressButton(vhfHelperPackageExport.test.transponderModeToDescriptor[newMode2 + 1])
+	luaUnit.assertEquals(tm.data, newMode2)
 end

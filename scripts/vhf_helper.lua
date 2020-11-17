@@ -148,13 +148,14 @@ do
 
 	OVERRIDE(TransponderValidator.getValidNumberCharacterOrUnderscore)
 	function TransponderValidator:getValidNumberCharacterOrUnderscore(stringEnteredSoFar, number)
-		local afterEnteringNumber = stringEnteredSoFar .. tostring(number)
+		local numberAsString = tostring(number)
+		local afterEnteringNumber = stringEnteredSoFar .. numberAsString
 		local autocompleted = self:autocomplete(afterEnteringNumber)
 		if (self:validate(autocompleted) == nil) then
 			return underscoreCharacter
 		end
 
-		return tostring(number)
+		return numberAsString
 	end
 end
 
@@ -567,13 +568,12 @@ local NAVLinkedDatarefs = {
 }
 
 InterchangeTransponderCode = 0
-
 TransponderCodeRead = 0
 
-local onTransponderInterchangeChange = function(ild, newInterchangeValue)
+local onTransponderCodeInterchangeChange = function(ild, newInterchangeValue)
 end
 
-local onTransponderLinkedChanged = function(ild, newLinkedValue)
+local onTransponderCodeLinkedChanged = function(ild, newLinkedValue)
 end
 
 local isNewTransponderCodeValid = function(ild, newValue)
@@ -582,16 +582,65 @@ local isNewTransponderCodeValid = function(ild, newValue)
 	end
 end
 
-local TransponderLinkedDataref =
+local TransponderCodeLinkedDataref =
 	InterchangeLinkedDataref:new(
 	InterchangeLinkedDataref.Constants.DatarefTypeInteger,
 	"VHFHelper/InterchangeTransponderCode",
 	"InterchangeTransponderCode",
 	"sim/cockpit2/radios/actuators/transponder_code",
 	"TransponderCodeRead",
-	onTransponderInterchangeChange,
-	onTransponderLinkedChanged,
+	onTransponderCodeInterchangeChange,
+	onTransponderCodeLinkedChanged,
 	isNewTransponderCodeValid
+)
+
+InterchangeTransponderMode = 0
+TransponderModeRead = 0
+
+local onTransponderModeInterchangeChange = function(ild, newInterchangeValue)
+end
+
+local onTransponderModeLinkedChanged = function(ild, newLinkedValue)
+end
+
+local transponderModeToDescriptor = {}
+
+table.insert(transponderModeToDescriptor, "OFF")
+table.insert(transponderModeToDescriptor, "STBY")
+table.insert(transponderModeToDescriptor, "ALT1")
+table.insert(transponderModeToDescriptor, "ALT2")
+table.insert(transponderModeToDescriptor, "ALT3")
+
+local isNewTransponderModeValid = function(ild, newValue)
+	-- This is based on person observation in different airplanes:
+	-- 0: OFF
+	-- 1: STBY <<
+	-- 2: ON/XPDR <<
+	-- 3: TEST/XPDR/ALT <<
+	-- 4: TEST2/XPDR
+	--
+	-- There's too much confusion, I can't get no relief:
+	-- https://forums.x-plane.org/index.php?/forums/topic/85093-transponder_mode-datarefs-altitude-reporting-and-confusion/
+	if (newValue < 0 or newValue > 4) then
+		printLogMessage(
+			("Invalid transponder code=%s received. Will not update local transponder mode."):format(tostring(newValue))
+		)
+		return false
+	end
+
+	return true
+end
+
+local TransponderModeLinkedDataref =
+	InterchangeLinkedDataref:new(
+	InterchangeLinkedDataref.Constants.DatarefTypeInteger,
+	"VHFHelper/InterchangeTransponderMode",
+	"InterchangeTransponderMode",
+	"sim/cockpit2/radios/actuators/transponder_mode",
+	"TransponderModeRead",
+	onTransponderModeInterchangeChange,
+	onTransponderModeLinkedChanged,
+	isNewTransponderModeValid
 )
 
 local allLinkedDatarefs = {
@@ -599,7 +648,8 @@ local allLinkedDatarefs = {
 	COMLinkedDatarefs[2],
 	NAVLinkedDatarefs[1],
 	NAVLinkedDatarefs[2],
-	TransponderLinkedDataref
+	TransponderCodeLinkedDataref,
+	TransponderModeLinkedDataref
 }
 
 VHFHelperPublicInterface = nil
@@ -865,12 +915,17 @@ do
 	TransponderCodeSubPanel = NumberSubPanel:new()
 
 	OVERRIDE(TransponderCodeSubPanel.new)
-	function TransponderCodeSubPanel:new(newValidator, transponderLinkedDataref, newDescriptor)
+	function TransponderCodeSubPanel:new(
+		newValidator,
+		transponderCodeLinkedDataref,
+		transponderModeLinkedDataref,
+		newDescriptor)
 		local newInstanceWithState = NumberSubPanel:new(newValidator)
 
-		newInstanceWithState.Constants.FullyPaddedString = "____"
+		newInstanceWithState.Constants.FullyPaddedString = "----"
 
-		newInstanceWithState.linkedDataref = transponderLinkedDataref
+		newInstanceWithState.codeDataref = transponderCodeLinkedDataref
+		newInstanceWithState.modeDataref = transponderModeLinkedDataref
 		newInstanceWithState.descriptor = newDescriptor
 
 		setmetatable(newInstanceWithState, self)
@@ -899,17 +954,45 @@ do
 	_NEWFUNC(TransponderCodeSubPanel._setLinkedValue)
 	function TransponderCodeSubPanel:_setLinkedValue()
 		local number = tonumber(self.inputPanelValidator:autocomplete(self.enteredValue))
-		self.linkedDataref:emitNewValue(number)
+		self.codeDataref:emitNewValue(number)
 		self.enteredValue = emptyString
 	end
 
 	_NEWFUNC(TransponderCodeSubPanel._getCurrentLinkedValueString)
 	function TransponderCodeSubPanel:_getCurrentLinkedValueString()
-		local str = tostring(self.linkedDataref:getLinkedValue())
+		local str = tostring(self.codeDataref:getLinkedValue())
 		for i = str:len(), 3 do
 			str = "0" .. str
 		end
 		return str
+	end
+
+	_NEWFUNC(TransponderCodeSubPanel._buildModeButtonLine)
+	function TransponderCodeSubPanel:_buildModeButtonLine()
+		imgui.SetWindowFontScale(0.8 * globalFontScale)
+		imgui.Dummy(8.0, 0.0)
+		imgui.SameLine()
+		imgui.PushStyleVar_2(imgui.constant.StyleVar.ItemSpacing, 4.0, 0.0)
+		imgui.PushStyleVar_2(imgui.constant.StyleVar.FramePadding, 0.0, 0.0)
+
+		for m = 0, #transponderModeToDescriptor - 1 do
+			self:_renderOneModeButton(m)
+			imgui.SameLine()
+		end
+
+		imgui.PopStyleVar()
+		imgui.PopStyleVar()
+	end
+
+	_NEWFUNC(TransponderCodeSubPanel._renderOneModeButton)
+	function TransponderCodeSubPanel:_renderOneModeButton(mode)
+		imguiUtils:renderActiveInactiveButton(
+			transponderModeToDescriptor[mode + 1],
+			self.modeDataref:getLinkedValue() == mode,
+			function()
+				self.modeDataref:emitNewValue(mode)
+			end
+		)
 	end
 
 	_NEWFUNC(TransponderCodeSubPanel._buildCurrentTransponderLine)
@@ -946,8 +1029,6 @@ do
 			end
 		end
 
-		imgui.TextUnformatted(" ")
-
 		imgui.PopStyleColor()
 		imgui.PopStyleColor()
 
@@ -963,8 +1044,13 @@ do
 		imgui.PushStyleVar_2(imgui.constant.StyleVar.ItemSpacing, 0.0, 2.0)
 
 		self:_buildCurrentTransponderLine(nextTransponderCodeIsSettable)
+		self:_buildModeButtonLine()
 
+		imgui.SetWindowFontScale(1.0 * globalFontScale)
+		imgui.TextUnformatted(" ")
 		imgui.Separator()
+
+		imgui.SetWindowFontScale(1.0 * globalFontScale)
 
 		imgui.TextUnformatted("Next " .. self.descriptor .. ":   ")
 
@@ -992,10 +1078,12 @@ local VhfFrequencySubPanelClass
 do
 	VhfFrequencySubPanel = NumberSubPanel:new()
 
+	_NEWFUNC(VhfFrequencySubPanel._getCurrentCleanLinkedValueString)
 	function VhfFrequencySubPanel:_getCurrentCleanLinkedValueString(vhfNumber)
 		assert(nil)
 	end
 
+	_NEWFUNC(VhfFrequencySubPanel._setCleanLinkedValueString)
 	function VhfFrequencySubPanel:_setCleanLinkedValueString(vhfNumber, cleanValueString)
 		assert(nil)
 	end
@@ -1004,7 +1092,7 @@ do
 	function VhfFrequencySubPanel:new(newValidator, newFirstVhfLinkedDataref, newSecondVhfLinkedDataref, newDescriptor)
 		local newInstanceWithState = NumberSubPanel:new(newValidator)
 
-		newInstanceWithState.Constants.FullyPaddedFreqString = "___.___"
+		newInstanceWithState.Constants.FullyPaddedFreqString = "---.---"
 
 		newInstanceWithState.linkedDatarefs = {newFirstVhfLinkedDataref, newSecondVhfLinkedDataref}
 		newInstanceWithState.descriptor = newDescriptor
@@ -1040,6 +1128,7 @@ do
 		end
 	end
 
+	_NEWFUNC(VhfFrequencySubPanel._buildCurrentVhfLine)
 	function VhfFrequencySubPanel:_buildCurrentVhfLine(vhfNumber, nextVhfFrequencyIsSettable)
 		imgui.PushStyleVar_2(imgui.constant.StyleVar.FramePadding, 0.0, 0.0)
 
@@ -1079,6 +1168,7 @@ do
 		imgui.PopStyleVar()
 	end
 
+	_NEWFUNC(VhfFrequencySubPanel._validateAndSetNextVHFFrequency)
 	function VhfFrequencySubPanel:_validateAndSetNextVHFFrequency(vhfNumber)
 		if (not self:numberCanBeSetNow()) then
 			return
@@ -1197,7 +1287,13 @@ end
 
 comFrequencyPanel = ComFrequencySubPanel:new(comFrequencyValidator, COMLinkedDatarefs[1], COMLinkedDatarefs[2], "COM")
 navFrequencyPanel = NavFrequencySubPanel:new(navFrequencyValidator, NAVLinkedDatarefs[1], NAVLinkedDatarefs[2], "NAV")
-transponderCodePanel = TransponderCodeSubPanel:new(transponderCodeValidator, TransponderLinkedDataref, "XPDR")
+transponderCodePanel =
+	TransponderCodeSubPanel:new(
+	transponderCodeValidator,
+	TransponderCodeLinkedDataref,
+	TransponderModeLinkedDataref,
+	"XPDR"
+)
 
 -- FlyWithLua Issue: Functions passed to float_wnd_set_imgui_builder and float_wnd_set_onclose can only exist outside of tables :-/
 function renderVhfHelperMainWindowToCanvas()
@@ -1306,14 +1402,30 @@ do
 	end
 
 	function vhfHelperMainWindow:_renderPanelButton(panel)
-		if (self.currentPanel == panel) then
+		imguiUtils:renderActiveInactiveButton(
+			" " .. panel.descriptor .. " ",
+			self.currentPanel == panel,
+			function()
+				self.currentPanel = panel
+			end
+		)
+	end
+end
+
+local imguiUtilsSingleton
+do
+	imguiUtils = {}
+	function imguiUtils:renderActiveInactiveButton(buttonTitle, active, onPressFunction)
+		if (active) then
 			imgui.PushStyleColor(imgui.constant.Col.Text, Colors.a320Orange)
 		else
 			imgui.PushStyleColor(imgui.constant.Col.Text, Colors.a320Blue)
 		end
-		if (imgui.Button(" " .. panel.descriptor .. " ")) then
-			self.currentPanel = panel
+
+		if (imgui.Button(buttonTitle)) then
+			onPressFunction()
 		end
+
 		imgui.PopStyleColor()
 	end
 end
@@ -1411,6 +1523,7 @@ vhfHelperPackageExport.test.vhfHelperLoop = vhfHelperLoop
 vhfHelperPackageExport.test.vhfHelperMainWindow = vhfHelperMainWindow
 vhfHelperPackageExport.test.COMLinkedDatarefs = COMLinkedDatarefs
 vhfHelperPackageExport.test.NAVLinkedDatarefs = NAVLinkedDatarefs
+vhfHelperPackageExport.test.transponderModeToDescriptor = transponderModeToDescriptor
 
 -- FlyWithLua Issue: When returning anything besides nothing, FlyWithLua does not expose global fields to other scripts
 return
