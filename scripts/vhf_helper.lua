@@ -607,7 +607,7 @@ local transponderModeToDescriptor = {}
 
 table.insert(transponderModeToDescriptor, "OFF")
 table.insert(transponderModeToDescriptor, "STBY")
-table.insert(transponderModeToDescriptor, "ALT1")
+table.insert(transponderModeToDescriptor, "ON")
 table.insert(transponderModeToDescriptor, "ALT2")
 table.insert(transponderModeToDescriptor, "ALT3")
 
