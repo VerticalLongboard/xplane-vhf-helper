@@ -27,7 +27,7 @@ local emptyString = ""
 local decimalCharacter = "."
 local underscoreCharacter = "_"
 
-local readableScriptName = "VHF Helper"
+local readableScriptName = "VR Radio Helper"
 
 local function printLogMessage(messageString)
 	logMsg(("%s: %s"):format(readableScriptName, messageString or "NIL"))
@@ -1271,6 +1271,8 @@ do
 	end
 
 	function vhfHelperMainWindow:show(value)
+		-- FlyWithLua Issue: Using float_wnd_set_visible only works for _hiding_ the panel, not for making it visible again.
+		-- Create and destroy for now.
 		if (self.window == nil and value) then
 			self:create()
 		elseif (self.window ~= nil and not value) then
@@ -1343,7 +1345,7 @@ do
 		)
 
 		create_command(
-			"FlyWithLua/" .. readableScriptName .. "/ToggleWindow",
+			"FlyWithLua/" .. readableScriptName .. "/TogglePanel",
 			"Toggle " .. readableScriptName .. " Window",
 			"vhfHelperMainWindow:toggle()",
 			"",

@@ -198,7 +198,7 @@ function TestHighLevelBehaviour:testCurrentTransponderCodeIsShownSomewhere()
 end
 
 function TestHighLevelBehaviour:testTogglePanelCommandTogglesPanel()
-	local toggleWindowCommandName = "FlyWithLua/VHF Helper/ToggleWindow"
+	local toggleWindowCommandName = "FlyWithLua/VR Radio Helper/TogglePanel"
 	local windowTitle = vhfHelperPackageExport.test.vhfHelperMainWindow.Constants.defaultWindowName
 
 	luaUnit.assertIsTrue(flyWithLuaStub:isWindowOpen(flyWithLuaStub:getWindowByTitle(windowTitle)))
