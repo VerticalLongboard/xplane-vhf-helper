@@ -947,10 +947,6 @@ do
 		return (self.enteredValue:len() > 0)
 	end
 
-	OVERRIDE(TransponderCodeSubPanel.renderToCanvas)
-	function TransponderCodeSubPanel:renderToCanvas()
-	end
-
 	_NEWFUNC(TransponderCodeSubPanel._setLinkedValue)
 	function TransponderCodeSubPanel:_setLinkedValue()
 		local number = tonumber(self.inputPanelValidator:autocomplete(self.enteredValue))
