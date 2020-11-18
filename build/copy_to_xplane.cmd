@@ -13,6 +13,11 @@ xcopy /Y /S /E .\scripts\* %SCRIPTS_TARGET_PATH% >> %TASK_OUTPUT_FILENAME%
 if %ERRORLEVEL% NEQ 0 (goto :label_copy_error)
 echo. >> %TASK_OUTPUT_FILENAME%
 
+echo Script Modules to %MODULES_TARGET_PATH%: >> %TASK_OUTPUT_FILENAME%
+xcopy /Y /S /E .\script_modules\* %MODULES_TARGET_PATH% >> %TASK_OUTPUT_FILENAME%
+if %ERRORLEVEL% NEQ 0 (goto :label_copy_error)
+echo. >> %TASK_OUTPUT_FILENAME%
+
 echo Modules to %MODULES_TARGET_PATH%: >> %TASK_OUTPUT_FILENAME%
 xcopy /Y /S /E .\modules\* %MODULES_TARGET_PATH% >> %TASK_OUTPUT_FILENAME%
 if %ERRORLEVEL% NEQ 0 (goto :label_copy_error)

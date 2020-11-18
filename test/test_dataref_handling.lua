@@ -112,7 +112,7 @@ function TestDatarefHandling:testExternalComChangeViaInterchangeIgnoresInvalidFr
 	luaUnit.assertEquals(c1.data, oldFrequency)
 end
 
-function TestDatarefHandling:testExternalChangeViaInterchangeUpdatesLocalComFrequencies()
+function TestDatarefHandling:testExternalComChangeViaInterchangeUpdatesLocalComFrequencies()
 	local i1 = flyWithLuaStub.datarefs[self.Constants.firstComInterchangeFreq]
 	local c1 = flyWithLuaStub.datarefs[self.Constants.firstComFreq]
 
