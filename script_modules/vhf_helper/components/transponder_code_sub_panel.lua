@@ -74,7 +74,7 @@ do
 
 	Globals._NEWFUNC(TransponderCodeSubPanel._renderOneModeButton)
 	function TransponderCodeSubPanel:_renderOneModeButton(mode)
-		imguiUtils:renderActiveInactiveButton(
+		Globals.ImguiUtils:renderActiveInactiveButton(
 			Datarefs.transponderModeToDescriptor[mode + 1],
 			self.modeDataref:getLinkedValue() == mode,
 			function()

@@ -114,28 +114,10 @@ do
 
         imgui.PopStyleColor()
         imgui.PopStyleColor()
-
-        if (imgui.Button("RESTART")) then
-            self.restartSoon = true
-        end
-    end
-
-    function vhfHelperMainWindow:doSomething()
-        -- BUILD_NUMBER = BUILD_NUMBER or 1
-        -- -- Try downloading latest version number
-        -- -- If latest not equal current:
-        -- --   Download package, Extract and dofile?
-        -- -- If latest equal: Do Loop bootstrap
-        -- if (BUILD_NUMBER ~= 2) then
-        --     BUILD_NUMBER = 2
-        command_once("FlyWithLua/debugging/reload_scripts")
-        -- dofile(SCRIPT_DIRECTORY .. "vhf_helper.lua")
-        -- return
-        -- end
     end
 
     function vhfHelperMainWindow:_renderPanelButton(panel)
-        imguiUtils:renderActiveInactiveButton(
+        Globals.ImguiUtils:renderActiveInactiveButton(
             " " .. panel.descriptor .. " ",
             self.currentPanel == panel,
             function()

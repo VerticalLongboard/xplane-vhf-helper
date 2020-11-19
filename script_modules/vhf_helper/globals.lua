@@ -90,10 +90,10 @@ Globals.Colors = {
     defaultImguiButtonBackground = 0xFF6F4624
 }
 
-local imguiUtilsSingleton
+local ImguiUtils
 do
-    imguiUtils = {}
-    function imguiUtils:renderActiveInactiveButton(buttonTitle, active, onPressFunction)
+    ImguiUtils = {}
+    function ImguiUtils:renderActiveInactiveButton(buttonTitle, active, onPressFunction)
         if (active) then
             imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
         else
@@ -107,5 +107,7 @@ do
         imgui.PopStyleColor()
     end
 end
+
+Globals.ImguiUtils = ImguiUtils
 
 return Globals
