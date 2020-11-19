@@ -1,4 +1,4 @@
-require("vhf_helper.components.configuration")
+local Configuration = require("vhf_helper.components.configuration")
 
 local M = {}
 M.bootstrap = function()

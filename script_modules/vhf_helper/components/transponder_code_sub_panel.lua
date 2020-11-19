@@ -1,8 +1,8 @@
 local Globals = require("vhf_helper.globals")
 local Datarefs = require("vhf_helper.state.datarefs")
-require("vhf_helper.components.number_sub_panel")
+local NumberSubPanel = require("vhf_helper.components.number_sub_panel")
 
-local TransponderCodeSubPanelClass
+local TransponderCodeSubPanel
 do
 	TransponderCodeSubPanel = NumberSubPanel:new()
 
@@ -161,3 +161,5 @@ do
 		self:_renderNumberPanel()
 	end
 end
+
+return TransponderCodeSubPanel

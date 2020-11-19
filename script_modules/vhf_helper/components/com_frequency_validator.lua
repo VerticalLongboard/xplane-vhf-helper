@@ -1,6 +1,6 @@
-require("vhf_helper.components.frequency_validator")
+local FrequencyValidator = require("vhf_helper.components.frequency_validator")
 
-local COMFrequencyValidatorClass
+local ComFrequencyValidator
 do
     ComFrequencyValidator = FrequencyValidator:new()
 
@@ -95,3 +95,5 @@ do
         return character
     end
 end
+
+return ComFrequencyValidator

@@ -1,7 +1,7 @@
 local Globals = require("vhf_helper.globals")
 local Validation = require("vhf_helper.state.validation")
 
-local NumberSubPanelClass
+local NumberSubPanel
 do
     NumberSubPanel = {}
 
@@ -110,3 +110,5 @@ do
         end
     end
 end
+
+return NumberSubPanel

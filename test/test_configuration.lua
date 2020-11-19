@@ -25,7 +25,7 @@ SOFTWARE.
 --]]
 TestVhfHelperConfiguration = {}
 
-require("vhf_helper.components.configuration")
+local Configuration = require("vhf_helper.components.configuration")
 
 function TestVhfHelperConfiguration:testConfigurationValuesAreSetAndRetrievedCorrectly()
 	local testConfig = Configuration:new(SCRIPT_DIRECTORY .. "test_vhf_helper.ini")

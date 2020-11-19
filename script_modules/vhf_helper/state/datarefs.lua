@@ -1,6 +1,6 @@
 local Validation = require("vhf_helper.state.validation")
 local Globals = require("vhf_helper.globals")
-require("vhf_helper.components.interchange_linked_dataref")
+local InterchangeLinkedDataref = require("vhf_helper.components.interchange_linked_dataref")
 
 -- FlyWithLua Issue: Pre-defined dataref handles cannot be in a table :-/
 InterchangeCOM1Frequency = 0

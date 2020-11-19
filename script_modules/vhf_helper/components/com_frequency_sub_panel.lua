@@ -1,7 +1,7 @@
 local Globals = require("vhf_helper.globals")
-require("vhf_helper.components.vhf_frequency_sub_panel")
+local VhfFrequencySubPanel = require("vhf_helper.components.vhf_frequency_sub_panel")
 
-local ComFrequencySubPanelClass
+local ComFrequencySubPanel
 do
     ComFrequencySubPanel = VhfFrequencySubPanel:new()
 
@@ -52,3 +52,5 @@ do
         end
     end
 end
+
+return ComFrequencySubPanel

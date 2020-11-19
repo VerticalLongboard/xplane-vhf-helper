@@ -1,7 +1,7 @@
 local Globals = require("vhf_helper.globals")
 local LuaIniParser = require("vhf_helper_modules.LIP")
 
-local ConfigurationClass
+local Configuration
 do
     Configuration = {}
 
@@ -46,3 +46,5 @@ do
         return self.Content[section][key]
     end
 end
+
+return Configuration

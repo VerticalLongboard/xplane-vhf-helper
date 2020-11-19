@@ -1,6 +1,7 @@
 local Globals = require("vhf_helper.globals")
+local VhfFrequencySubPanel = require("vhf_helper.components.vhf_frequency_sub_panel")
 
-local NavFrequencySubPanelClass
+local NavFrequencySubPanel
 do
     NavFrequencySubPanel = VhfFrequencySubPanel:new()
 
@@ -16,3 +17,4 @@ do
         self.linkedDatarefs[vhfNumber]:emitNewValue(nextFrequencyAsNumber)
     end
 end
+return NavFrequencySubPanel

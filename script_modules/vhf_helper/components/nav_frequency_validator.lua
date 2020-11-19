@@ -1,6 +1,6 @@
-require("vhf_helper.components.frequency_validator")
+local FrequencyValidator = require("vhf_helper.components.frequency_validator")
 
-local NAVFrequencyValidatorClass
+local NavFrequencyValidator
 do
     NavFrequencyValidator = FrequencyValidator:new()
 
@@ -77,3 +77,5 @@ do
         return character
     end
 end
+
+return NavFrequencyValidator

@@ -4,9 +4,8 @@ local Validation = require("vhf_helper.state.validation")
 local Globals = require("vhf_helper.globals")
 local Panels = require("vhf_helper.state.panels")
 
-VHFHelperPublicInterface = nil
 local EventBus = require("vhf_helper_modules.eventbus")
-VHFHelperEventBus = EventBus.new()
+
 VHFHelperEventOnFrequencyChanged = "EventBus_EventName_VHFHelperEventOnFrequencyChanged"
 
 local function activatePublicInterface()
@@ -75,4 +74,8 @@ end
 local M = {}
 M.activatePublicInterface = activatePublicInterface
 M.deactivatePublicInterface = deactivatePublicInterface
+M.bootstrap = function()
+    VHFHelperPublicInterface = nil
+    VHFHelperEventBus = EventBus.new()
+end
 return M

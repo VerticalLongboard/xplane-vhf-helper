@@ -1,3 +1,5 @@
+local InterchangeLinkedDataref = require("vhf_helper.components.interchange_linked_dataref")
+
 TestInterchangeLinkedDataref = {
     Constants = {
         InitialDatarefValue = 133525,

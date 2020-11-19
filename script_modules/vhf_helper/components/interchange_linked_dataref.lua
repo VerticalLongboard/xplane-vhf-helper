@@ -1,4 +1,4 @@
-local InterchangeLinkedDatarefClass
+local InterchangeLinkedDataref
 do
     InterchangeLinkedDataref = {
         Constants = {
@@ -99,3 +99,5 @@ do
         XPLMSetDatai(self.linkedDatarefWriteHandle, value)
     end
 end
+
+return InterchangeLinkedDataref

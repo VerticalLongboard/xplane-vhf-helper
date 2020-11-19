@@ -1,7 +1,7 @@
 Globals = require("vhf_helper.globals")
-require("vhf_helper.components.number_validator")
+local NumberValidator = require("vhf_helper.components.number_validator")
 
-local FrequencyValidatorClass
+local FrequencyValidator
 do
     FrequencyValidator = NumberValidator:new()
 
@@ -27,3 +27,5 @@ do
         return cleanFrequencyString
     end
 end
+
+return FrequencyValidator

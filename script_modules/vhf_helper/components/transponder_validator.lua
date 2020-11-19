@@ -1,6 +1,6 @@
-require("vhf_helper.components.number_validator")
+local NumberValidator = require("vhf_helper.components.number_validator")
 
-local TransponderValidatorClass
+local TransponderValidator
 do
     TransponderValidator = NumberValidator:new()
 
@@ -60,3 +60,5 @@ do
         return numberAsString
     end
 end
+
+return TransponderValidator
