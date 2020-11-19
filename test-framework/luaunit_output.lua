@@ -105,7 +105,7 @@ function ColorTapOutput:startSuite()
 end
 function ColorTapOutput:startClass(className)
     if className ~= "[TestFunctions]" then
-        print("[96m# Starting class: " .. className .. "[0m")
+        print("[4m# Starting class: " .. className .. "[0m")
     end
 end
 
