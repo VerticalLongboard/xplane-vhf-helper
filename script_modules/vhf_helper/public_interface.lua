@@ -4,7 +4,7 @@ local Validation = require("vhf_helper.state.validation")
 local Globals = require("vhf_helper.globals")
 local Panels = require("vhf_helper.state.panels")
 
-local EventBus = require("vhf_helper_modules.eventbus")
+local EventBus = require("eventbus")
 
 VHFHelperEventOnFrequencyChanged = "EventBus_EventName_VHFHelperEventOnFrequencyChanged"
 

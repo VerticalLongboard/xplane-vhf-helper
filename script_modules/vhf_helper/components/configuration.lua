@@ -1,5 +1,5 @@
 local Globals = require("vhf_helper.globals")
-local LuaIniParser = require("vhf_helper_modules.LIP")
+local LuaIniParser = require("LIP")
 
 local Configuration
 do
