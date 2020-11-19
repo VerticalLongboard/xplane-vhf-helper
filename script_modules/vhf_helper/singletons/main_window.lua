@@ -1,7 +1,7 @@
-local Configuration = require("vhf_helper.configuration")
-local PublicInterface = require("vhf_helper.public_interface")
-local Panels = require("vhf_helper.panels")
 local Globals = require("vhf_helper.globals")
+local Config = require("vhf_helper.state.config")
+local Panels = require("vhf_helper.state.panels")
+local PublicInterface = require("vhf_helper.public_interface")
 
 -- FlyWithLua Issue: Functions passed to float_wnd_set_imgui_builder and float_wnd_set_onclose can only exist outside of tables :-/
 function renderVhfHelperMainWindowToCanvas()
@@ -22,6 +22,7 @@ do
         self.Constants = {defaultWindowName = Globals.readableScriptName}
         self.window = nil
         self.currentPanel = Panels.comFrequencyPanel
+        self.restartSoon = false
     end
 
     function vhfHelperMainWindow:bootstrap()
@@ -38,7 +39,7 @@ do
         local minWidthWithoutScrollbars = nil
         local minHeightWithoutScrollbars = nil
 
-        globalFontScaleDescriptor = Globals.trim(Configuration.Config:getValue("Windows", "GlobalFontScale", "big"))
+        globalFontScaleDescriptor = Globals.trim(Config.Config:getValue("Windows", "GlobalFontScale", "big"))
         if (globalFontScaleDescriptor == "huge") then
             globalFontScale = 3.0
             minWidthWithoutScrollbars = 380
@@ -60,8 +61,8 @@ do
         float_wnd_set_imgui_builder(self.window, "renderVhfHelperMainWindowToCanvas")
         float_wnd_set_onclose(self.window, "closeVhfHelperMainWindow")
 
-        Configuration.Config:setValue("Windows", "MainWindowVisibility", Globals.windowVisibilityVisible)
-        Configuration.Config:save()
+        Config.Config:setValue("Windows", "MainWindowVisibility", Globals.windowVisibilityVisible)
+        Config.Config:save()
 
         PublicInterface.activatePublicInterface()
     end
@@ -74,8 +75,8 @@ do
         float_wnd_destroy(self.window)
         self.window = nil
 
-        Configuration.Config:setValue("Windows", "MainWindowVisibility", Globals.windowVisibilityHidden)
-        Configuration.Config:save()
+        Config.Config:setValue("Windows", "MainWindowVisibility", Globals.windowVisibilityHidden)
+        Config.Config:save()
 
         PublicInterface.deactivatePublicInterface()
     end
@@ -113,6 +114,24 @@ do
 
         imgui.PopStyleColor()
         imgui.PopStyleColor()
+
+        if (imgui.Button("RESTART")) then
+            self.restartSoon = true
+        end
+    end
+
+    function vhfHelperMainWindow:doSomething()
+        -- BUILD_NUMBER = BUILD_NUMBER or 1
+        -- -- Try downloading latest version number
+        -- -- If latest not equal current:
+        -- --   Download package, Extract and dofile?
+        -- -- If latest equal: Do Loop bootstrap
+        -- if (BUILD_NUMBER ~= 2) then
+        --     BUILD_NUMBER = 2
+        command_once("FlyWithLua/debugging/reload_scripts")
+        -- dofile(SCRIPT_DIRECTORY .. "vhf_helper.lua")
+        -- return
+        -- end
     end
 
     function vhfHelperMainWindow:_renderPanelButton(panel)
@@ -125,3 +144,9 @@ do
         )
     end
 end
+
+local M = {}
+M.bootstrap = function()
+    vhfHelperMainWindow:bootstrap()
+end
+return M

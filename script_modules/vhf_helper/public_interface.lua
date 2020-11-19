@@ -1,11 +1,11 @@
-local Panels = require("vhf_helper.panels")
-local Datarefs = require("vhf_helper.datarefs")
-local Validation = require("vhf_helper.validation")
+local Panels = require("vhf_helper.state.panels")
+local Datarefs = require("vhf_helper.state.datarefs")
+local Validation = require("vhf_helper.state.validation")
 local Globals = require("vhf_helper.globals")
-local Panels = require("vhf_helper.panels")
+local Panels = require("vhf_helper.state.panels")
 
 VHFHelperPublicInterface = nil
-local EventBus = require("eventbus")
+local EventBus = require("vhf_helper_modules.eventbus")
 VHFHelperEventBus = EventBus.new()
 VHFHelperEventOnFrequencyChanged = "EventBus_EventName_VHFHelperEventOnFrequencyChanged"
 

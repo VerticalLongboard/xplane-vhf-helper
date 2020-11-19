@@ -1,5 +1,6 @@
-local Validation = require("vhf_helper.validation")
+local Validation = require("vhf_helper.state.validation")
 local Globals = require("vhf_helper.globals")
+require("vhf_helper.components.interchange_linked_dataref")
 
 -- FlyWithLua Issue: Pre-defined dataref handles cannot be in a table :-/
 InterchangeCOM1Frequency = 0
@@ -60,7 +61,6 @@ local isNewTransponderCodeValid = function(ild, newValue)
 end
 
 local transponderModeToDescriptor = {}
-
 table.insert(transponderModeToDescriptor, "OFF")
 table.insert(transponderModeToDescriptor, "STBY")
 table.insert(transponderModeToDescriptor, "ON")

@@ -1,6 +1,6 @@
-local Configuration = require("vhf_helper.configuration")
 local Globals = require("vhf_helper.globals")
-local Datarefs = require("vhf_helper.datarefs")
+local Config = require("vhf_helper.state.config")
+local Datarefs = require("vhf_helper.state.datarefs")
 
 local vhfHelperLoopSingleton
 do
@@ -19,13 +19,12 @@ do
 
     function vhfHelperLoop:bootstrap()
         self:_reset()
-        Configuration.Config:load()
+        Config.Config:load()
 
         local windowIsSupposedToBeVisible = false
         if
-            (Globals.trim(
-                Configuration.Config:getValue("Windows", "MainWindowVisibility", Globals.windowVisibilityHidden)
-            ) == Globals.windowVisibilityVisible)
+            (Globals.trim(Config.Config:getValue("Windows", "MainWindowVisibility", Globals.windowVisibilityHidden)) ==
+                Globals.windowVisibilityVisible)
          then
             windowIsSupposedToBeVisible = true
         end
@@ -64,6 +63,11 @@ do
     end
 
     function vhfHelperLoop:everyFrameLoop()
+        if (vhfHelperMainWindow.restartSoon) then
+            vhfHelperMainWindow:doSomething()
+            return
+        end
+
         if (not self.alreadyInitialized) then
             return
         end
@@ -89,3 +93,9 @@ do
         end
     end
 end
+
+local M = {}
+M.bootstrap = function()
+    vhfHelperLoop:bootstrap()
+end
+return M

@@ -1,5 +1,5 @@
 local Globals = require("vhf_helper.globals")
-local Validation = require("vhf_helper.validation")
+local Validation = require("vhf_helper.state.validation")
 
 local NumberSubPanelClass
 do

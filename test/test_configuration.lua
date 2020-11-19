@@ -25,10 +25,10 @@ SOFTWARE.
 --]]
 TestVhfHelperConfiguration = {}
 
-local c = require("vhf_helper.configuration")
+require("vhf_helper.components.configuration")
 
 function TestVhfHelperConfiguration:testConfigurationValuesAreSetAndRetrievedCorrectly()
-	local testConfig = c.Configuration:new(SCRIPT_DIRECTORY .. "test_vhf_helper.ini")
+	local testConfig = Configuration:new(SCRIPT_DIRECTORY .. "test_vhf_helper.ini")
 
 	local section = "GeneralTest"
 	local key = "MajorFailureReason"

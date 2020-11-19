@@ -1,15 +1,5 @@
 local Globals = require("vhf_helper.globals")
-local LuaIniParser = require("LIP")
-
-local function fileExists(filePath)
-    local file = io.open(filePath, "r")
-    if file == nil then
-        return false
-    end
-
-    io.close(file)
-    return true
-end
+local LuaIniParser = require("vhf_helper_modules.LIP")
 
 local ConfigurationClass
 do
@@ -23,7 +13,7 @@ do
     end
 
     function Configuration:load()
-        if (not fileExists(self.Path)) then
+        if (not Globals.fileExists(self.Path)) then
             return
         end
 
@@ -56,14 +46,3 @@ do
         return self.Content[section][key]
     end
 end
-
-local Config = nil
-
-local M = {}
-M.Config = Config
-M.Configuration = Configuration
-M.bootstrap = function()
-    Config = Configuration:new(SCRIPT_DIRECTORY .. "vhf_helper.ini")
-    M.Config = Config
-end
-return M

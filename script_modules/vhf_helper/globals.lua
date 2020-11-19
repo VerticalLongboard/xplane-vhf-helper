@@ -5,6 +5,23 @@ local Globals = {
     readableScriptName = "VR Radio Helper"
 }
 
+Globals.requireAllAndBootstrap = function(luaRequireStringTable)
+    for _, luaRequireString in pairs(luaRequireStringTable) do
+        local requiredScript = require(luaRequireString)
+        requiredScript.bootstrap()
+    end
+end
+
+Globals.fileExists = function(filePath)
+    local file = io.open(filePath, "r")
+    if file == nil then
+        return false
+    end
+
+    io.close(file)
+    return true
+end
+
 Globals.printLogMessage = function(messageString)
     logMsg(("%s: %s"):format(Globals.readableScriptName, messageString or "NIL"))
 end

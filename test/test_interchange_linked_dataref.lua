@@ -72,7 +72,7 @@ function TestInterchangeLinkedDataref:testEmittingNewValueUpdatesBothLinkedAndIn
     luaUnit.assertEquals(self.object:getLinkedValue(), newValue)
 end
 
-function TestInterchangeLinkedDataref:testLoopUpdateDetectsAndAppliesInterchangeChanges()
+function TestInterchangeLinkedDataref:testLoopUpdateDetectsAndAppliesInterchangeChangesImmediatelyAndLinkedChangesAfterOneFrame()
     self.object:initialize()
     luaUnit.assertIsFalse(self.calledInterchange)
     luaUnit.assertIsFalse(self.calledLinked)

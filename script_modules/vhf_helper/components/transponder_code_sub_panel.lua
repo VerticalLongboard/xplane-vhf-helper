@@ -1,5 +1,6 @@
 local Globals = require("vhf_helper.globals")
-local Datarefs = require("vhf_helper.datarefs")
+local Datarefs = require("vhf_helper.state.datarefs")
+require("vhf_helper.components.number_sub_panel")
 
 local TransponderCodeSubPanelClass
 do

@@ -24,7 +24,7 @@ SOFTWARE.
 
 --]]
 local imguiStub = require("imgui_stub")
-local eventBusStub = require("eventbus")
+local eventBusStub = require("vhf_helper_modules.eventbus")
 
 -- PublicInterface = require("vhf_helper.public_interface")
 
