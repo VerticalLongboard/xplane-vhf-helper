@@ -10,20 +10,16 @@ do
         return newInstanceWithState
     end
 
-    function SpeakNato:_speak(string)
-        XPLMSpeakString(string)
-    end
-
-    function SpeakNato:speakSingleNumber(string)
-        self:_speak(self:_getNatoStringForSingleNumber(string))
+    function SpeakNato:speakTransponderCode(string)
+        self:_speak(self:_getNatoStringForTransponderCode(string))
     end
 
     function SpeakNato:speakFrequency(string)
         self:_speak(self:_getNatoStringForFrequency(string))
     end
 
-    function SpeakNato:_getNatoStringForSingleNumber(string)
-        string = string:gsub("000$", "towsend ")
+    function SpeakNato:_getNatoStringForTransponderCode(string)
+        string = string:gsub("000$", "towsent ")
         return self:_getNatoStringForNumbers(string)
     end
 
@@ -46,6 +42,40 @@ do
         string = string:gsub("%.", "decimal ")
 
         return string
+    end
+
+    function SpeakNato:_getNatoStringForLetters(string)
+        string = string:gsub("A", " alfah ")
+        string = string:gsub("B", " brahvoh ")
+        string = string:gsub("C", " charlie ")
+        string = string:gsub("D", " delta ")
+        string = string:gsub("E", " echo ")
+        string = string:gsub("F", " foxtrot ")
+        string = string:gsub("G", " golf ")
+        string = string:gsub("H", " hotell ")
+        string = string:gsub("I", " inndeeah ")
+        string = string:gsub("J", " juliet ")
+        string = string:gsub("K", " kilo ")
+        string = string:gsub("L", " lima ")
+        string = string:gsub("M", " mike ")
+        string = string:gsub("N", " novemmber ")
+        string = string:gsub("O", " oscar ")
+        string = string:gsub("P", " papa ")
+        string = string:gsub("Q", " kebec ")
+        string = string:gsub("R", " romeo ")
+        string = string:gsub("S", " sierrahh ")
+        string = string:gsub("T", " tango ")
+        string = string:gsub("U", " uniform ")
+        string = string:gsub("V", " victor ")
+        string = string:gsub("W", " whizzkee ")
+        string = string:gsub("X", " x ray ")
+        string = string:gsub("Y", " yankee ")
+        string = string:gsub("Z", " zulu ")
+        return string
+    end
+
+    function SpeakNato:_speak(string)
+        XPLMSpeakString(string)
     end
 end
 

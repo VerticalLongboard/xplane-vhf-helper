@@ -7,11 +7,14 @@ function TestSpeakNato:setUp()
 end
 
 function TestSpeakNato:testFrequencySpeakingWorks()
+    luaUnit.assertEquals(SpeakNato:_getNatoStringForFrequency("122.8"), "won too too decimal ate ")
+    luaUnit.assertEquals(SpeakNato:_getNatoStringForFrequency("109.30"), "won zeero niner decimal tree ")
     luaUnit.assertEquals(SpeakNato:_getNatoStringForFrequency("133.900"), "won tree tree decimal niner ")
-    luaUnit.assertEquals(SpeakNato:_getNatoStringForFrequency("109.300"), "won zeero niner decimal tree ")
     luaUnit.assertEquals(SpeakNato:_getNatoStringForFrequency("120.640"), "won too zeero decimal siccs fore ")
+    luaUnit.assertEquals(SpeakNato:_getNatoStringForFrequency("135.687"), "won tree five decimal siccs ate seven ")
 end
 
-function TestSpeakNato:testSingleNumberSpeakingWorks()
-    luaUnit.assertEquals(SpeakNato:_getNatoStringForSingleNumber("1000"), "won towsend ")
+function TestSpeakNato:testTransponderCodeSpeakingWorks()
+    luaUnit.assertEquals(SpeakNato:_getNatoStringForTransponderCode("1000"), "won towsent ")
+    luaUnit.assertEquals(SpeakNato:_getNatoStringForTransponderCode("3506"), "tree five zeero siccs ")
 end

@@ -46,7 +46,7 @@ do
 		local numberString = self.inputPanelValidator:autocomplete(self.enteredValue)
 		local number = tonumber(numberString)
 		self.codeDataref:emitNewValue(number)
-		self.speakNato:speakSingleNumber(numberString)
+		self.speakNato:speakTransponderCode(numberString)
 		self.enteredValue = Globals.emptyString
 	end
 
