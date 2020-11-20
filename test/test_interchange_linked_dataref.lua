@@ -21,6 +21,7 @@ function TestInterchangeLinkedDataref:_resetCallbackCallState()
 end
 
 function TestInterchangeLinkedDataref:setUp()
+    flyWithLuaStub:reset()
     flyWithLuaStub:createSharedDatarefHandle(
         "internal_dataref",
         flyWithLuaStub.Constants.DatarefTypeInteger,

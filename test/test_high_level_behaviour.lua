@@ -106,7 +106,7 @@ function TestHighLevelBehaviour:createInternalDatarefsAndBootstrap()
 		TestDatarefHandling.Constants.initialTransponderMode
 	)
 
-	vhfHelper = dofile("scripts/vhf_helper.lua")
+	local vhfHelper = dofile("scripts/vhf_helper.lua")
 	flyWithLuaStub:bootstrapAllMacros()
 	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
 end

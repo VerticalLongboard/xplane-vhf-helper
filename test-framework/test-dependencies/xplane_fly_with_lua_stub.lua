@@ -387,6 +387,15 @@ function XPLMFindDataRef(datarefName)
     return datarefName
 end
 
+function float_wnd_create(width, height, something, whatever)
+    local newWindow = {
+        wasDestroyed = false,
+        isVisible = true
+    }
+    table.insert(flyWithLuaStub.windows, newWindow)
+    return newWindow
+end
+
 function XPLMSetDatai(datarefName, newDataAsInteger)
     luaUnit.assertNotNil(datarefName)
     luaUnit.assertNotNil(newDataAsInteger)
@@ -399,13 +408,9 @@ function XPLMSetDatai(datarefName, newDataAsInteger)
     luaUnit.assertTrue(d.isInternallyDefinedDataref)
 end
 
-function float_wnd_create(width, height, something, whatever)
-    local newWindow = {
-        wasDestroyed = false,
-        isVisible = true
-    }
-    table.insert(flyWithLuaStub.windows, newWindow)
-    return newWindow
+function XPLMSpeakString(string)
+    luaUnit.assertNotNil(string)
+    logMsg(("Speaking string=%s"):format(string))
 end
 
 function float_wnd_set_title(window, newTitle)

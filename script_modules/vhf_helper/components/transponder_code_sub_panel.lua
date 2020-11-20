@@ -1,6 +1,7 @@
 local Globals = require("vhf_helper.globals")
 local Datarefs = require("vhf_helper.state.datarefs")
 local NumberSubPanel = require("vhf_helper.components.number_sub_panel")
+local SpeakNato = require("vhf_helper.components.speak_nato")
 
 local TransponderCodeSubPanel
 do
@@ -14,6 +15,7 @@ do
 		newDescriptor)
 		local newInstanceWithState = NumberSubPanel:new(newValidator)
 
+		newInstanceWithState.speakNato = SpeakNato:new()
 		newInstanceWithState.Constants.FullyPaddedString = "----"
 
 		newInstanceWithState.codeDataref = transponderCodeLinkedDataref
@@ -41,8 +43,10 @@ do
 
 	Globals._NEWFUNC(TransponderCodeSubPanel._setLinkedValue)
 	function TransponderCodeSubPanel:_setLinkedValue()
-		local number = tonumber(self.inputPanelValidator:autocomplete(self.enteredValue))
+		local numberString = self.inputPanelValidator:autocomplete(self.enteredValue)
+		local number = tonumber(numberString)
 		self.codeDataref:emitNewValue(number)
+		self.speakNato:speakSingleNumber(numberString)
 		self.enteredValue = Globals.emptyString
 	end
 

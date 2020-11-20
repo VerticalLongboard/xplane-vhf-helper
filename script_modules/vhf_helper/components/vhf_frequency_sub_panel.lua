@@ -1,5 +1,6 @@
 local Globals = require("vhf_helper.globals")
 local NumberSubPanel = require("vhf_helper.components.number_sub_panel")
+local SpeakNato = require("vhf_helper.components.speak_nato")
 
 local VhfFrequencySubPanel
 do
@@ -19,6 +20,7 @@ do
     function VhfFrequencySubPanel:new(newValidator, newFirstVhfLinkedDataref, newSecondVhfLinkedDataref, newDescriptor)
         local newInstanceWithState = NumberSubPanel:new(newValidator)
 
+        newInstanceWithState.speakNato = SpeakNato:new()
         newInstanceWithState.Constants.FullyPaddedFreqString = "---.---"
 
         newInstanceWithState.linkedDatarefs = {newFirstVhfLinkedDataref, newSecondVhfLinkedDataref}
@@ -101,8 +103,10 @@ do
             return
         end
 
-        local cleanVhfFrequency = self.inputPanelValidator:autocomplete(self.enteredValue):gsub("%.", "")
+        local autocompleted = self.inputPanelValidator:autocomplete(self.enteredValue)
+        local cleanVhfFrequency = autocompleted:gsub("%.", "")
         self:_setCleanLinkedValueString(vhfNumber, cleanVhfFrequency)
+        self.speakNato:speakFrequency(autocompleted)
 
         self.enteredValue = Globals.emptyString
     end

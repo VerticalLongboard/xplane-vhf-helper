@@ -6,6 +6,7 @@ local imguiStub = require("imgui_stub")
 local vhfHelper = dofile("scripts/vhf_helper.lua")
 flyWithLuaStub:suppressLogMessagesBeginningWith("VR Radio Helper: Using '")
 
+require("test_speak_nato")
 require("test_public_interface")
 require("test_dataref_handling")
 require("test_configuration")
