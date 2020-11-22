@@ -13,9 +13,18 @@ do
         local blamedComponents = {}
         for componentName, component in pairs(self.components) do
             for issueDescription, issue in pairs(component.issues) do
+                local notWorkedAroundCompletely = false
+                for occurrenceLocation, occurrence in pairs(issue.occurrences) do
+                    if (occurrence.workaround == nil) then
+                        notWorkedAroundCompletely = true
+                    end
+                end
+
                 for key, blameString in pairs(blameStringList) do
                     if (issueDescription:find(blameString) ~= nil) then
-                        blamedComponents[componentName] = blamedComponents[componentName] or {}
+                        if (notWorkedAroundCompletely) then
+                            blamedComponents[componentName] = blamedComponents[componentName] or {}
+                        end
                     end
                 end
             end
@@ -28,8 +37,8 @@ do
 
         local knownIssueString = nil
         if (num == 0) then
-            local newOccurrenceLocation = self:_getOccurrenceLocation()
-            knownIssueString = ("[91mNONE, and cannot blame anything in %s[0m."):format(newOccurrenceLocation)
+            local newOccurrenceLocation = self:_getOccurrenceLocation(4)
+            knownIssueString = ("[91mCannot blame anything in %s[0m. A non-issue?"):format(newOccurrenceLocation)
         else
             knownIssueString = "None for now, known issue in "
             for blamedComponentName, _ in pairs(blamedComponents) do
@@ -43,15 +52,15 @@ do
         newKnownIssue.blamedComponents = blamedComponents
     end
 
-    function IssueTracker:_getOccurrenceLocation()
-        local stackLevelAboveTrackIssue = 3
+    function IssueTracker:_getOccurrenceLocation(level)
+        local stackLevelAboveTrackIssue = level
         local debugInfo = debug.getinfo(stackLevelAboveTrackIssue)
         local newOccurrenceLocation = debugInfo.source:sub(2, -1) .. ":" .. debugInfo.currentline
         return newOccurrenceLocation
     end
 
     function IssueTracker:post(newComponent, newDescription, newWorkaround)
-        local newOccurrenceLocation = self:_getOccurrenceLocation()
+        local newOccurrenceLocation = self:_getOccurrenceLocation(4)
 
         local existingIssue = self:_find(newComponent, newDescription, newWorkaround)
         if (existingIssue ~= nil) then
@@ -83,41 +92,63 @@ do
         return newIssue
     end
 
-    function IssueTracker:print()
-        self:_log("[4mIssue Tracker: All manually highlighted issues in code:[0m")
+    function IssueTracker:printSummary()
+        self:_log("\n" .. "[4mIssue Tracker: All manually highlighted issues in code:[0m")
         local num = 0
         local numUnique = 0
+        local numWorkedAround = 0
         self:post("Lua", "Lua does not support 'continue' statements", "Use deeply nested ifs instead.")
         self:post("Lua", "Lua does not support labels", "Stick to ifs until next Lua update")
         for componentName, component in pairs(self.components) do
             local componentWasPrinted = false
             for issueDescription, issue in pairs(component.issues) do
+                local issueWasPrinted = false
                 if (not issue.isLinked) then
-                    if (not componentWasPrinted) then
-                        self:_log(("\n[4m%s[0m:"):format(componentName))
-                        componentWasPrinted = true
-                    end
-                    self:_log(
-                        ("[96m(%dx)[0m%s"):format(issue.numOccurrences, Globals.prefixAllLines(issueDescription, " "))
-                    )
                     numUnique = numUnique + 1
                     num = num + issue.numOccurrences
+                    local notWorkedAroundCompletely = false
                     for occurrenceLocation, occurrence in pairs(issue.occurrences) do
                         if (occurrence.workaround == nil) then
-                            self:_log((" [94m%s[0m: [93mNo Workaround[0m"):format(occurrenceLocation))
-                        else
-                            self:_log(
-                                (" [94m%s[0m: Workaround:%s"):format(
-                                    occurrenceLocation,
-                                    Globals.prefixAllLines(occurrence.workaround, " ")
-                                )
-                            )
+                            notWorkedAroundCompletely = true
                         end
+                    end
+
+                    if (notWorkedAroundCompletely) then
+                        for occurrenceLocation, occurrence in pairs(issue.occurrences) do
+                            if (occurrence.workaround == nil) then
+                                if (not componentWasPrinted) then
+                                    self:_log(("\n[4m%s[0m:"):format(componentName))
+                                    componentWasPrinted = true
+                                end
+                                if (not issueWasPrinted) then
+                                    self:_log(
+                                        ("[96m(%dx)[0m%s"):format(
+                                            issue.numOccurrences,
+                                            Globals.prefixAllLines(issueDescription, " ")
+                                        )
+                                    )
+                                    issueWasPrinted = true
+                                end
+
+                                self:_log((" [94m%s[0m: [93mNo Workaround[0m"):format(occurrenceLocation))
+                            else
+                                self:_log(
+                                    (" [94m%s[0m: Workaround:%s"):format(
+                                        occurrenceLocation,
+                                        Globals.prefixAllLines(occurrence.workaround, " ")
+                                    )
+                                )
+                            end
+                        end
+                    else
+                        numWorkedAround = numWorkedAround + 1
                     end
                 end
             end
         end
-        self:_log(("\nFound total=%d unique=%d issues.\n"):format(num, numUnique))
+        self:_log(
+            ("\nFound %d total (%d unique) issues. Worked around %d issues.\n"):format(num, numUnique, numWorkedAround)
+        )
 
         self:_log("[96m[4mIssue Tracker: All linked known issues:[0m")
         for componentName, component in pairs(self.components) do

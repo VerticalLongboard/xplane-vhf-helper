@@ -17,6 +17,11 @@ do
         self.alreadyInitialized = false
     end
 
+    TRACK_ISSUE(
+        "FlyWithLua",
+        "Macros can not be disabled programmatically. The dot in the FlyWithLua macros menu will only disappear if clicked manually," ..
+            "\n" .. "but is not coupled in any way with panel visibility or existence."
+    )
     function vhfHelperLoop:bootstrap()
         self:_reset()
         Config.Config:load()

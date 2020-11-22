@@ -17,7 +17,8 @@ TRACK_ISSUE(
     "The close function is called asynchronously so quickly closing and opening the panel will close it again quickly after." ..
         "\n" ..
             "Since float_wnd_destroy does call the onClose function as well and windows cannot be made visible again," ..
-                "\n" .. "destroying again is the only viable way.",
+                "\n" ..
+                    "destroying again is the only viable way. Not having a separate visible-invisible creation-destroy cycle breaks public interface activation :-(",
     "Destroy it anyway to keep at least public interface in line with panel visibility."
 )
 
