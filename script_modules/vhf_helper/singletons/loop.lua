@@ -20,7 +20,8 @@ do
     TRACK_ISSUE(
         "FlyWithLua",
         "Macros can not be disabled programmatically. The dot in the FlyWithLua macros menu will only disappear if clicked manually," ..
-            "\n" .. "but is not coupled in any way with panel visibility or existence."
+            "\n" .. "but is not coupled in any way with panel visibility or existence.",
+        "Mention that this is a known issue"
     )
     function vhfHelperLoop:bootstrap()
         self:_reset()
@@ -79,8 +80,8 @@ do
     end
 
     TRACK_ISSUE(
-        "Loop",
-        "Default X-Plane datarefs _should_ be available at any time. If one of them changes, initialization never finishes."
+        "Tech Debt",
+        "Default X-Plane datarefs should be available at any time. If one of them ever changes via an X-Plane update, initialization never finishes."
     )
     function vhfHelperLoop:_canInitializeNow()
         for _, ldr in pairs(Datarefs.allLinkedDatarefs) do

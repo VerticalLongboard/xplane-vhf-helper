@@ -18,11 +18,13 @@ require("test_interchange_linked_dataref")
 KNOWN_ISSUE(
     "VR Radio Helper",
     "Quickly closing and opening a panel again leads to the panel closing itself after about second.",
+    "Don't close and open the panel too quickly.",
     {"float_wnd_set_visible", "close function is called asynchronously"}
 )
 
 KNOWN_ISSUE(
     "VR Radio Helper",
     "The dot right next to the FlyWithLua macro will not disappear when the window is closed, only when clicking the macro again.",
+    "Use the TogglePanel command (and map it to a key) instead of the macro.",
     {"FlyWithLua macro"}
 )

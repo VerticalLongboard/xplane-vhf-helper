@@ -13,7 +13,8 @@ end
 
 TRACK_ISSUE(
     "FlyWithLua",
-    "The close function is called asynchronously so quickly closing and opening the panel will close it again quickly after."
+    "The close function is called asynchronously so quickly closing and opening the panel will close it again quickly after.",
+    "Mention that this is a known issue"
 )
 function closeVhfHelperSideWindow()
     vhfHelperSideWindow:destroy()

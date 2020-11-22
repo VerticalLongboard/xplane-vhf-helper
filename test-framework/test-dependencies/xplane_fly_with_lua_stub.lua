@@ -459,6 +459,11 @@ end
 function XPLMSpeakString(string)
     luaUnit.assertNotNil(string)
     logMsg(("Speaking string=%s"):format(string))
+    flyWithLuaStub.lastSpeakString = string
+end
+
+function flyWithLuaStub:getLastSpeakString()
+    return self.lastSpeakString
 end
 
 function float_wnd_set_title(window, newTitle)

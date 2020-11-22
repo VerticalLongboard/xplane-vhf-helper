@@ -6,8 +6,7 @@ function TestSpeakNato:setUp()
     self.speakNato = SpeakNato:new()
 end
 
-TRACK_ISSUE("SpeakNato", "Tests don't include any actual call to the platform speak function.")
-function TestSpeakNato:testFrequencySpeakingWorks()
+function TestSpeakNato:testFrequencyStringConversionWorks()
     luaUnit.assertEquals(SpeakNato:_getNatoStringForFrequency("122.8"), "won too too decimal ate ")
     luaUnit.assertEquals(SpeakNato:_getNatoStringForFrequency("109.30"), "won zeero niner decimal tree ")
     luaUnit.assertEquals(SpeakNato:_getNatoStringForFrequency("133.900"), "won tree tree decimal niner ")
@@ -15,7 +14,14 @@ function TestSpeakNato:testFrequencySpeakingWorks()
     luaUnit.assertEquals(SpeakNato:_getNatoStringForFrequency("135.687"), "won tree five decimal siccs ate seven ")
 end
 
-function TestSpeakNato:testTransponderCodeSpeakingWorks()
+function TestSpeakNato:testTransponderCodeStringConversionWorks()
     luaUnit.assertEquals(SpeakNato:_getNatoStringForTransponderCode("1000"), "won towsent ")
     luaUnit.assertEquals(SpeakNato:_getNatoStringForTransponderCode("3506"), "tree five zeero siccs ")
+end
+
+function TestSpeakNato:testSpeakingSpeaks()
+    self.speakNato:speakFrequency("132.607")
+    luaUnit.assertEquals(flyWithLuaStub:getLastSpeakString(), "won tree too decimal siccs zeero seven ")
+    self.speakNato:speakTransponderCode("6000")
+    luaUnit.assertEquals(flyWithLuaStub:getLastSpeakString(), "siccs towsent ")
 end
