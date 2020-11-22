@@ -28,9 +28,10 @@ local imguiStub = require("imgui_stub")
 
 TestHighLevelBehaviour = {
 	Constants = {
-		comPanelButtonTitle = " COM ",
-		navPanelButtonTitle = " NAV ",
-		transponderPanelButtonTitle = " XPDR "
+		comPanelButtonTitle = "COM",
+		navPanelButtonTitle = "NAV",
+		transponderPanelButtonTitle = "XPDR",
+		SidePanelButtonTitle = ">"
 	}
 }
 
@@ -227,4 +228,14 @@ function TestHighLevelBehaviour:testTransmoderModeIsSwitched()
 	local newMode2 = 3
 	self:_pressButton(vhfHelperPackageExport.test.transponderModeToDescriptor[newMode2 + 1])
 	luaUnit.assertEquals(tm.data, newMode2)
+end
+
+function TestHighLevelBehaviour:testSideWindowOpensAndRendersAfterOneFrame()
+	self:_pressButton(self.Constants.SidePanelButtonTitle)
+	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
+	luaUnit.assertIsTrue(
+		flyWithLuaStub:isWindowOpen(
+			flyWithLuaStub:getWindowByTitle(vhfHelperPackageExport.test.vhfHelperSideWindow.Constants.defaultWindowName)
+		)
+	)
 end

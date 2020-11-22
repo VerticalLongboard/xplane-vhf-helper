@@ -16,8 +16,10 @@ M.bootstrap = function()
     vhfHelperPackageExport.test.Config = Config.Config
     vhfHelperPackageExport.test.vhfHelperLoop = vhfHelperLoop
     vhfHelperPackageExport.test.vhfHelperMainWindow = vhfHelperMainWindow
+    vhfHelperPackageExport.test.vhfHelperSideWindow = vhfHelperSideWindow
     vhfHelperPackageExport.test.COMLinkedDatarefs = Datarefs.COMLinkedDatarefs
     vhfHelperPackageExport.test.NAVLinkedDatarefs = Datarefs.NAVLinkedDatarefs
     vhfHelperPackageExport.test.transponderModeToDescriptor = Datarefs.transponderModeToDescriptor
+    
 end
 return M

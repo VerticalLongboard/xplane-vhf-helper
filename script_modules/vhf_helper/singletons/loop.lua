@@ -60,14 +60,10 @@ do
         self.alreadyInitialized = true
 
         do_every_frame("vhfHelperLoop:everyFrameLoop()")
+        do_every_frame("vhfHelperMainWindow:everyFrameLoop()")
     end
 
     function vhfHelperLoop:everyFrameLoop()
-        if (vhfHelperMainWindow.restartSoon) then
-            vhfHelperMainWindow:doSomething()
-            return
-        end
-
         if (not self.alreadyInitialized) then
             return
         end
@@ -77,6 +73,10 @@ do
         end
     end
 
+    TRACK_ISSUE(
+        "Loop",
+        "Default X-Plane datarefs _should_ be available at any time. If one of them changes, initialization never finishes."
+    )
     function vhfHelperLoop:_canInitializeNow()
         for _, ldr in pairs(Datarefs.allLinkedDatarefs) do
             if (not ldr:isLocalLinkedDatarefAvailable()) then

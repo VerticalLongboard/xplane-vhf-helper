@@ -33,10 +33,15 @@ Globals.requireAllAndBootstrap(
         "vhf_helper.state.panels",
         "vhf_helper.state.config",
         "vhf_helper.singletons.main_window",
+        "vhf_helper.singletons.side_window",
         "vhf_helper.singletons.loop"
     }
 )
 Globals.requireAllAndBootstrap({"vhf_helper.package_export"})
 
--- FlyWithLua Issue: When returning anything besides nothing, FlyWithLua does not expose global fields to other scripts
+TRACK_ISSUE(
+    "FlyWithLua",
+    "When returning anything besides nothing, FlyWithLua does not expose global fields to other scripts.",
+    "Return default module and use package export script to expose globals instead."
+)
 return

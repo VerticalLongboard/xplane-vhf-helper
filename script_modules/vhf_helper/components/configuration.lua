@@ -47,4 +47,25 @@ do
     end
 end
 
+Configuration.Constants = {
+    BooleanTrue = "yes",
+    BooleanFalse = "no"
+}
+
+Configuration.getBooleanFromValue = function(stringValue)
+    if (stringValue == Configuration.Constants.BooleanTrue) then
+        return true
+    else
+        return false
+    end
+end
+
+Configuration.getValueFromBoolean = function(boolean)
+    if (boolean) then
+        return Configuration.Constants.BooleanTrue
+    else
+        return Configuration.Constants.BooleanFalse
+    end
+end
+
 return Configuration

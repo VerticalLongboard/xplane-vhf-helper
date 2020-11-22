@@ -2,7 +2,11 @@ local Validation = require("vhf_helper.state.validation")
 local Globals = require("vhf_helper.globals")
 local InterchangeLinkedDataref = require("vhf_helper.components.interchange_linked_dataref")
 
--- FlyWithLua Issue: Pre-defined dataref handles cannot be in a table :-/
+TRACK_ISSUE(
+    "FlyWithLua",
+    "Pre-defined dataref handles cannot be in a table :-/",
+    "Declare global dataref variables outside any table."
+)
 InterchangeCOM1Frequency = 0
 InterchangeCOM2Frequency = 0
 InterchangeNAV1Frequency = 0
@@ -17,11 +21,13 @@ NAV2FrequencyRead = 0
 TransponderCodeRead = 0
 TransponderModeRead = 0
 
+TRACK_ISSUE(
+    "FlyWithLua",
+    "After creating a shared new dataref (and setting its inital value) the writable dataref variable is being assigned" ..
+        "\n" .. "a random value (very likely straight from memory) after waiting a few frames.",
+    "Ignore invalid values and continue using locally available values (which are supposed to be valid at this time)."
+)
 local function isFrequencyValueValid(ild, validator, newValue)
-    -- FlyWithLua Issue:
-    -- After creating a shared new dataref (and setting its inital value) the writable dataref variable is being assigned a
-    -- random value (very likely straight from memory) after waiting a few frames.
-    -- To workaround, ignore invalid values and continue using local COM frequency values (which are supposed to be valid at this time).
     local freqString = tostring(newValue)
     local freqFullString = freqString:sub(1, 3) .. Globals.decimalCharacter .. freqString:sub(4, 6)
     if (not validator:validate(freqFullString)) then

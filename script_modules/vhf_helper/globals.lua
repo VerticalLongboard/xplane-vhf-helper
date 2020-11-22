@@ -2,14 +2,33 @@ local Globals = {
     emptyString = "",
     decimalCharacter = ".",
     underscoreCharacter = "_",
-    readableScriptName = "VR Radio Helper"
+    readableScriptName = "VR Radio Helper",
+    sidePanelName = "VR Radio Helper Feedback and Settings"
 }
+
+TRACK_ISSUE = TRACK_ISSUE or function(component, description, workaround)
+    end
+
+Globals.pushDefaultButtonColorsToImguiStack = function()
+    local slightlyBrighterDefaultButtonColor = 0xFF7F5634
+    imgui.PushStyleColor(imgui.constant.Col.ButtonActive, Globals.Colors.defaultImguiButtonBackground)
+    imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, slightlyBrighterDefaultButtonColor)
+end
+
+Globals.popDefaultButtonColorsFromImguiStack = function()
+    imgui.PopStyleColor()
+    imgui.PopStyleColor()
+end
 
 Globals.requireAllAndBootstrap = function(luaRequireStringTable)
     for _, luaRequireString in pairs(luaRequireStringTable) do
         local requiredScript = require(luaRequireString)
         requiredScript.bootstrap()
     end
+end
+
+Globals.prefixAllLines = function(linesString, prefix)
+    return prefix .. linesString:gsub("\n", "\n" .. prefix)
 end
 
 Globals.fileExists = function(filePath)

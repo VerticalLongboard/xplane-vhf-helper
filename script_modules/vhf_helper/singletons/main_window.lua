@@ -3,14 +3,25 @@ local Config = require("vhf_helper.state.config")
 local Panels = require("vhf_helper.state.panels")
 local PublicInterface = require("vhf_helper.public_interface")
 
--- FlyWithLua Issue: Functions passed to float_wnd_set_imgui_builder and float_wnd_set_onclose can only exist outside of tables :-/
+TRACK_ISSUE(
+    "FlyWithLua",
+    "Functions passed to float_wnd_set_imgui_builder and float_wnd_set_onclose can only exist outside of tables :-/",
+    "Create global render and onClose functions for main window."
+)
 function renderVhfHelperMainWindowToCanvas()
     vhfHelperMainWindow:renderToCanvas()
 end
 
+TRACK_ISSUE(
+    "FlyWithLua",
+    "The close function is called asynchronously so quickly closing and opening the panel will close it again quickly after." ..
+        "\n" ..
+            "Since float_wnd_destroy does call the onClose function as well and windows cannot be made visible again," ..
+                "\n" .. "destroying again is the only viable way.",
+    "Destroy it anyway to keep at least public interface in line with panel visibility."
+)
+
 function closeVhfHelperMainWindow()
-    -- FlyWithLua Issue: The close function is called asynchronously so quickly closing and opening the panel will close it again quickly after.
-    -- Destroy it anyway to keep public interface in line with panel visibility.
     vhfHelperMainWindow:destroy()
 end
 
@@ -22,7 +33,7 @@ do
         self.Constants = {defaultWindowName = Globals.readableScriptName}
         self.window = nil
         self.currentPanel = Panels.comFrequencyPanel
-        self.restartSoon = false
+        self.toggleSideWindowSoon = false
     end
 
     function vhfHelperMainWindow:bootstrap()
@@ -81,9 +92,12 @@ do
         PublicInterface.deactivatePublicInterface()
     end
 
+    TRACK_ISSUE(
+        "FlyWithLua",
+        "Using float_wnd_set_visible only works for _hiding_ the panel, not for making it visible again.",
+        "Create and destroy main window for now."
+    )
     function vhfHelperMainWindow:show(value)
-        -- FlyWithLua Issue: Using float_wnd_set_visible only works for _hiding_ the panel, not for making it visible again.
-        -- Create and destroy for now.
         if (self.window == nil and value) then
             self:create()
         elseif (self.window ~= nil and not value) then
@@ -95,10 +109,13 @@ do
         self:show(self.window == nil)
     end
 
+    TRACK_ISSUE(
+        "Imgui",
+        "Creating a window while rendering another one is not allowed for some reason.",
+        "Delay creation till finishing the current render function via storing an additional boolean."
+    )
     function vhfHelperMainWindow:renderToCanvas()
-        local slightlyBrighterDefaultButtonColor = 0xFF7F5634
-        imgui.PushStyleColor(imgui.constant.Col.ButtonActive, Globals.Colors.defaultImguiButtonBackground)
-        imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, slightlyBrighterDefaultButtonColor)
+        Globals.pushDefaultButtonColorsToImguiStack()
 
         self.currentPanel:renderToCanvas()
 
@@ -112,13 +129,23 @@ do
         self:_renderPanelButton(Panels.transponderCodePanel)
         imgui.SameLine()
 
-        imgui.PopStyleColor()
-        imgui.PopStyleColor()
+        if (imgui.Button(">")) then
+            self.toggleSideWindowSoon = true
+        end
+
+        Globals.popDefaultButtonColorsFromImguiStack()
+    end
+
+    function vhfHelperMainWindow:everyFrameLoop()
+        if (self.toggleSideWindowSoon) then
+            vhfHelperSideWindow:toggle()
+            self.toggleSideWindowSoon = false
+        end
     end
 
     function vhfHelperMainWindow:_renderPanelButton(panel)
         Globals.ImguiUtils:renderActiveInactiveButton(
-            " " .. panel.descriptor .. " ",
+            panel.descriptor,
             self.currentPanel == panel,
             function()
                 self.currentPanel = panel

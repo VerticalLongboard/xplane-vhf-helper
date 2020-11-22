@@ -6,6 +6,7 @@ function TestSpeakNato:setUp()
     self.speakNato = SpeakNato:new()
 end
 
+TRACK_ISSUE("SpeakNato", "Tests don't include any actual call to the platform speak function.")
 function TestSpeakNato:testFrequencySpeakingWorks()
     luaUnit.assertEquals(SpeakNato:_getNatoStringForFrequency("122.8"), "won too too decimal ate ")
     luaUnit.assertEquals(SpeakNato:_getNatoStringForFrequency("109.30"), "won zeero niner decimal tree ")

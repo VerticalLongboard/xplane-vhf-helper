@@ -44,6 +44,7 @@ do
         return string
     end
 
+    TRACK_ISSUE("SpeakNato", "This function is not yet required.")
     function SpeakNato:_getNatoStringForLetters(string)
         string = string:gsub("A", " alfah ")
         string = string:gsub("B", " brahvoh ")

@@ -52,6 +52,12 @@ do
         self:_setInterchangeValue(linkedValue)
     end
 
+    TRACK_ISSUE(
+        "InterchangeLinkedDataref",
+        "Depending on how FlyWithLua actually flushes writable dataref updates to readable datarefs, a change in linked values" ..
+            "\n" .. "may be delayed by one frame or not.",
+        "Expect the 1-frame-delay in tests for now and behave as if it's not delayed in production code."
+    )
     function InterchangeLinkedDataref:loopUpdate()
         local currentInterchangeValue = self:getInterchangeValue()
         if (currentInterchangeValue ~= self.lastInterchangeValue) then
