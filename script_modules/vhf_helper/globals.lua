@@ -9,6 +9,9 @@ local Globals = {
 TRACK_ISSUE = TRACK_ISSUE or function(component, description, workaround)
     end
 
+MULTILINE_TEXT = MULTILINE_TEXT or function(...)
+    end
+
 Globals.pushDefaultButtonColorsToImguiStack = function()
     local slightlyBrighterDefaultButtonColor = 0xFF7F5634
     imgui.PushStyleColor(imgui.constant.Col.ButtonActive, Globals.Colors.defaultImguiButtonBackground)
