@@ -135,10 +135,10 @@ do
 
                     for occurrenceLocation, occurrence in pairs(issue.occurrences) do
                         self:_log(
-                            ("[94m%s[0m:%s"):format(occurrenceLocation, Globals.prefixAllLines(issueDescription, " "))
+                            ("[94m%s[0m:%s"):format(occurrenceLocation, self:_prefixAllLines(issueDescription, " "))
                         )
                         assert(occurrence.workaround)
-                        self:_log(("  Workaround:%s\n"):format(Globals.prefixAllLines(occurrence.workaround, " ")))
+                        self:_log(("  Workaround:%s\n"):format(self:_prefixAllLines(occurrence.workaround, " ")))
                     end
                 end
             end
@@ -208,7 +208,7 @@ do
                                 self:_log(
                                     (" [94m%s[0m: Workaround:%s"):format(
                                         occurrenceLocation,
-                                        Globals.prefixAllLines(occurrence.workaround, " ")
+                                        self:_prefixAllLines(occurrence.workaround, " ")
                                     )
                                 )
                             end
@@ -299,6 +299,15 @@ end
 
 KNOWN_ISSUE = function(newComponent, newDescription, newWorkaround, blameStringList)
     issueTracker:declareLinkedKnownIssue(newComponent, newDescription, newWorkaround, blameStringList)
+end
+
+MULTILINE_TEXT = function(...)
+    local completeString = ""
+    for _, argument in pairs(arg) do
+        completeString = completeString .. argument .. "\n"
+    end
+
+    return completeString
 end
 
 return issueTracker
