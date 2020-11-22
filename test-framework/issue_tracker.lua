@@ -165,6 +165,10 @@ do
         return longestDescription
     end
 
+    function IssueTracker:_prefixAllLines(linesString, prefix)
+        return prefix .. linesString:gsub("\n", "\n" .. prefix)
+    end
+
     function IssueTracker:_printIssuesWithoutWorkarounds()
         self:trackIssue("Lua", "continue statements", "nested ifs")
         self:trackIssue("Lua", "labels", "nested ifs")
@@ -179,7 +183,7 @@ do
                 local issueToPrint =
                     ("[96m(%dx)[0m%s"):format(
                     issue.numOccurrences,
-                    Globals.prefixAllLines(self:_findBestDecriptionForIssue(issueDescription, issue), " ")
+                    self:_prefixAllLines(self:_findBestDecriptionForIssue(issueDescription, issue), " ")
                 )
                 local issueWasPrinted = false
                 if (not issue.isLinked) then
