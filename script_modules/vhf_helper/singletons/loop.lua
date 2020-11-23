@@ -28,10 +28,7 @@ do
         Config.Config:load()
 
         local windowIsSupposedToBeVisible = false
-        if
-            (Globals.trim(Config.Config:getValue("Windows", "MainWindowVisibility", Globals.windowVisibilityHidden)) ==
-                Globals.windowVisibilityVisible)
-         then
+        if (Config.Config:getInitialWindowVisibility() == true) then
             windowIsSupposedToBeVisible = true
         end
 

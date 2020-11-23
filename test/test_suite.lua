@@ -9,7 +9,7 @@ flyWithLuaStub:suppressLogMessagesContaining({"VR Radio Helper: Using '"})
 
 require("test_speak_nato")
 require("test_public_interface")
-require("test_dataref_handling")
+require("test_datarefs")
 require("test_configuration")
 require("test_input_validation")
 require("test_high_level_behaviour")

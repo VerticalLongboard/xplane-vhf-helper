@@ -95,8 +95,9 @@ do
         return XPLMFindDataRef(self.linkedDatarefName)
     end
 
+    TRACK_ISSUE("Tech Debt", "Find out why this worked before without tostring(value)")
     function InterchangeLinkedDataref:_setInterchangeValue(value)
-        local setInterchangeValueFunction = loadstring(self.interchangeVariableName .. " = " .. value)
+        local setInterchangeValueFunction = loadstring(self.interchangeVariableName .. " = " .. tostring(value))
         setInterchangeValueFunction()
         self.lastInterchangeValue = value
     end

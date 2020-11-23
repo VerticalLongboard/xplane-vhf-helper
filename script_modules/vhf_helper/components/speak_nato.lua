@@ -2,6 +2,7 @@ local SpeakNato
 do
     SpeakNato = {}
 
+    TRACK_ISSUE("Tech Debt", "All of what SpeakNato does is static. Move class instance functions to static object.")
     function SpeakNato:new()
         local newInstanceWithState = {}
 

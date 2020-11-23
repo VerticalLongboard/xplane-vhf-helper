@@ -76,35 +76,35 @@ end
 function TestHighLevelBehaviour:createInternalDatarefsAndBootstrap()
 	flyWithLuaStub:reset()
 	flyWithLuaStub:createSharedDatarefHandle(
-		TestDatarefHandling.Constants.firstComFreq,
+		TestDatarefs.Constants.firstComFreq,
 		flyWithLuaStub.Constants.DatarefTypeInteger,
-		TestDatarefHandling.Constants.initialCom1Frequency
+		TestDatarefs.Constants.initialCom1Frequency
 	)
 	flyWithLuaStub:createSharedDatarefHandle(
-		TestDatarefHandling.Constants.secondComFreq,
+		TestDatarefs.Constants.secondComFreq,
 		flyWithLuaStub.Constants.DatarefTypeInteger,
-		TestDatarefHandling.Constants.initialCom2Frequency
+		TestDatarefs.Constants.initialCom2Frequency
 	)
 
 	flyWithLuaStub:createSharedDatarefHandle(
-		TestDatarefHandling.Constants.firstNavFreq,
+		TestDatarefs.Constants.firstNavFreq,
 		flyWithLuaStub.Constants.DatarefTypeInteger,
-		TestDatarefHandling.Constants.initialNav1Frequency
+		TestDatarefs.Constants.initialNav1Frequency
 	)
 	flyWithLuaStub:createSharedDatarefHandle(
-		TestDatarefHandling.Constants.secondNavFreq,
+		TestDatarefs.Constants.secondNavFreq,
 		flyWithLuaStub.Constants.DatarefTypeInteger,
-		TestDatarefHandling.Constants.initialNav2Frequency
+		TestDatarefs.Constants.initialNav2Frequency
 	)
 	flyWithLuaStub:createSharedDatarefHandle(
-		TestDatarefHandling.Constants.transponderCode,
+		TestDatarefs.Constants.transponderCode,
 		flyWithLuaStub.Constants.DatarefTypeInteger,
-		TestDatarefHandling.Constants.initialTransponderCode
+		TestDatarefs.Constants.initialTransponderCode
 	)
 	flyWithLuaStub:createSharedDatarefHandle(
-		TestDatarefHandling.Constants.transponderMode,
+		TestDatarefs.Constants.transponderMode,
 		flyWithLuaStub.Constants.DatarefTypeInteger,
-		TestDatarefHandling.Constants.initialTransponderMode
+		TestDatarefs.Constants.initialTransponderMode
 	)
 
 	local vhfHelper = dofile("scripts/vhf_helper.lua")
@@ -122,9 +122,9 @@ function TestHighLevelBehaviour:testClosingThePanelChangesPanelConfigurationAcco
 		flyWithLuaStub:isMacroActive(vhfHelperPackageExport.test.vhfHelperLoop.Constants.defaultMacroName)
 	)
 
-	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowVisibility, "visible")
+	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowInitiallyVisible, "yes")
 	flyWithLuaStub:closeWindowByTitle(vhfHelperPackageExport.test.vhfHelperMainWindow.Constants.defaultWindowName)
-	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowVisibility, "hidden")
+	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowInitiallyVisible, "no")
 end
 
 function TestHighLevelBehaviour:testDeactivatingTheScriptChangesPanelConfigurationAccordingly()
@@ -132,17 +132,17 @@ function TestHighLevelBehaviour:testDeactivatingTheScriptChangesPanelConfigurati
 		flyWithLuaStub:isMacroActive(vhfHelperPackageExport.test.vhfHelperLoop.Constants.defaultMacroName)
 	)
 
-	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowVisibility, "visible")
+	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowInitiallyVisible, "yes")
 	flyWithLuaStub:activateAllMacros(false)
-	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowVisibility, "hidden")
+	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowInitiallyVisible, "no")
 end
 
 function TestHighLevelBehaviour:testCurrentComFrequenciesAreShownSomewhere()
-	local freqAsString = tostring(TestDatarefHandling.Constants.initialCom1Frequency)
+	local freqAsString = tostring(TestDatarefs.Constants.initialCom1Frequency)
 	local fullFrequencyString = freqAsString:sub(1, 3) .. "." .. freqAsString:sub(4, 6)
 	self:_assertStringShowsUp(fullFrequencyString)
 
-	freqAsString = tostring(TestDatarefHandling.Constants.initialCom2Frequency)
+	freqAsString = tostring(TestDatarefs.Constants.initialCom2Frequency)
 	fullFrequencyString = freqAsString:sub(1, 3) .. "." .. freqAsString:sub(4, 6)
 	self:_assertStringShowsUp(fullFrequencyString)
 end
@@ -155,19 +155,19 @@ end
 
 function TestHighLevelBehaviour:testSwitchingComDoesSwitch()
 	local freqString = "129725"
-	self:_switchToOtherFrequency(2, TestDatarefHandling.Constants.secondComFreq, freqString)
+	self:_switchToOtherFrequency(2, TestDatarefs.Constants.secondComFreq, freqString)
 
 	local freqString2 = "122650"
-	self:_switchToOtherFrequency(2, TestDatarefHandling.Constants.secondComFreq, freqString2)
+	self:_switchToOtherFrequency(2, TestDatarefs.Constants.secondComFreq, freqString2)
 end
 
 function TestHighLevelBehaviour:testCurrentNavFrequenciesAreShownSomewhere()
 	self:_pressButton(self.Constants.navPanelButtonTitle)
-	local freqAsString = tostring(TestDatarefHandling.Constants.initialNav1Frequency)
+	local freqAsString = tostring(TestDatarefs.Constants.initialNav1Frequency)
 	local fullFrequencyString = freqAsString:sub(1, 3) .. "." .. freqAsString:sub(4, 6)
 	self:_assertStringShowsUp(fullFrequencyString)
 
-	freqAsString = tostring(TestDatarefHandling.Constants.initialNav2Frequency)
+	freqAsString = tostring(TestDatarefs.Constants.initialNav2Frequency)
 	fullFrequencyString = freqAsString:sub(1, 3) .. "." .. freqAsString:sub(4, 6)
 	self:_assertStringShowsUp(fullFrequencyString)
 end
@@ -182,24 +182,24 @@ end
 function TestHighLevelBehaviour:testSwitchingNavDoesSwitch()
 	self:_pressButton(self.Constants.navPanelButtonTitle)
 	local freqString = "10965"
-	self:_switchToOtherFrequency(2, TestDatarefHandling.Constants.secondNavFreq, freqString)
+	self:_switchToOtherFrequency(2, TestDatarefs.Constants.secondNavFreq, freqString)
 
 	local freqString2 = "11535"
-	self:_switchToOtherFrequency(2, TestDatarefHandling.Constants.secondNavFreq, freqString2)
+	self:_switchToOtherFrequency(2, TestDatarefs.Constants.secondNavFreq, freqString2)
 end
 
 function TestHighLevelBehaviour:testSwitchingTransponderDoesSwitch()
 	self:_pressButton(self.Constants.transponderPanelButtonTitle)
 	local transponderString = "4066"
-	self:_switchToOtherTransponder(TestDatarefHandling.Constants.transponderCode, transponderString)
+	self:_switchToOtherTransponder(TestDatarefs.Constants.transponderCode, transponderString)
 
 	local transponderString2 = "1000"
-	self:_switchToOtherTransponder(TestDatarefHandling.Constants.transponderCode, transponderString2)
+	self:_switchToOtherTransponder(TestDatarefs.Constants.transponderCode, transponderString2)
 end
 
 function TestHighLevelBehaviour:testCurrentTransponderCodeIsShownSomewhere()
 	self:_pressButton(self.Constants.transponderPanelButtonTitle)
-	local codeString = tostring(TestDatarefHandling.Constants.initialTransponderCode)
+	local codeString = tostring(TestDatarefs.Constants.initialTransponderCode)
 	self:_assertStringShowsUp(codeString)
 end
 
@@ -218,8 +218,8 @@ end
 
 function TestHighLevelBehaviour:testTransmoderModeIsSwitched()
 	self:_pressButton(self.Constants.transponderPanelButtonTitle)
-	local tm = flyWithLuaStub.datarefs[TestDatarefHandling.Constants.transponderMode]
-	luaUnit.assertEquals(tm.data, TestDatarefHandling.Constants.initialTransponderMode)
+	local tm = flyWithLuaStub.datarefs[TestDatarefs.Constants.transponderMode]
+	luaUnit.assertEquals(tm.data, TestDatarefs.Constants.initialTransponderMode)
 
 	local newMode = 0
 	self:_pressButton(vhfHelperPackageExport.test.transponderModeToDescriptor[newMode + 1])

@@ -1,6 +1,6 @@
 local Globals = require("vhf_helper.globals")
 local Config = require("vhf_helper.state.config")
-local Configuration = require("vhf_helper.components.configuration")
+local Configuration = require("vhf_helper.shared_components.configuration")
 
 TRACK_ISSUE(
     "FlyWithLua",
@@ -84,44 +84,40 @@ do
     function vhfHelperSideWindow:renderToCanvas()
         imgui.TextUnformatted("Audio")
         imgui.Separator()
-        local speakNumbersChanged, newSpeakNumbers =
-            imgui.Checkbox(
-            "Speak numbers when switching yourself",
-            Configuration.getBooleanFromValue(
-                Config.Config:getValue("Audio", "SpeakNumbersLocally", Configuration.Constants.BooleanTrue)
-            )
-        )
 
-        -- local speakNumbersChanged, newSpeakNumbers =
-        --     imgui.Checkbox(
-        --     "Speak numbers when other pilot switches",
-        --     Configuration.getBooleanFromValue(
-        --         Config.Config:getValue("Audio", "SpeakNumbersRemote", Configuration.Constants.BooleanTrue)
-        --     )
-        -- )
+        local speakNumbersChanged, newSpeakNumbers =
+            imgui.Checkbox("Speak numbers when switching yourself", Config.Config:getSpeakNumbersLocally())
+
+        local speakRemoteNumbersChanged, newSpeakRemoteNumbers =
+            imgui.Checkbox("Speak numbers when switched remotely", Config.Config:getSpeakRemoteNumbers())
 
         if (speakNumbersChanged) then
-            Config.Config:setValue("Audio", "SpeakNumbersLocally", Configuration.getValueFromBoolean(newSpeakNumbers))
+            Config.Config:setSpeakNumbersLocally(newSpeakNumbers)
             Config.Config:save()
         end
 
-        imgui.TextUnformatted("")
-        imgui.TextUnformatted("Multicrew Support")
-        imgui.Separator()
-        imgui.TextUnformatted("Your smartcopilot.cfg is set up correctly for multicrew.")
+        if (speakRemoteNumbersChanged) then
+            Config.Config:setSpeakRemoteNumbers(newSpeakRemoteNumbers)
+            Config.Config:save()
+        end
 
-        imgui.TextUnformatted("")
-        imgui.TextUnformatted("Plane Compatibility")
-        imgui.Separator()
-        imgui.TextUnformatted(PLANE_ICAO)
-        imgui.TextUnformatted(XPLANE_VERSION)
-        imgui.TextUnformatted(AIRCRAFT_PATH)
-        imgui.TextUnformatted(AIRCRAFT_FILENAME)
+        -- imgui.TextUnformatted("")
+        -- imgui.TextUnformatted("Multicrew Support")
+        -- imgui.Separator()
+        -- imgui.TextUnformatted("Your smartcopilot.cfg is set up correctly for multicrew.")
 
-        imgui.TextUnformatted("")
-        imgui.TextUnformatted("Feedback :-)")
-        imgui.Separator()
-        imgui.TextUnformatted("https://github")
+        -- imgui.TextUnformatted("")
+        -- imgui.TextUnformatted("Plane Compatibility")
+        -- imgui.Separator()
+        -- imgui.TextUnformatted(PLANE_ICAO)
+        -- imgui.TextUnformatted(XPLANE_VERSION)
+        -- imgui.TextUnformatted(AIRCRAFT_PATH)
+        -- imgui.TextUnformatted(AIRCRAFT_FILENAME)
+
+        -- imgui.TextUnformatted("")
+        -- imgui.TextUnformatted("Feedback :-)")
+        -- imgui.Separator()
+        -- imgui.TextUnformatted("https://github")
     end
 end
 

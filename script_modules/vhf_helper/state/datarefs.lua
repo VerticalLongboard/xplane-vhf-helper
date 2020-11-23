@@ -1,6 +1,8 @@
 local Validation = require("vhf_helper.state.validation")
 local Globals = require("vhf_helper.globals")
 local InterchangeLinkedDataref = require("vhf_helper.components.interchange_linked_dataref")
+local SpeakNato = require("vhf_helper.components.speak_nato")
+local Config = require("vhf_helper.state.config")
 
 TRACK_ISSUE(
     "FlyWithLua",
@@ -48,6 +50,24 @@ end
 local onNotRequiredCallbackFunction = function(ild, newValue)
 end
 
+local onInterchangeFrequencyChanged = function(ild, newValue)
+    if (Config.Config:getSpeakRemoteNumbers() == true) then
+        local freqString = tostring(newValue)
+        local freqFullString = freqString:sub(1, 3) .. Globals.decimalCharacter .. freqString:sub(4, 6)
+        SpeakNato:speakFrequency(freqFullString)
+    end
+end
+
+local onInterchangeTransponderCodeChanged = function(ild, newValue)
+    if (Config.Config:getSpeakRemoteNumbers() == true) then
+        local codeString = tostring(newValue)
+        for i = codeString:len(), 3 do
+            codeString = "0" .. codeString
+        end
+        SpeakNato:speakTransponderCode(codeString)
+    end
+end
+
 local onComLinkedChanged = function(ild, newLinkedValue)
     VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
 end
@@ -60,10 +80,13 @@ local isNewNavFrequencyValid = function(ild, newValue)
     return isFrequencyValueValid(ild, Validation.navFrequencyValidator, newValue)
 end
 
+TRACK_ISSUE("Tech Debt", "Transponder code is not validated using TransponderCodeValidator")
 local isNewTransponderCodeValid = function(ild, newValue)
     if (newValue < 0 or newValue > Validation.transponderCodeValidator.Constants.MaxTransponderCode) then
         return false
     end
+
+    return true
 end
 
 local transponderModeToDescriptor = {}
@@ -73,6 +96,10 @@ table.insert(transponderModeToDescriptor, "ON")
 table.insert(transponderModeToDescriptor, "ALT2")
 table.insert(transponderModeToDescriptor, "ALT3")
 
+TRACK_ISSUE(
+    "Plane Compatibility",
+    "Default planes work well usually, but non-default planes have vastly different meanings for transponder modes."
+)
 local isNewTransponderModeValid = function(ild, newValue)
     -- This is based on personal observation in different airplanes:
     -- 0: OFF
@@ -103,7 +130,7 @@ M.bootstrap = function()
             "InterchangeCOM1Frequency",
             "sim/cockpit2/radios/actuators/com1_frequency_hz_833",
             "COM1FrequencyRead",
-            onNotRequiredCallbackFunction,
+            onInterchangeFrequencyChanged,
             onComLinkedChanged,
             isNewComFrequencyValid
         ),
@@ -113,7 +140,7 @@ M.bootstrap = function()
             "InterchangeCOM2Frequency",
             "sim/cockpit2/radios/actuators/com2_frequency_hz_833",
             "COM2FrequencyRead",
-            onNotRequiredCallbackFunction,
+            onInterchangeFrequencyChanged,
             onComLinkedChanged,
             isNewComFrequencyValid
         )
@@ -125,7 +152,7 @@ M.bootstrap = function()
             "InterchangeNAV1Frequency",
             "sim/cockpit2/radios/actuators/nav1_frequency_hz",
             "NAV1FrequencyRead",
-            onNotRequiredCallbackFunction,
+            onInterchangeFrequencyChanged,
             onNotRequiredCallbackFunction,
             isNewNavFrequencyValid
         ),
@@ -135,7 +162,7 @@ M.bootstrap = function()
             "InterchangeNAV2Frequency",
             "sim/cockpit2/radios/actuators/nav2_frequency_hz",
             "NAV2FrequencyRead",
-            onNotRequiredCallbackFunction,
+            onInterchangeFrequencyChanged,
             onNotRequiredCallbackFunction,
             isNewNavFrequencyValid
         )
@@ -158,7 +185,7 @@ M.bootstrap = function()
         "InterchangeTransponderCode",
         "sim/cockpit2/radios/actuators/transponder_code",
         "TransponderCodeRead",
-        onNotRequiredCallbackFunction,
+        onInterchangeTransponderCodeChanged,
         onNotRequiredCallbackFunction,
         isNewTransponderCodeValid
     )

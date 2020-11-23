@@ -1,7 +1,7 @@
-local Configuration = require("vhf_helper.components.configuration")
+local VhfHelperConfiguration = require("vhf_helper.components.vhf_helper_configuration")
 
 local M = {}
 M.bootstrap = function()
-    M.Config = Configuration:new(SCRIPT_DIRECTORY .. "vhf_helper.ini")
+    M.Config = VhfHelperConfiguration:new(SCRIPT_DIRECTORY .. "vhf_helper.ini")
 end
 return M

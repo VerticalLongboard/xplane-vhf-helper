@@ -73,7 +73,7 @@ do
         float_wnd_set_imgui_builder(self.window, "renderVhfHelperMainWindowToCanvas")
         float_wnd_set_onclose(self.window, "closeVhfHelperMainWindow")
 
-        Config.Config:setValue("Windows", "MainWindowVisibility", Globals.windowVisibilityVisible)
+        Config.Config:setInitialWindowVisibility(true)
         Config.Config:save()
 
         PublicInterface.activatePublicInterface()
@@ -87,7 +87,7 @@ do
         float_wnd_destroy(self.window)
         self.window = nil
 
-        Config.Config:setValue("Windows", "MainWindowVisibility", Globals.windowVisibilityHidden)
+        Config.Config:setInitialWindowVisibility(false)
         Config.Config:save()
 
         PublicInterface.deactivatePublicInterface()
