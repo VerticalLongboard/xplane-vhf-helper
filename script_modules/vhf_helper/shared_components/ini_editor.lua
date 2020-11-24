@@ -80,7 +80,7 @@ do
             else
                 self.lastError =
                     ("IniEditor: INI file=%s has a syntax error in line='%s'"):format(
-                    filePathBeforeLoadingIsComplete or "(loading from string)",
+                    self.filePathBeforeLoadingIsComplete or "(loading from string)",
                     lineText
                 )
                 logMsg(self.lastError)
