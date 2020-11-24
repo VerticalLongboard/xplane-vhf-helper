@@ -1,6 +1,7 @@
 local Globals = require("vhf_helper.globals")
 local Config = require("vhf_helper.state.config")
 local Configuration = require("vhf_helper.shared_components.configuration")
+local Utilities = require("vhf_helper.shared_components.utilities")
 
 TRACK_ISSUE(
     "FlyWithLua",
@@ -137,7 +138,7 @@ do
         imgui.TextUnformatted(self.Constants.MulticrewStateToMessage[multicrewState][1])
         local lastMulticrewError = vhfHelperMulticrewManager:getLastErrorOrNil()
         if (lastMulticrewError ~= nil) then
-            imgui.TextUnformatted(lastMulticrewError)
+            imgui.TextUnformatted(Utilities.newlineBreakStringAtWidth(lastMulticrewError, 40))
         end
         imgui.PopStyleColor()
 

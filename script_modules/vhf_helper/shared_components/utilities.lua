@@ -41,4 +41,20 @@ Utilities.splitStringBySeparator = function(str, separatorCharacter)
     return str:gmatch("(.-)" .. separatorCharacter)
 end
 
+Utilities.newlineBreakStringAtWidth = function(str, width)
+    local brokenString = ""
+    local index = 1
+    while true do
+        local nextPart = str:sub(index, index + width - 1)
+        if (nextPart:len() == 0) then
+            break
+        end
+        brokenString = brokenString .. nextPart .. "\n"
+        index = index + width
+    end
+
+    brokenString = brokenString:sub(1, -2)
+    return brokenString
+end
+
 return Utilities
