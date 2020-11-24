@@ -16,8 +16,9 @@ do
 
     Globals._NEWFUNC(VhfHelperConfiguration.getInitialWindowVisibility)
     function VhfHelperConfiguration:getInitialWindowVisibility()
-        return self:getValue("Windows", "MainWindowInitiallyVisible", Globals.windowVisibilityHidden) ==
-            Globals.windowVisibilityVisible
+        return Configuration.getBooleanFromValue(
+            self:getValue("Windows", "MainWindowInitiallyVisible", Configuration.Constants.BooleanFalse)
+        )
     end
 
     Globals._NEWFUNC(VhfHelperConfiguration.setInitialWindowVisibility)
@@ -27,7 +28,9 @@ do
 
     Globals._NEWFUNC(VhfHelperConfiguration.getSpeakNumbersLocally)
     function VhfHelperConfiguration:getSpeakNumbersLocally()
-        return Configuration.getBooleanFromValue(self:getValue("Audio", "SpeakNumbersLocally", Configuration.Constants.BooleanTrue))
+        return Configuration.getBooleanFromValue(
+            self:getValue("Audio", "SpeakNumbersLocally", Configuration.Constants.BooleanTrue)
+        )
     end
 
     Globals._NEWFUNC(VhfHelperConfiguration.setSpeakNumbersLocally)
@@ -37,7 +40,9 @@ do
 
     Globals._NEWFUNC(VhfHelperConfiguration.getSpeakRemoteNumbers)
     function VhfHelperConfiguration:getSpeakRemoteNumbers()
-        return Configuration.getBooleanFromValue(self:getValue("Audio", "SpeakRemoteNumbers", Configuration.Constants.BooleanTrue))
+        return Configuration.getBooleanFromValue(
+            self:getValue("Audio", "SpeakRemoteNumbers", Configuration.Constants.BooleanTrue)
+        )
     end
 
     Globals._NEWFUNC(VhfHelperConfiguration.setSpeakRemoteNumbers)

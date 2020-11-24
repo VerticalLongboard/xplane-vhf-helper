@@ -6,6 +6,7 @@ do
         local newInstanceWithState = {components = {}}
         setmetatable(newInstanceWithState, self)
         self.__index = self
+
         return newInstanceWithState
     end
 
@@ -21,6 +22,18 @@ do
     end
 
     function IssueTracker:printSummary()
+        self:_TRACK_INTERNAL_ISSUE(
+            "Lua",
+            "Lua does not support continue statements",
+            "Use deeply nested ifs or labels in a future Lua update/Lua version instead."
+        )
+        self:_TRACK_INTERNAL_ISSUE("Lua", "Lua does not support labels", "Stick to ifs until next Lua update")
+        self:_TRACK_INTERNAL_ISSUE(
+            "IssueTracker",
+            "The longest description is not necessarily the best one.",
+            "Let's see how people use IssueTracker for now."
+        )
+
         self:_relinkAllLinkedIssues()
         self:_printIssues(false)
         self:_printKnownIssues()
@@ -127,13 +140,6 @@ do
     end
 
     function IssueTracker:_printKnownIssues()
-        self:_TRACK_INTERNAL_ISSUE(
-            "Lua",
-            "Lua does not support continue statements",
-            "Use deeply nested ifs or labels in a future Lua update/Lua version instead."
-        )
-        self:_TRACK_INTERNAL_ISSUE("Lua", "Lua does not support labels", "Stick to ifs until next Lua update")
-
         local headerToPrint = "[96m[4mIssue Tracker: All linked known issues:[0m"
         for componentName, component in pairs(self.components) do
             local componentToPrint = ("\n[4m%s[0m:"):format(componentName)
@@ -168,12 +174,6 @@ do
     end
 
     function IssueTracker:_findBestDecriptionForIssue(issueDescription, issue)
-        self:_TRACK_INTERNAL_ISSUE(
-            "IssueTracker",
-            "The longest description is not necessarily the best one.",
-            "Let's see how people use IssueTracker for now."
-        )
-
         local longestDescription = issueDescription
         local longestDescriptionLength = longestDescription:len()
         for desc, _ in pairs(issue.descriptions) do
@@ -192,9 +192,6 @@ do
     end
 
     function IssueTracker:_printIssues(printAll)
-        self:_TRACK_INTERNAL_ISSUE("Lua", "continue statements", "nested ifs")
-        self:_TRACK_INTERNAL_ISSUE("Lua", "labels", "nested ifs")
-
         if (printAll) then
             self:_log(
                 "\n" .. "[96m[4mIssue Tracker: All manually highlighted issues in code that ran during tests:[0m"
@@ -216,6 +213,7 @@ do
                     issue.numOccurrences,
                     self:_prefixAllLines(self:_findBestDecriptionForIssue(issueDescription, issue), " ")
                 )
+
                 if (not issue.isLinked) then
                     numUnique = numUnique + 1
                     num = num + issue.numOccurrences
@@ -336,9 +334,11 @@ end
 
 MULTILINE_TEXT = function(...)
     local completeString = ""
-    for _, argument in pairs(arg) do
+    for _, argument in ipairs(arg) do
         completeString = completeString .. argument .. "\n"
     end
+
+    completeString = completeString:sub(1, -2)
 
     return completeString
 end

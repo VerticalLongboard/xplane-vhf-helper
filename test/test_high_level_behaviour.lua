@@ -112,6 +112,7 @@ function TestHighLevelBehaviour:createInternalDatarefsAndBootstrap()
 	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
 end
 
+TRACK_ISSUE("Test", "Missing test for: Default visibility set to true in INI shows window")
 function TestHighLevelBehaviour:setUp()
 	self:createInternalDatarefsAndBootstrap()
 	flyWithLuaStub:activateMacro(vhfHelperPackageExport.test.vhfHelperLoop.Constants.defaultMacroName, true)
