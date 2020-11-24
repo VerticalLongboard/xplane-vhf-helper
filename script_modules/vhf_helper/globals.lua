@@ -92,6 +92,7 @@ Globals.Colors = {
     a320Orange = 0xFF00AAFF,
     a320Blue = 0xFFFFDDAA,
     a320Green = 0xFF00AA00,
+    MessageRed = 0xFF0000FF,
     white = 0xFFFFFFFF,
     black = 0xFF000000,
     defaultImguiBackground = 0xFF121110,

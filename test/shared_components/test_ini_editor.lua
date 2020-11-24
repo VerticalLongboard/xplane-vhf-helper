@@ -109,6 +109,10 @@ function TestIniEditor:testAddingKeyValueLineWorks()
     luaUnit.assertEquals(l[15].value, "yep")
 end
 
+function TestIniEditor:testAddingDuplicateKeyValueLineDoesNotWork()
+    luaUnit.assertIsFalse(self.object:addKeyValueLine("AnotherSection", "thatsAKey", "yes"))
+end
+
 function TestIniEditor:testSavingToFileWorksAndAddsOnlyAnotherNewlineAtMost()
     local writeFilePath = SCRIPT_DIRECTORY .. "test_ini_editor_output.ini"
     luaUnit.assertNotEquals(writeFilePath, self.ActualLoadPath)

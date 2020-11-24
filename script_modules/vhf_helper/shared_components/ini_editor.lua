@@ -49,6 +49,11 @@ do
         "Tech Debt",
         "Not being able to load the file leaves IniEditor in a bad state. Reset (or force people to new() it)"
     )
+
+    function IniEditor:getLastErrorOrNil()
+        return self.lastError
+    end
+
     function IniEditor:loadFromString(content)
         local lines = Utilities.splitStringBySeparator(content, "\n")
 
@@ -73,23 +78,23 @@ do
                 newLine.key = key
                 newLine.value = value
             else
-                logMsg(
+                self.lastError =
                     ("IniEditor: INI file=%s has a syntax error in line='%s'"):format(
-                        filePathBeforeLoadingIsComplete or "(loading from string)",
-                        lineText
-                    )
+                    filePathBeforeLoadingIsComplete or "(loading from string)",
+                    lineText
                 )
+                logMsg(self.lastError)
                 return false
             end
 
             if (newLine.type == self.LineTypes.Section) then
                 if (self.structuredContent[newLine.sectionName] ~= nil) then
-                    logMsg(
+                    self.lastError =
                         ("IniEditor: INI file=%s: Content text contains duplicate section=%s"):format(
-                            self.filePathBeforeLoadingIsComplete,
-                            newLine.sectionName
-                        )
+                        self.filePathBeforeLoadingIsComplete,
+                        newLine.sectionName
                     )
+                    logMsg(self.lastError)
                     return false
                 end
 
@@ -99,24 +104,26 @@ do
                 currentSectionName = newLine.sectionName
             elseif (newLine.type == self.LineTypes.KeyValue) then
                 if (currentSection == nil) then
-                    logMsg(
+                    self.lastError =
                         ("IniEditor: INI file=%s: Key=%s and Value=%s are outside any section."):format(
-                            self.filePathBeforeLoadingIsComplete,
-                            newLine.key,
-                            newLine.value
-                        )
+                        self.filePathBeforeLoadingIsComplete,
+                        newLine.key,
+                        newLine.value
                     )
+                    logMsg(self.lastError)
+
                     return false
                 end
 
                 if (currentSection[newLine.key] ~= nil) then
-                    logMsg(
+                    self.lastError =
                         ("IniEditor: INI file=%s: Key=%s in Section=%s is duplicate"):format(
-                            self.filePathBeforeLoadingIsComplete,
-                            newLine.key,
-                            currentSectionName
-                        )
+                        self.filePathBeforeLoadingIsComplete,
+                        newLine.key,
+                        currentSectionName
                     )
+
+                    logMsg(self.lastError)
                     return false
                 end
 
@@ -186,7 +193,6 @@ function IniEditor:doesKeyValueExist(sectionName, key, value)
     return true
 end
 
-TRACK_ISSUE("Bug", "Removing a key value line does NOT remove it from structured content!")
 function IniEditor:removeAllKeyValueLinesByKeyMatcher(keyMatcher)
     for indexKey, line in pairs(self.unstructuredLines) do
         if (line.type == self.LineTypes.KeyValue) then
@@ -211,7 +217,6 @@ function IniEditor:_removeOneKeyFromStructuredContent(keyToRemove)
     assert(nil)
 end
 
-TRACK_ISSUE("Bug", "Adding new key value lines does NOT check for duplicates!")
 function IniEditor:addKeyValueLine(sectionName, key, value)
     assert(sectionName)
     assert(key)
@@ -236,6 +241,11 @@ function IniEditor:addKeyValueLine(sectionName, key, value)
         end
     end
 
+    if (self.structuredContent[sectionName][key] ~= nil) then
+        local isDuplicateReturn = false
+        return isDuplicateReturn
+    end
+
     local newKeyValueLine = {
         type = self.LineTypes.KeyValue,
         text = ("%s=%s"):format(key, value),
@@ -246,6 +256,8 @@ function IniEditor:addKeyValueLine(sectionName, key, value)
 
     table.insert(self.unstructuredLines, sectionLineIndex + 1, newKeyValueLine)
     self.structuredContent[sectionName][key] = value
+
+    return true
 end
 
 function IniEditor:getReadOnlyStructuredContent()

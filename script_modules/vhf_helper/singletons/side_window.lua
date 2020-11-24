@@ -27,6 +27,34 @@ do
     function vhfHelperSideWindow:_reset()
         self.Constants = {defaultWindowName = Globals.sidePanelName}
         self.window = nil
+
+        self.Constants.MulticrewStateToMessage = {}
+        self.Constants.MulticrewStateToMessage[vhfHelperMulticrewManager.Constants.State.MulticrewAvailable] = {
+            "You're all set for multicrew. Have fun!",
+            Globals.Colors.a320Green
+        }
+        self.Constants.MulticrewStateToMessage[
+                vhfHelperMulticrewManager.Constants.State.SmartCopilotConfigurationMissing
+            ] = {
+            "SmartCopilot is not set up for your current aircraft.\nSetup SmartCopilot first.",
+            Globals.Colors.a320Blue
+        }
+        self.Constants.MulticrewStateToMessage[
+                vhfHelperMulticrewManager.Constants.State.SmartCopilotConfigurationInvalid
+            ] = {
+            "Your smartcopilot.cfg is invalid.\nRe-install or fix your SmartCopilot setup first.\nIf you're lucky, it could still run.",
+            Globals.Colors.MessageRed
+        }
+        self.Constants.MulticrewStateToMessage[
+                vhfHelperMulticrewManager.Constants.State.SmartCopilotConfigurationPatchingFailed
+            ] = {
+            "Patching your smartcopilot.cfg failed.\nPatch it manually.",
+            Globals.Colors.a320Red
+        }
+        self.Constants.MulticrewStateToMessage[vhfHelperMulticrewManager.Constants.State.RestartRequiredAfterPatch] = {
+            "You're almost ready, smartcopilot.cfg got patched.\nRestart SmartCopilot and/or X-Plane!",
+            Globals.Colors.a320Blue
+        }
     end
 
     function vhfHelperSideWindow:bootstrap()
@@ -99,10 +127,19 @@ do
             Config.Config:setSpeakRemoteNumbers(newSpeakRemoteNumbers)
         end
 
-        -- imgui.TextUnformatted("")
-        -- imgui.TextUnformatted("Multicrew Support")
-        -- imgui.Separator()
-        -- imgui.TextUnformatted("Your smartcopilot.cfg is set up correctly for multicrew.")
+        imgui.TextUnformatted("")
+        imgui.TextUnformatted("Multicrew Support")
+        imgui.Separator()
+
+        local multicrewState = vhfHelperMulticrewManager:getState()
+
+        imgui.PushStyleColor(imgui.constant.Col.Text, self.Constants.MulticrewStateToMessage[multicrewState][2])
+        imgui.TextUnformatted(self.Constants.MulticrewStateToMessage[multicrewState][1])
+        local lastMulticrewError = vhfHelperMulticrewManager:getLastErrorOrNil()
+        if (lastMulticrewError ~= nil) then
+            imgui.TextUnformatted(lastMulticrewError)
+        end
+        imgui.PopStyleColor()
 
         -- imgui.TextUnformatted("")
         -- imgui.TextUnformatted("Plane Compatibility")

@@ -45,9 +45,11 @@ do
     function Configuration:getValue(section, key, defaultValue)
         if (self.Content[section] == nil) then
             self.Content[section] = {}
+            self:_markDirty()
         end
         if (self.Content[section][key]) == nil then
             self.Content[section][key] = defaultValue
+            self:_markDirty()
         end
 
         return self.Content[section][key]

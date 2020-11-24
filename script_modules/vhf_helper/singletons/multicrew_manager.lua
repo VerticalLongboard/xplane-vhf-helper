@@ -22,7 +22,12 @@ do
             }
         }
 
+        self.lastError = nil
         self.state = self.Constants.State.Bootstrapping
+    end
+
+    function vhfHelperMulticrewManager:getLastErrorOrNil()
+        return self.lastError
     end
 
     function vhfHelperMulticrewManager:bootstrap()
@@ -47,6 +52,7 @@ do
         local iniEditor = IniEditor:new()
         if (not iniEditor:loadFromFile(smartCopilotCfgPath)) then
             self.state = self.Constants.State.SmartCopilotConfigurationInvalid
+            self.lastError = iniEditor:getLastErrorOrNil()
             return
         end
         if (iniEditor:getReadOnlyStructuredContent()[self.Constants.SmartCopilotTriggerSectionName] == nil) then

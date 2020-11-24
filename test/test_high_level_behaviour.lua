@@ -239,3 +239,9 @@ function TestHighLevelBehaviour:testSideWindowOpensAndRendersAfterOneFrame()
 		)
 	)
 end
+
+function TestHighLevelBehaviour:testSideWindowMulticrewSupportShowsUpInDefaultState()
+	self:_pressButton(self.Constants.SidePanelButtonTitle)
+	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
+	self:_assertStringShowsUp("SmartCopilot is not set up for your current aircraft.\nSetup SmartCopilot first.")
+end
