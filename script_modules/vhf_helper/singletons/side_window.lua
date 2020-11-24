@@ -85,20 +85,18 @@ do
         imgui.TextUnformatted("Audio")
         imgui.Separator()
 
-        local speakNumbersChanged, newSpeakNumbers =
+        local speakNumbersLocallyChanged, newSpeakNumbersLocally =
             imgui.Checkbox("Speak numbers when switching yourself", Config.Config:getSpeakNumbersLocally())
+
+        if (speakNumbersLocallyChanged) then
+            Config.Config:setSpeakNumbersLocally(newSpeakNumbersLocally)
+        end
 
         local speakRemoteNumbersChanged, newSpeakRemoteNumbers =
             imgui.Checkbox("Speak numbers when switched remotely", Config.Config:getSpeakRemoteNumbers())
 
-        if (speakNumbersChanged) then
-            Config.Config:setSpeakNumbersLocally(newSpeakNumbers)
-            Config.Config:save()
-        end
-
         if (speakRemoteNumbersChanged) then
             Config.Config:setSpeakRemoteNumbers(newSpeakRemoteNumbers)
-            Config.Config:save()
         end
 
         -- imgui.TextUnformatted("")

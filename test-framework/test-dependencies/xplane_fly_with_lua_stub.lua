@@ -31,18 +31,16 @@ SCRIPT_DIRECTORY = os.getenv("TEMP_TEST_SCRIPT_FOLDER") .. "\\"
 local function resetPlatformGlobals()
     local invalidPlaneIcao = "...."
     local invalidXplaneVersion = "0"
-    local invalidAircraftPath = "."
+    local defaultAircraftPath = SCRIPT_DIRECTORY
     local invalidAircraftFilename = ""
 
     PLANE_ICAO = invalidPlaneIcao
     XPLANE_VERSION = invalidXplaneVersion
-    AIRCRAFT_PATH = invalidAircraftPath
+    AIRCRAFT_PATH = defaultAircraftPath
     AIRCRAFT_FILENAME = invalidAircraftFilename
 end
 
 resetPlatformGlobals()
-
-PLANE_ICAO = invalidPlaneIcao
 
 flyWithLuaStub = {
     Constants = {

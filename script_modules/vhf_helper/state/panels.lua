@@ -10,15 +10,15 @@ M.bootstrap = function()
     M.comFrequencyPanel =
         ComFrequencySubPanel:new(
         Validation.comFrequencyValidator,
-        Datarefs.COMLinkedDatarefs[1],
-        Datarefs.COMLinkedDatarefs[2],
+        Datarefs.comLinkedDatarefs[1],
+        Datarefs.comLinkedDatarefs[2],
         "COM"
     )
     M.navFrequencyPanel =
         NavFrequencySubPanel:new(
         Validation.navFrequencyValidator,
-        Datarefs.NAVLinkedDatarefs[1],
-        Datarefs.NAVLinkedDatarefs[2],
+        Datarefs.navLinkedDatarefs[1],
+        Datarefs.navLinkedDatarefs[2],
         "NAV"
     )
     M.transponderCodePanel =

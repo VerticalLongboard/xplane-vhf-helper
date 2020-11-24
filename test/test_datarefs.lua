@@ -164,7 +164,7 @@ function TestDatarefs:testInternalComChangeLeadsToStableFrequencyAcrossMultipleF
 
 	local newFrequency = 129225
 
-	vhfHelperPackageExport.test.COMLinkedDatarefs[2]:emitNewValue(newFrequency)
+	vhfHelperPackageExport.test.comLinkedDatarefs[2]:emitNewValue(newFrequency)
 	flyWithLuaStub:readbackAllWritableDatarefs()
 
 	for f = 1, 10 do

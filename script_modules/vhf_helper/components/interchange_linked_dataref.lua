@@ -39,6 +39,10 @@ do
         return newInstanceWithState
     end
 
+    function InterchangeLinkedDataref:getInterchangeDatarefName()
+        return self.interchangeDatarefName
+    end
+
     function InterchangeLinkedDataref:initialize()
         define_shared_DataRef(self.interchangeDatarefName, self.dataType)
         dataref(self.interchangeVariableName, self.interchangeDatarefName, self.Constants.DatarefAccessTypeWritable)
@@ -56,7 +60,7 @@ do
         "InterchangeLinkedDataref",
         "Depending on how FlyWithLua actually flushes writable dataref updates to readable datarefs, a change in linked values" ..
             "\n" .. "may be delayed by one frame or not.",
-        "Expect the 1-frame-delay in tests for now and behave as if it's not delayed in production code."
+        "Expect the 1-frame-delay in tests for now and behave as if it's not delayed (but it can be) in production code."
     )
     function InterchangeLinkedDataref:loopUpdate()
         local currentInterchangeValue = self:getInterchangeValue()

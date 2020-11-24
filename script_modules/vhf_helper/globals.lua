@@ -30,20 +30,6 @@ Globals.requireAllAndBootstrap = function(luaRequireStringTable)
     end
 end
 
-Globals.prefixAllLines = function(linesString, prefix)
-    return prefix .. linesString:gsub("\n", "\n" .. prefix)
-end
-
-Globals.fileExists = function(filePath)
-    local file = io.open(filePath, "r")
-    if file == nil then
-        return false
-    end
-
-    io.close(file)
-    return true
-end
-
 Globals.printLogMessage = function(messageString)
     logMsg(("%s: %s"):format(Globals.readableScriptName, messageString or "NIL"))
 end

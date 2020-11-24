@@ -107,7 +107,7 @@ do
         local cleanVhfFrequency = autocompleted:gsub("%.", "")
         self:_setCleanLinkedValueString(vhfNumber, cleanVhfFrequency)
         if (Config.Config:getSpeakNumbersLocally()) then
-            SpeakNato:speakFrequency(autocompleted)
+            SpeakNato.speakFrequency(autocompleted)
         end
 
         self.enteredValue = Globals.emptyString

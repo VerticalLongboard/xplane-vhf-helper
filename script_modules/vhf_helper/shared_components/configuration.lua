@@ -1,4 +1,5 @@
 local Globals = require("vhf_helper.globals")
+local Utilities = require("vhf_helper.shared_components.utilities")
 local LuaIniParser = require("LIP")
 
 local Configuration
@@ -13,7 +14,7 @@ do
     end
 
     function Configuration:load()
-        if (not Globals.fileExists(self.Path)) then
+        if (not Utilities.fileExists(self.Path)) then
             return
         end
 
@@ -21,7 +22,11 @@ do
     end
 
     function Configuration:save()
+        if (not self.isDirty) then
+            return
+        end
         LuaIniParser.save(self.Path, self.Content)
+        self.isDirty = false
     end
 
     function Configuration:setValue(section, key, value)
@@ -33,6 +38,8 @@ do
         end
 
         self.Content[section][key] = value
+
+        self:_markDirty()
     end
 
     function Configuration:getValue(section, key, defaultValue)
@@ -44,6 +51,10 @@ do
         end
 
         return self.Content[section][key]
+    end
+
+    function Configuration:_markDirty()
+        self.isDirty = true
     end
 end
 

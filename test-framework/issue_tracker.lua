@@ -64,11 +64,13 @@ do
 
     function IssueTracker:_relinkKnownLinkedIssue(issueToRelink)
         assert(issueToRelink.isLinked)
+        issueToRelink.numRelatedTo = 0
         for componentName, component in pairs(self.components) do
             for issueDescription, issue in pairs(component.issues) do
                 if (not issue.isLinked) then
                     for key, blameString in pairs(issueToRelink.blameStringList) do
                         if (issueDescription:find(blameString) ~= nil) then
+                            issueToRelink.numRelatedTo = issueToRelink.numRelatedTo + 1
                             issueToRelink.blamedComponents[componentName] =
                                 issueToRelink.blamedComponents[componentName] or {}
                         end
@@ -152,7 +154,13 @@ do
                             ("[94m%s[0m:%s"):format(occurrenceLocation, self:_prefixAllLines(issueDescription, " "))
                         )
                         assert(occurrence.workaround)
-                        self:_log(("  Workaround:%s\n"):format(self:_prefixAllLines(occurrence.workaround, " ")))
+                        self:_log(("  Workaround:%s"):format(self:_prefixAllLines(occurrence.workaround, " ")))
+
+                        local issuesPlural = "issues"
+                        if (issue.numRelatedTo == 1) then
+                            issuesPlural = "issue"
+                        end
+                        self:_log(("  Related to %d %s.\n"):format(issue.numRelatedTo, issuesPlural))
                     end
                 end
             end
@@ -208,7 +216,6 @@ do
                     issue.numOccurrences,
                     self:_prefixAllLines(self:_findBestDecriptionForIssue(issueDescription, issue), " ")
                 )
-                local issueWasPrinted = false
                 if (not issue.isLinked) then
                     numUnique = numUnique + 1
                     num = num + issue.numOccurrences
@@ -244,7 +251,7 @@ do
         end
         if (num == 0) then
             self:_log(
-                ("\nFound %d total issues. That means everything is fine or nobody cares. Use TRACK_ISSUE() to leave hints in code.\n"):format(
+                ('\nFound %d total issues. That means everything is fine or nobody cares. Use TRACK_ISSUE("Blamed Topic", "Description") to leave hints in code.\n'):format(
                     num,
                     numUnique,
                     numWorkedAround
@@ -252,13 +259,15 @@ do
             )
         else
             self:_log(
-                ("\nFound %d unique (%d total collected) issues in code that ran during tests, %d withhout a workaround.\n" ..
-                    "If you like to see all issues, run the task 'triggerAllIssues'\n"):format(
+                ("\nFound %d unique (%d total collected) issues in code that ran during tests, %d withhout a workaround."):format(
                     numUnique,
                     num,
                     numUnique - numWorkedAround
                 )
             )
+            if (not printAll) then
+                self:_log("If you like to see all issues, run the task 'triggerAllIssues'\n")
+            end
         end
     end
 

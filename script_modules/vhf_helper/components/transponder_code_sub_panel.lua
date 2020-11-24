@@ -47,7 +47,7 @@ do
 		local number = tonumber(numberString)
 		self.codeDataref:emitNewValue(number)
 		if (Config.Config:getSpeakNumbersLocally()) then
-			SpeakNato:speakTransponderCode(numberString)
+			SpeakNato.speakTransponderCode(numberString)
 		end
 		self.enteredValue = Globals.emptyString
 	end

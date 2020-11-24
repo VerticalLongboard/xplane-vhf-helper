@@ -33,7 +33,7 @@ local function activatePublicInterface()
             end
 
             for c = 1, 2 do
-                currentComString = tostring(Datarefs.COMLinkedDatarefs[c]:getLinkedValue())
+                currentComString = tostring(Datarefs.comLinkedDatarefs[c]:getLinkedValue())
                 currentComString = currentComString:sub(1, 3) .. Globals.decimalCharacter .. currentComString:sub(4, 7)
                 if (newFullString == currentComString) then
                     return true

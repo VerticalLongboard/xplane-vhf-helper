@@ -7,6 +7,8 @@ local vhfHelper = dofile("scripts/vhf_helper.lua")
 
 flyWithLuaStub:suppressLogMessagesContaining({"VR Radio Helper: Using '"})
 
+require("multicrew.test_multicrew")
+require("shared_components.test_ini_editor")
 require("test_speak_nato")
 require("test_public_interface")
 require("test_datarefs")
@@ -19,7 +21,7 @@ KNOWN_ISSUE(
     "VR Radio Helper",
     "Quickly closing and opening a panel again leads to the panel closing itself after about second.",
     "Don't close and open the panel too quickly.",
-    {"float_wnd_set_visible", "close function is called asynchronously"}
+    {"float_wnd_set_visible", "close function is called asynchronously", "float_wnd_get_visible"}
 )
 
 KNOWN_ISSUE(

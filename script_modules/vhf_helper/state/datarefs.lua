@@ -7,7 +7,7 @@ local Config = require("vhf_helper.state.config")
 TRACK_ISSUE(
     "FlyWithLua",
     "Pre-defined dataref handles cannot be in a table :-/",
-    "Declare global dataref variables outside any table."
+    "Declare global dataref variables outside any table and give them a long enough name."
 )
 InterchangeCOM1Frequency = 0
 InterchangeCOM2Frequency = 0
@@ -25,8 +25,10 @@ TransponderModeRead = 0
 
 TRACK_ISSUE(
     "FlyWithLua",
-    "After creating a shared new dataref (and setting its inital value) the writable dataref variable is being assigned" ..
-        "\n" .. "a random value (very likely straight from memory) after waiting a few frames.",
+    MULTILINE_TEXT(
+        "After creating a shared new dataref (and setting its inital value) the writable dataref variable is being assigned",
+        "a random value (very likely straight from memory) after waiting a few frames."
+    ),
     "Ignore invalid values and continue using locally available values (which are supposed to be valid at this time)."
 )
 local function isFrequencyValueValid(ild, validator, newValue)
@@ -54,7 +56,7 @@ local onInterchangeFrequencyChanged = function(ild, newValue)
     if (Config.Config:getSpeakRemoteNumbers() == true) then
         local freqString = tostring(newValue)
         local freqFullString = freqString:sub(1, 3) .. Globals.decimalCharacter .. freqString:sub(4, 6)
-        SpeakNato:speakFrequency(freqFullString)
+        SpeakNato.speakFrequency(freqFullString)
     end
 end
 
@@ -64,7 +66,7 @@ local onInterchangeTransponderCodeChanged = function(ild, newValue)
         for i = codeString:len(), 3 do
             codeString = "0" .. codeString
         end
-        SpeakNato:speakTransponderCode(codeString)
+        SpeakNato.speakTransponderCode(codeString)
     end
 end
 
@@ -80,13 +82,8 @@ local isNewNavFrequencyValid = function(ild, newValue)
     return isFrequencyValueValid(ild, Validation.navFrequencyValidator, newValue)
 end
 
-TRACK_ISSUE("Tech Debt", "Transponder code is not validated using TransponderCodeValidator")
 local isNewTransponderCodeValid = function(ild, newValue)
-    if (newValue < 0 or newValue > Validation.transponderCodeValidator.Constants.MaxTransponderCode) then
-        return false
-    end
-
-    return true
+    return Validation.transponderCodeValidator:validate(tostring(newValue)) ~= nil
 end
 
 local transponderModeToDescriptor = {}
@@ -123,7 +120,7 @@ end
 local M = {}
 M.transponderModeToDescriptor = transponderModeToDescriptor
 M.bootstrap = function()
-    M.COMLinkedDatarefs = {
+    M.comLinkedDatarefs = {
         InterchangeLinkedDataref:new(
             InterchangeLinkedDataref.Constants.DatarefTypeInteger,
             "VHFHelper/InterchangeCOM1Frequency",
@@ -145,7 +142,7 @@ M.bootstrap = function()
             isNewComFrequencyValid
         )
     }
-    M.NAVLinkedDatarefs = {
+    M.navLinkedDatarefs = {
         InterchangeLinkedDataref:new(
             InterchangeLinkedDataref.Constants.DatarefTypeInteger,
             "VHFHelper/InterchangeNAV1Frequency",
@@ -190,10 +187,10 @@ M.bootstrap = function()
         isNewTransponderCodeValid
     )
     M.allLinkedDatarefs = {
-        M.COMLinkedDatarefs[1],
-        M.COMLinkedDatarefs[2],
-        M.NAVLinkedDatarefs[1],
-        M.NAVLinkedDatarefs[2],
+        M.comLinkedDatarefs[1],
+        M.comLinkedDatarefs[2],
+        M.navLinkedDatarefs[1],
+        M.navLinkedDatarefs[2],
         M.TransponderCodeLinkedDataref,
         M.TransponderModeLinkedDataref
     }

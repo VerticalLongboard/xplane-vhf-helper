@@ -74,7 +74,6 @@ do
         float_wnd_set_onclose(self.window, "closeVhfHelperMainWindow")
 
         Config.Config:setInitialWindowVisibility(true)
-        Config.Config:save()
 
         PublicInterface.activatePublicInterface()
     end
@@ -88,7 +87,6 @@ do
         self.window = nil
 
         Config.Config:setInitialWindowVisibility(false)
-        Config.Config:save()
 
         PublicInterface.deactivatePublicInterface()
     end

@@ -64,6 +64,7 @@ do
 
         do_every_frame("vhfHelperLoop:everyFrameLoop()")
         do_every_frame("vhfHelperMainWindow:everyFrameLoop()")
+        do_every_frame("vhfHelperMulticrewManager:everyFrameLoop()")
     end
 
     function vhfHelperLoop:everyFrameLoop()
@@ -74,6 +75,8 @@ do
         for _, ldr in pairs(Datarefs.allLinkedDatarefs) do
             ldr:loopUpdate()
         end
+
+        Config.Config:save()
     end
 
     TRACK_ISSUE(
