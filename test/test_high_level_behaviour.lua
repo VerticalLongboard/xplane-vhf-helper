@@ -244,5 +244,9 @@ end
 function TestHighLevelBehaviour:testSideWindowMulticrewSupportShowsUpInDefaultState()
 	self:_pressButton(self.Constants.SidePanelButtonTitle)
 	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
-	self:_assertStringShowsUp("SmartCopilot is not set up for your current aircraft.\nSetup SmartCopilot first.")
+	self:_assertStringShowsUp(
+		vhfHelperPackageExport.test.vhfHelperSideWindow.Constants.MulticrewStateToMessage[
+			vhfHelperPackageExport.test.vhfHelperMulticrewManager.Constants.State.SmartCopilotConfigurationMissing
+		][1]
+	)
 end

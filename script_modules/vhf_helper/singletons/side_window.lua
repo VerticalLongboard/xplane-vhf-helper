@@ -2,6 +2,7 @@ local Globals = require("vhf_helper.globals")
 local Config = require("vhf_helper.state.config")
 local Configuration = require("vhf_helper.shared_components.configuration")
 local Utilities = require("vhf_helper.shared_components.utilities")
+local InlineButtonBlob = require("vhf_helper.shared_components.inline_button_blob")
 
 TRACK_ISSUE(
     "FlyWithLua",
@@ -37,25 +38,42 @@ do
         self.Constants.MulticrewStateToMessage[
                 vhfHelperMulticrewManager.Constants.State.SmartCopilotConfigurationMissing
             ] = {
-            "SmartCopilot is not set up for your current aircraft.\nSetup SmartCopilot first.",
+            "No SmartCopilot configuration found for your current aircraft.",
             Globals.Colors.a320Blue
         }
         self.Constants.MulticrewStateToMessage[
                 vhfHelperMulticrewManager.Constants.State.SmartCopilotConfigurationInvalid
             ] = {
-            "Your smartcopilot.cfg is invalid.\nRe-install or fix your SmartCopilot setup first.\nIf you're lucky, it could still run.",
-            Globals.Colors.MessageRed
+            "Your smartcopilot.cfg is invalid.\nRe-install or fix your SmartCopilot setup first.\nIf you're lucky, it may still run.",
+            Globals.Colors.a320Red
         }
         self.Constants.MulticrewStateToMessage[
                 vhfHelperMulticrewManager.Constants.State.SmartCopilotConfigurationPatchingFailed
             ] = {
-            "Patching your smartcopilot.cfg failed.\nPatch it manually.",
+            "Patching your smartcopilot.cfg failed. Patch it manually.",
             Globals.Colors.a320Red
         }
         self.Constants.MulticrewStateToMessage[vhfHelperMulticrewManager.Constants.State.RestartRequiredAfterPatch] = {
-            "You're almost ready, smartcopilot.cfg got patched.\nRestart SmartCopilot and/or X-Plane!",
+            "You're almost ready, smartcopilot.cfg got patched a moment ago.\nRestart SmartCopilot and/or X-Plane!",
             Globals.Colors.a320Blue
         }
+
+        self.FeedbackLinkBlob = InlineButtonBlob:new()
+        self.FeedbackLinkBlob:addTextWithoutNewline(
+            "How VR Radio Helper work for you? Please leave feedback at Github:"
+        )
+
+        self.FeedbackLinkBlob:addNewline()
+        self.FeedbackLinkBlob:addCustomCallbackButton(
+            "Click: https://github.com/VerticalLongboard/xplane-vhf-helper",
+            function(buttonTitle)
+                os.execute(
+                    'start "" https://github.com/VerticalLongboard/xplane-vhf-helper/issues/new?labels=Feedback^&title=New%20VR%20Radio%20Helper%20Feedback^&body=Please%20leave%20your%20feedback%20here.%20Thanks%20for%20taking%20your%20time!'
+                )
+            end
+        )
+        self.FeedbackLinkBlob:addNewline()
+        self.FeedbackLinkBlob:addTextWithoutNewline("(Opens in default browser on Windows)")
     end
 
     function vhfHelperSideWindow:bootstrap()
@@ -75,8 +93,8 @@ do
             minWidthWithoutScrollbars = 300
             minHeightWithoutScrollbars = 300
         elseif (globalFontScaleDescriptor == "big") then
-            minWidthWithoutScrollbars = 400
-            minHeightWithoutScrollbars = 260
+            minWidthWithoutScrollbars = 500
+            minHeightWithoutScrollbars = 300
         else
             minWidthWithoutScrollbars = 100
             minHeightWithoutScrollbars = 100
@@ -142,6 +160,13 @@ do
         end
         imgui.PopStyleColor()
 
+        imgui.TextUnformatted("")
+        imgui.TextUnformatted("Feedback :-)")
+        imgui.Separator()
+        self.FeedbackLinkBlob:renderToCanvas()
+
+        -- imgui.TextUnformatted("")
+
         -- imgui.TextUnformatted("")
         -- imgui.TextUnformatted("Plane Compatibility")
         -- imgui.Separator()
@@ -149,11 +174,6 @@ do
         -- imgui.TextUnformatted(XPLANE_VERSION)
         -- imgui.TextUnformatted(AIRCRAFT_PATH)
         -- imgui.TextUnformatted(AIRCRAFT_FILENAME)
-
-        -- imgui.TextUnformatted("")
-        -- imgui.TextUnformatted("Feedback :-)")
-        -- imgui.Separator()
-        -- imgui.TextUnformatted("https://github")
     end
 end
 
