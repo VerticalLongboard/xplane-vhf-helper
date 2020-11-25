@@ -45,9 +45,7 @@ do
     end
 
     function vhfHelperCompatibilityManager:_addConfigurationForId(id, configuration)
-        if (self.CompatibilityIdToConfiguration[id] ~= nil) then
-            logMsg(("Plane Compatibility: WARNING: Overwriting compatibility configuration for plane id=%s"):format(id))
-        end
+        assert(self.CompatibilityIdToConfiguration[id] == nil)
         self.CompatibilityIdToConfiguration[id] = configuration
     end
 

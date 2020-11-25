@@ -38,23 +38,23 @@ do
 
         self.Content[section][key] = value
 
-        self:_markDirty()
+        self:markDirty()
     end
 
     function Configuration:getValue(section, key, defaultValue)
         if (self.Content[section] == nil) then
             self.Content[section] = {}
-            self:_markDirty()
+            self:markDirty()
         end
         if (self.Content[section][key]) == nil then
             self.Content[section][key] = defaultValue
-            self:_markDirty()
+            self:markDirty()
         end
 
         return self.Content[section][key]
     end
 
-    function Configuration:_markDirty()
+    function Configuration:markDirty()
         self.isDirty = true
     end
 end

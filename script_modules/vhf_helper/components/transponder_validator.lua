@@ -1,4 +1,5 @@
 local NumberValidator = require("vhf_helper.components.number_validator")
+local Globals = require("vhf_helper.globals")
 
 local TransponderValidator
 do

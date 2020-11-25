@@ -28,10 +28,11 @@ local Globals = require("vhf_helper.globals")
 Globals.requireAllAndBootstrap({"vhf_helper.public_interface"})
 Globals.requireAllAndBootstrap(
     {
+        "vhf_helper.state.config",
+        "vhf_helper.state.notifications",
         "vhf_helper.state.validation",
         "vhf_helper.state.datarefs",
         "vhf_helper.state.panels",
-        "vhf_helper.state.config",
         "vhf_helper.singletons.compatibility_manager",
         "vhf_helper.singletons.multicrew_manager",
         "vhf_helper.singletons.main_window",

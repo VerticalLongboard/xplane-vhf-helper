@@ -1,4 +1,4 @@
-Globals = require("vhf_helper.globals")
+local Globals = require("vhf_helper.globals")
 local NumberValidator = require("vhf_helper.components.number_validator")
 
 local FrequencyValidator

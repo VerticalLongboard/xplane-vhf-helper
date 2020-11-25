@@ -76,7 +76,12 @@ end
 
 Utilities.openUrlInLocalDefaultBrowser = function(url)
     local call = 'start "" ' .. Utilities.osExecuteEncode(Utilities.urlEncode(url))
-    os.execute(call)
+    local successErrorlevel = 0
+    if (os.execute(call) ~= successErrorlevel) then
+        return false
+    end
+
+    return true
 end
 
 return Utilities

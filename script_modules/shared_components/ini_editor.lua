@@ -148,7 +148,6 @@ do
                         logMsg(self.lastError)
                         return false
                     else
-                        logMsg("ignoring new line")
                         ignoreNewLine = true
                     end
                 end

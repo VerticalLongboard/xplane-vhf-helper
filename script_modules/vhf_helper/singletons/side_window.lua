@@ -3,6 +3,7 @@ local Config = require("vhf_helper.state.config")
 local Configuration = require("shared_components.configuration")
 local Utilities = require("shared_components.utilities")
 local InlineButtonBlob = require("shared_components.inline_button_blob")
+local Notifications = require("vhf_helper.state.notifications")
 
 TRACK_ISSUE(
     "FlyWithLua",
@@ -22,15 +23,54 @@ function closeVhfHelperSideWindow()
     vhfHelperSideWindow:destroy()
 end
 
+local ClickableFeedbackBrowserLink
+do
+    ClickableFeedbackBrowserLink = {}
+
+    function ClickableFeedbackBrowserLink:new()
+        local newInstanceWithState = {
+            timesBrowserOpened = 0
+        }
+
+        setmetatable(newInstanceWithState, self)
+        self.__index = self
+        return newInstanceWithState
+    end
+
+    function ClickableFeedbackBrowserLink:addLinkToBlob(blob, linkTitle, url)
+        blob:addCustomCallbackButton(
+            linkTitle,
+            function(buttonTitle)
+                if (Utilities.openUrlInLocalDefaultBrowser(url)) then
+                    self.timesBrowserOpened = self.timesBrowserOpened + 1
+                    blob:addNewline()
+                    blob:addColorTextWithoutNewline(
+                        ("Opened web browser x%d"):format(self.timesBrowserOpened),
+                        Globals.Colors.a320Blue
+                    )
+                else
+                    blob:addNewline()
+                    blob:addColorTextWithoutNewline("Error opening web browser", Globals.Colors.a320Blue)
+                end
+            end
+        )
+    end
+end
+
 local vhfHelperSideWindowSingleton
 do
     vhfHelperSideWindow = {
         Constants = {
             defaultWindowName = Globals.sidePanelName
+        },
+        Notifications = {
+            HaveALookAtMe = "SideWindow.HaveALookAtMe"
         }
     }
 
     function vhfHelperSideWindow:_reset()
+        -- Notifications.notificationManager:postOnce(vhfHelperSideWindow.Notifications.HaveALookAtMe)
+
         self.window = nil
 
         vhfHelperSideWindow.Constants.MulticrewStateToMessage = {}
@@ -49,7 +89,7 @@ do
         vhfHelperSideWindow.Constants.MulticrewStateToMessage[
                 vhfHelperMulticrewManager.Constants.State.SmartCopilotConfigurationInvalid
             ] = {
-            "Your smartcopilot.cfg is invalid.\nRe-install or fix your SmartCopilot setup first.\nIf you're lucky, it may still run.",
+            "Your smartcopilot.cfg is invalid and won't be touched.\nRe-install or fix your SmartCopilot setup first.\nIf you're lucky, it may still run.",
             Globals.Colors.a320Red
         }
         vhfHelperSideWindow.Constants.MulticrewStateToMessage[
@@ -70,15 +110,15 @@ do
         self.PlaneCompatibilityBlob:addNewline()
         self.PlaneCompatibilityBlob:addTextWithoutNewline("describe your findings at Github:")
         self.PlaneCompatibilityBlob:addNewline()
-        self.PlaneCompatibilityBlob:addCustomCallbackButton(
+        self.PlaneCompatibilityLink = ClickableFeedbackBrowserLink:new()
+        self.PlaneCompatibilityLink:addLinkToBlob(
+            self.PlaneCompatibilityBlob,
             "Compatibility: https://github.com/VerticalLongboard/xplane-vhf-helper/...",
-            function(buttonTitle)
-                local url =
-                    ("https://github.com/VerticalLongboard/xplane-vhf-helper/issues/new?labels=PlaneCompatibility&title=New Plane Compatibility Report for ICAO %s&body=Your current plane is treated as a default plane. Since all features are enabled, you may have experienced issues. Please describe the behaviour you observed (Transponder modes don't match, Frequencies don't show up, COM can't be set etc.).\nThanks a lot for taking your time!\n\n**---YOUR REPORT HERE---**"):format(
+            self:_getUrlWithDiagnosticParams(
+                ("https://github.com/VerticalLongboard/xplane-vhf-helper/issues/new?labels=PlaneCompatibility&title=New Plane Compatibility Report for ICAO %s&body=Your current plane is treated as a default plane. Since all features are enabled, you may have experienced issues. Please describe the behaviour you observed (Transponder modes don't match, Frequencies don't show up, COM can't be set etc.).\nThanks a lot for taking your time!\n\n**---YOUR REPORT HERE---**"):format(
                     PLANE_ICAO
                 )
-                Utilities.openUrlInLocalDefaultBrowser(self:_getUrlWithDiagnosicParams(url))
-            end
+            )
         )
 
         TRACK_ISSUE("Feature", "Add version number to build.")
@@ -89,11 +129,11 @@ do
             ("For news and updates, see the official Github page:"):format("UNKNOWN_VERSION")
         )
         self.UpdatesBlob:addNewline()
-        self.UpdatesBlob:addCustomCallbackButton(
+        self.UpdatesLink = ClickableFeedbackBrowserLink:new()
+        self.UpdatesLink:addLinkToBlob(
+            self.UpdatesBlob,
             "Latest Release: https://github.com/VerticalLongboard/xplane-vhf-helper/...",
-            function(buttonTitle)
-                os.execute('start "" https://github.com/VerticalLongboard/xplane-vhf-helper/releases/latest')
-            end
+            "https://github.com/VerticalLongboard/xplane-vhf-helper/releases/latest"
         )
 
         self.FeedbackLinkBlob = InlineButtonBlob:new()
@@ -101,19 +141,19 @@ do
             "How does VR Radio Helper work for you? Please leave your feedback at Github:"
         )
         self.FeedbackLinkBlob:addNewline()
-        self.FeedbackLinkBlob:addCustomCallbackButton(
+        self.FeedbackLink = ClickableFeedbackBrowserLink:new()
+        self.FeedbackLink:addLinkToBlob(
+            self.FeedbackLinkBlob,
             "Feedback: https://github.com/VerticalLongboard/xplane-vhf-helper/...",
-            function(buttonTitle)
-                local url =
-                    "https://github.com/VerticalLongboard/xplane-vhf-helper/issues/new?labels=Feedback&title=New VR Radio Helper Feedback&body=Please leave your feedback here.\nThanks for taking your time!\n\n**---YOUR FEEDBACK HERE---**"
-                Utilities.openUrlInLocalDefaultBrowser(self:_getUrlWithDiagnosicParams(url))
-            end
+            self:_getUrlWithDiagnosticParams(
+                "https://github.com/VerticalLongboard/xplane-vhf-helper/issues/new?labels=Feedback&title=New VR Radio Helper Feedback&body=Please leave your feedback here.\nThanks for taking your time!\n\n**---YOUR FEEDBACK HERE---**"
+            )
         )
         self.FeedbackLinkBlob:addNewline()
         self.FeedbackLinkBlob:addTextWithoutNewline("Much appreciated!")
     end
 
-    function vhfHelperSideWindow:_getUrlWithDiagnosicParams(urlFirstPart)
+    function vhfHelperSideWindow:_getUrlWithDiagnosticParams(urlFirstPart)
         local diagnosticInfo =
             ("\n\n---\nThis diagnostic information helps making VR Radio Helper better, please keep it here:\n---\n" ..
             "- X-Plane Version: %s\n" .. "- System: %s\n" .. "- Plane Compatibility: %s\n"):format(
@@ -133,6 +173,8 @@ do
             return
         end
 
+        self:_reset()
+
         local minWidthWithoutScrollbars = nil
         local minHeightWithoutScrollbars = nil
 
@@ -142,7 +184,7 @@ do
             minHeightWithoutScrollbars = 300
         elseif (globalFontScaleDescriptor == "big") then
             minWidthWithoutScrollbars = 550
-            minHeightWithoutScrollbars = 450
+            minHeightWithoutScrollbars = 500
         else
             minWidthWithoutScrollbars = 100
             minHeightWithoutScrollbars = 100
@@ -223,7 +265,6 @@ do
             imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
             imgui.TextUnformatted("All features are enabled, but may not work correctly.")
             imgui.PopStyleColor()
-            self.PlaneCompatibilityBlob:renderToCanvas()
         else
             imgui.TextUnformatted("Your plane looks like a")
             imgui.SameLine()
@@ -238,6 +279,9 @@ do
         end
 
         imgui.TextUnformatted("")
+        self.PlaneCompatibilityBlob:renderToCanvas()
+
+        imgui.TextUnformatted("")
         self:_renderSectionHeader("Updates")
         self.UpdatesBlob:renderToCanvas()
 
@@ -246,6 +290,12 @@ do
         self.FeedbackLinkBlob:renderToCanvas()
 
         Globals.popDefaultButtonColorsFromImguiStack()
+
+        -- imgui.TextUnformatted(tostring(Notifications.notificationManager))
+
+        -- for nid, pending in pairs(Notifications.notificationManager.notifications) do
+        --     imgui.TextUnformatted(("nid=%s pending=%s"):format(nid, tostring(pending)))
+        -- end
     end
 
     function vhfHelperSideWindow:_renderSectionHeader(title)

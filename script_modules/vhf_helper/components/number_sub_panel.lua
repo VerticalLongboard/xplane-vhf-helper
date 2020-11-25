@@ -51,6 +51,7 @@ do
         end
     end
 
+    TRACK_ISSUE("NumberSubPanel", "Make disabled buttons appear disabled")
     function NumberSubPanel:_renderNumberPanel()
         local numberFontScale = 1.3 * globalFontScale
         imgui.SetWindowFontScale(numberFontScale)

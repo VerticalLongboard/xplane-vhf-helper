@@ -36,6 +36,7 @@ function LuaIniParserStub.load(fileName)
 end
 
 function LuaIniParserStub.save(fileName, data)
+	fileContent = data
 end
 
 return LuaIniParserStub
