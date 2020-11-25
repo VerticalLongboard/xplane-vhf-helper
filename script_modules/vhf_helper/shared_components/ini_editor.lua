@@ -62,6 +62,7 @@ do
 
         local currentSection = nil
         local currentSectionName = nil
+        local currentLineNumber = 1
         for lineText in lines do
             local newLine = {}
             if (lineText:match(self.Matchers.EmptyLine)) then
@@ -79,8 +80,9 @@ do
                 newLine.value = value
             else
                 self.lastError =
-                    ("IniEditor: INI file=%s has a syntax error in line='%s'"):format(
+                    ("IniEditor: INI file=%s:%d has a syntax error in line='%s'"):format(
                     self.filePathBeforeLoadingIsComplete or "(loading from string)",
+                    currentLineNumber,
                     lineText
                 )
                 logMsg(self.lastError)
@@ -90,8 +92,9 @@ do
             if (newLine.type == self.LineTypes.Section) then
                 if (self.structuredContent[newLine.sectionName] ~= nil) then
                     self.lastError =
-                        ("IniEditor: INI file=%s: Content text contains duplicate section=%s"):format(
+                        ("IniEditor: INI file=%s:%d: Content text contains duplicate section=%s"):format(
                         self.filePathBeforeLoadingIsComplete,
+                        currentLineNumber,
                         newLine.sectionName
                     )
                     logMsg(self.lastError)
@@ -105,8 +108,9 @@ do
             elseif (newLine.type == self.LineTypes.KeyValue) then
                 if (currentSection == nil) then
                     self.lastError =
-                        ("IniEditor: INI file=%s: Key=%s and Value=%s are outside any section."):format(
+                        ("IniEditor: INI file=%s:%d: Key=%s and Value=%s are outside any section."):format(
                         self.filePathBeforeLoadingIsComplete,
+                        currentLineNumber,
                         newLine.key,
                         newLine.value
                     )
@@ -117,8 +121,9 @@ do
 
                 if (currentSection[newLine.key] ~= nil) then
                     self.lastError =
-                        ("IniEditor: INI file=%s: Key=%s in Section=%s is duplicate"):format(
+                        ("IniEditor: INI file=%s:%d: Key=%s in Section=%s is duplicate"):format(
                         self.filePathBeforeLoadingIsComplete,
+                        currentLineNumber,
                         newLine.key,
                         currentSectionName
                     )
@@ -134,6 +139,8 @@ do
             newLine.removed = false
             newLine.text = lineText
             table.insert(self.unstructuredLines, newLine)
+
+            currentLineNumber = currentLineNumber + 1
         end
 
         return true
