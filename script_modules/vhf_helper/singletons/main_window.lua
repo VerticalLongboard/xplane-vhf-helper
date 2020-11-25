@@ -2,6 +2,7 @@ local Globals = require("vhf_helper.globals")
 local Config = require("vhf_helper.state.config")
 local Panels = require("vhf_helper.state.panels")
 local PublicInterface = require("vhf_helper.public_interface")
+local Utilities = require("shared_components.utilities")
 
 TRACK_ISSUE(
     "FlyWithLua",
@@ -28,10 +29,9 @@ end
 
 local vhfHelperMainWindowSingleton
 do
-    vhfHelperMainWindow = {}
+    vhfHelperMainWindow = {Constants = {defaultWindowName = Globals.readableScriptName}}
 
     function vhfHelperMainWindow:_reset()
-        self.Constants = {defaultWindowName = Globals.readableScriptName}
         self.window = nil
         self.currentPanel = Panels.comFrequencyPanel
         self.toggleSideWindowSoon = false
@@ -51,7 +51,7 @@ do
         local minWidthWithoutScrollbars = nil
         local minHeightWithoutScrollbars = nil
 
-        globalFontScaleDescriptor = Globals.trim(Config.Config:getValue("Windows", "GlobalFontScale", "big"))
+        globalFontScaleDescriptor = Utilities.trim(Config.Config:getValue("Windows", "GlobalFontScale", "big"))
         if (globalFontScaleDescriptor == "huge") then
             globalFontScale = 3.0
             minWidthWithoutScrollbars = 380
@@ -69,7 +69,7 @@ do
         Globals.defaultDummySize = 20.0 * globalFontScale
 
         self.window = float_wnd_create(minWidthWithoutScrollbars, minHeightWithoutScrollbars, 1, true)
-        float_wnd_set_title(self.window, self.Constants.defaultWindowName)
+        float_wnd_set_title(self.window, vhfHelperMainWindow.Constants.defaultWindowName)
         float_wnd_set_imgui_builder(self.window, "renderVhfHelperMainWindowToCanvas")
         float_wnd_set_onclose(self.window, "closeVhfHelperMainWindow")
 
@@ -121,11 +121,17 @@ do
         imgui.Separator()
         imgui.Separator()
         imgui.SetWindowFontScale(0.9 * globalFontScale)
-        self:_renderPanelButton(Panels.comFrequencyPanel)
+        self:_renderPanelButton(Panels.comFrequencyPanel, true)
         imgui.SameLine()
-        self:_renderPanelButton(Panels.navFrequencyPanel)
+        self:_renderPanelButton(
+            Panels.navFrequencyPanel,
+            vhfHelperCompatibilityManager:getCurrentConfiguration().isNavFeatureEnabled
+        )
         imgui.SameLine()
-        self:_renderPanelButton(Panels.transponderCodePanel)
+        self:_renderPanelButton(
+            Panels.transponderCodePanel,
+            vhfHelperCompatibilityManager:getCurrentConfiguration().isTransponderFeatureEnabled
+        )
         imgui.SameLine()
 
         if (imgui.Button(">")) then
@@ -142,10 +148,11 @@ do
         end
     end
 
-    function vhfHelperMainWindow:_renderPanelButton(panel)
+    function vhfHelperMainWindow:_renderPanelButton(panel, enabled)
         Globals.ImguiUtils:renderActiveInactiveButton(
             panel.descriptor,
             self.currentPanel == panel,
+            enabled,
             function()
                 self.currentPanel = panel
             end

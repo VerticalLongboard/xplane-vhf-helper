@@ -1,5 +1,4 @@
-local Globals = require("vhf_helper.globals")
-local Utilities = require("vhf_helper.shared_components.utilities")
+local Utilities = require("shared_components.utilities")
 local LuaIniParser = require("LIP")
 
 local Configuration
@@ -34,7 +33,7 @@ do
             self.Content[section] = {}
         end
         if (type(value) == "string") then
-            value = Globals.trim(value)
+            value = Utilities.trim(value)
         end
 
         self.Content[section][key] = value

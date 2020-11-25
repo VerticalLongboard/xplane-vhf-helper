@@ -1,8 +1,8 @@
 local Globals = require("vhf_helper.globals")
 local Config = require("vhf_helper.state.config")
-local Configuration = require("vhf_helper.shared_components.configuration")
-local Utilities = require("vhf_helper.shared_components.utilities")
-local InlineButtonBlob = require("vhf_helper.shared_components.inline_button_blob")
+local Configuration = require("shared_components.configuration")
+local Utilities = require("shared_components.utilities")
+local InlineButtonBlob = require("shared_components.inline_button_blob")
 
 TRACK_ISSUE(
     "FlyWithLua",
@@ -24,56 +24,104 @@ end
 
 local vhfHelperSideWindowSingleton
 do
-    vhfHelperSideWindow = {}
+    vhfHelperSideWindow = {
+        Constants = {
+            defaultWindowName = Globals.sidePanelName
+        }
+    }
 
     function vhfHelperSideWindow:_reset()
-        self.Constants = {defaultWindowName = Globals.sidePanelName}
         self.window = nil
 
-        self.Constants.MulticrewStateToMessage = {}
-        self.Constants.MulticrewStateToMessage[vhfHelperMulticrewManager.Constants.State.MulticrewAvailable] = {
+        vhfHelperSideWindow.Constants.MulticrewStateToMessage = {}
+        vhfHelperSideWindow.Constants.MulticrewStateToMessage[
+                vhfHelperMulticrewManager.Constants.State.MulticrewAvailable
+            ] = {
             "You're all set for multicrew. Have fun!",
             Globals.Colors.a320Green
         }
-        self.Constants.MulticrewStateToMessage[
+        vhfHelperSideWindow.Constants.MulticrewStateToMessage[
                 vhfHelperMulticrewManager.Constants.State.SmartCopilotConfigurationMissing
             ] = {
             "No SmartCopilot configuration found for your current aircraft.",
             Globals.Colors.a320Blue
         }
-        self.Constants.MulticrewStateToMessage[
+        vhfHelperSideWindow.Constants.MulticrewStateToMessage[
                 vhfHelperMulticrewManager.Constants.State.SmartCopilotConfigurationInvalid
             ] = {
             "Your smartcopilot.cfg is invalid.\nRe-install or fix your SmartCopilot setup first.\nIf you're lucky, it may still run.",
             Globals.Colors.a320Red
         }
-        self.Constants.MulticrewStateToMessage[
+        vhfHelperSideWindow.Constants.MulticrewStateToMessage[
                 vhfHelperMulticrewManager.Constants.State.SmartCopilotConfigurationPatchingFailed
             ] = {
             "Patching your smartcopilot.cfg failed. Patch it manually.",
             Globals.Colors.a320Red
         }
-        self.Constants.MulticrewStateToMessage[vhfHelperMulticrewManager.Constants.State.RestartRequiredAfterPatch] = {
+        vhfHelperSideWindow.Constants.MulticrewStateToMessage[
+                vhfHelperMulticrewManager.Constants.State.RestartRequiredAfterPatch
+            ] = {
             "You're almost ready, smartcopilot.cfg got patched a moment ago.\nRestart SmartCopilot and/or X-Plane!",
-            Globals.Colors.a320Blue
+            Globals.Colors.a320Orange
         }
+
+        self.PlaneCompatibilityBlob = InlineButtonBlob:new()
+        self.PlaneCompatibilityBlob:addTextWithoutNewline("If you think that something doesn't work correctly,")
+        self.PlaneCompatibilityBlob:addNewline()
+        self.PlaneCompatibilityBlob:addTextWithoutNewline("describe your findings at Github:")
+        self.PlaneCompatibilityBlob:addNewline()
+        self.PlaneCompatibilityBlob:addCustomCallbackButton(
+            "Compatibility: https://github.com/VerticalLongboard/xplane-vhf-helper/...",
+            function(buttonTitle)
+                local url =
+                    ("https://github.com/VerticalLongboard/xplane-vhf-helper/issues/new?labels=PlaneCompatibility&title=New Plane Compatibility Report for ICAO %s&body=Your current plane is treated as a default plane. Since all features are enabled, you may have experienced issues. Please describe the behaviour you observed (Transponder modes don't match, Frequencies don't show up, COM can't be set etc.).\nThanks a lot for taking your time!\n\n**---YOUR REPORT HERE---**"):format(
+                    PLANE_ICAO
+                )
+                Utilities.openUrlInLocalDefaultBrowser(self:_getUrlWithDiagnosicParams(url))
+            end
+        )
+
+        TRACK_ISSUE("Feature", "Add version number to build.")
+        self.UpdatesBlob = InlineButtonBlob:new()
+        self.UpdatesBlob:addTextWithoutNewline(("You are using VR Radio Helper %s"):format("UNKNOWN_VERSION"))
+        self.UpdatesBlob:addNewline()
+        self.UpdatesBlob:addTextWithoutNewline(
+            ("For news and updates, see the official Github page:"):format("UNKNOWN_VERSION")
+        )
+        self.UpdatesBlob:addNewline()
+        self.UpdatesBlob:addCustomCallbackButton(
+            "Latest Release: https://github.com/VerticalLongboard/xplane-vhf-helper/...",
+            function(buttonTitle)
+                os.execute('start "" https://github.com/VerticalLongboard/xplane-vhf-helper/releases/latest')
+            end
+        )
 
         self.FeedbackLinkBlob = InlineButtonBlob:new()
         self.FeedbackLinkBlob:addTextWithoutNewline(
-            "How VR Radio Helper work for you? Please leave feedback at Github:"
+            "How does VR Radio Helper work for you? Please leave your feedback at Github:"
         )
-
         self.FeedbackLinkBlob:addNewline()
         self.FeedbackLinkBlob:addCustomCallbackButton(
-            "Click: https://github.com/VerticalLongboard/xplane-vhf-helper",
+            "Feedback: https://github.com/VerticalLongboard/xplane-vhf-helper/...",
             function(buttonTitle)
-                os.execute(
-                    'start "" https://github.com/VerticalLongboard/xplane-vhf-helper/issues/new?labels=Feedback^&title=New%20VR%20Radio%20Helper%20Feedback^&body=Please%20leave%20your%20feedback%20here.%20Thanks%20for%20taking%20your%20time!'
-                )
+                local url =
+                    "https://github.com/VerticalLongboard/xplane-vhf-helper/issues/new?labels=Feedback&title=New VR Radio Helper Feedback&body=Please leave your feedback here.\nThanks for taking your time!\n\n**---YOUR FEEDBACK HERE---**"
+                Utilities.openUrlInLocalDefaultBrowser(self:_getUrlWithDiagnosicParams(url))
             end
         )
         self.FeedbackLinkBlob:addNewline()
-        self.FeedbackLinkBlob:addTextWithoutNewline("(Opens in default browser on Windows)")
+        self.FeedbackLinkBlob:addTextWithoutNewline("Much appreciated!")
+    end
+
+    function vhfHelperSideWindow:_getUrlWithDiagnosicParams(urlFirstPart)
+        local diagnosticInfo =
+            ("\n\n---\nThis diagnostic information helps making VR Radio Helper better, please keep it here:\n---\n" ..
+            "- X-Plane Version: %s\n" .. "- System: %s\n" .. "- Plane Compatibility: %s\n"):format(
+            XPLANE_VERSION,
+            SYSTEM,
+            vhfHelperCompatibilityManager:getPlaneCompatibilityIdString()
+        )
+        return urlFirstPart .. diagnosticInfo
     end
 
     function vhfHelperSideWindow:bootstrap()
@@ -88,20 +136,20 @@ do
         local minWidthWithoutScrollbars = nil
         local minHeightWithoutScrollbars = nil
 
-        globalFontScaleDescriptor = Globals.trim(Config.Config:getValue("Windows", "GlobalFontScale", "big"))
+        globalFontScaleDescriptor = Utilities.trim(Config.Config:getValue("Windows", "GlobalFontScale", "big"))
         if (globalFontScaleDescriptor == "huge") then
             minWidthWithoutScrollbars = 300
             minHeightWithoutScrollbars = 300
         elseif (globalFontScaleDescriptor == "big") then
-            minWidthWithoutScrollbars = 500
-            minHeightWithoutScrollbars = 300
+            minWidthWithoutScrollbars = 550
+            minHeightWithoutScrollbars = 450
         else
             minWidthWithoutScrollbars = 100
             minHeightWithoutScrollbars = 100
         end
 
         self.window = float_wnd_create(minWidthWithoutScrollbars, minHeightWithoutScrollbars, 1, true)
-        float_wnd_set_title(self.window, self.Constants.defaultWindowName)
+        float_wnd_set_title(self.window, vhfHelperSideWindow.Constants.defaultWindowName)
         float_wnd_set_imgui_builder(self.window, "renderVhfHelperSideWindowToCanvas")
         float_wnd_set_onclose(self.window, "closeVhfHelperSideWindow")
     end
@@ -129,8 +177,9 @@ do
     end
 
     function vhfHelperSideWindow:renderToCanvas()
-        imgui.TextUnformatted("Audio")
-        imgui.Separator()
+        Globals.pushDefaultButtonColorsToImguiStack()
+
+        self:_renderSectionHeader("Audio")
 
         local speakNumbersLocallyChanged, newSpeakNumbersLocally =
             imgui.Checkbox("Speak numbers when switching yourself", Config.Config:getSpeakNumbersLocally())
@@ -147,33 +196,63 @@ do
         end
 
         imgui.TextUnformatted("")
-        imgui.TextUnformatted("Multicrew Support")
-        imgui.Separator()
+        self:_renderSectionHeader("Multicrew Support")
 
         local multicrewState = vhfHelperMulticrewManager:getState()
 
-        imgui.PushStyleColor(imgui.constant.Col.Text, self.Constants.MulticrewStateToMessage[multicrewState][2])
-        imgui.TextUnformatted(self.Constants.MulticrewStateToMessage[multicrewState][1])
+        local maxStringWidth = 60
+
+        imgui.PushStyleColor(
+            imgui.constant.Col.Text,
+            vhfHelperSideWindow.Constants.MulticrewStateToMessage[multicrewState][2]
+        )
+        imgui.TextUnformatted(vhfHelperSideWindow.Constants.MulticrewStateToMessage[multicrewState][1])
         local lastMulticrewError = vhfHelperMulticrewManager:getLastErrorOrNil()
         if (lastMulticrewError ~= nil) then
-            imgui.TextUnformatted(Utilities.newlineBreakStringAtWidth(lastMulticrewError, 40))
+            imgui.TextUnformatted(Utilities.newlineBreakStringAtWidth(lastMulticrewError, maxStringWidth))
         end
         imgui.PopStyleColor()
 
         imgui.TextUnformatted("")
-        imgui.TextUnformatted("Feedback :-)")
-        imgui.Separator()
+        self:_renderSectionHeader("Plane Compatibility")
+
+        local cc = vhfHelperCompatibilityManager:getCurrentConfiguration()
+
+        if (cc.isDefaultPlane) then
+            imgui.TextUnformatted("No compatibility information found.")
+            imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
+            imgui.TextUnformatted("All features are enabled, but may not work correctly.")
+            imgui.PopStyleColor()
+            self.PlaneCompatibilityBlob:renderToCanvas()
+        else
+            imgui.TextUnformatted("Your plane looks like a")
+            imgui.SameLine()
+            imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Blue)
+            imgui.TextUnformatted(("%s"):format(cc.readableName))
+            imgui.PopStyleColor()
+            if (cc.hasKnownIssues) then
+                imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
+                imgui.TextUnformatted(("Known Issues: %s"):format(cc.knownIssuesText))
+                imgui.PopStyleColor()
+            end
+        end
+
+        imgui.TextUnformatted("")
+        self:_renderSectionHeader("Updates")
+        self.UpdatesBlob:renderToCanvas()
+
+        imgui.TextUnformatted("")
+        self:_renderSectionHeader("Feedback :-)")
         self.FeedbackLinkBlob:renderToCanvas()
 
-        -- imgui.TextUnformatted("")
+        Globals.popDefaultButtonColorsFromImguiStack()
+    end
 
-        -- imgui.TextUnformatted("")
-        -- imgui.TextUnformatted("Plane Compatibility")
-        -- imgui.Separator()
-        -- imgui.TextUnformatted(PLANE_ICAO)
-        -- imgui.TextUnformatted(XPLANE_VERSION)
-        -- imgui.TextUnformatted(AIRCRAFT_PATH)
-        -- imgui.TextUnformatted(AIRCRAFT_FILENAME)
+    function vhfHelperSideWindow:_renderSectionHeader(title)
+        imgui.PushStyleColor(imgui.constant.Col.Text, 0xFFAAAAAA)
+        imgui.TextUnformatted(title)
+        imgui.PopStyleColor()
+        imgui.Separator()
     end
 end
 

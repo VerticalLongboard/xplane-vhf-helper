@@ -7,8 +7,8 @@ local vhfHelper = dofile("scripts/vhf_helper.lua")
 
 flyWithLuaStub:suppressLogMessagesContaining({"VR Radio Helper: Using '"})
 
-require("shared_components.test_inline_button_blob")
-require("shared_components.test_ini_editor")
+require("shared_components.test_suite")
+
 require("multicrew.test_multicrew")
 require("test_speak_nato")
 require("test_public_interface")

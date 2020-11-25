@@ -57,4 +57,26 @@ Utilities.newlineBreakStringAtWidth = function(str, width)
     return brokenString
 end
 
+Utilities.urlEncode = function(str)
+    str = str:gsub(" ", "%%20")
+    str = str:gsub("\n", "%%0a")
+    return str
+end
+
+Utilities.osExecuteEncode = function(str)
+    str = str:gsub("&", "^&")
+    str = str:gsub("<", "^<")
+    str = str:gsub(">", "^>")
+    return str
+end
+
+Utilities.trim = function(str)
+    return str:gsub("^%s*(.-)%s*$", "%1")
+end
+
+Utilities.openUrlInLocalDefaultBrowser = function(url)
+    local call = 'start "" ' .. Utilities.osExecuteEncode(Utilities.urlEncode(url))
+    os.execute(call)
+end
+
 return Utilities

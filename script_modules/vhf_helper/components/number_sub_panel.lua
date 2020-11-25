@@ -3,16 +3,17 @@ local Validation = require("vhf_helper.state.validation")
 
 local NumberSubPanel
 do
-    NumberSubPanel = {}
+    NumberSubPanel = {
+        Constants = {
+            ClearButtonTitle = "Clr",
+            BackspaceButtonTitle = "Del"
+        }
+    }
 
     function NumberSubPanel:new(newValidator)
         local newInstanceWithState = {
             enteredValue = Globals.emptyString,
-            inputPanelValidator = newValidator,
-            Constants = {
-                ClearButtonTitle = "Clr",
-                BackspaceButtonTitle = "Del"
-            }
+            inputPanelValidator = newValidator
         }
         setmetatable(newInstanceWithState, self)
         self.__index = self
@@ -67,7 +68,7 @@ do
         imgui.Dummy(Globals.defaultDummySize * rightSideDummyScale, Globals.defaultDummySize)
         imgui.SameLine()
         imgui.SetWindowFontScale(1.0 * globalFontScale)
-        if (imgui.Button(self.Constants.BackspaceButtonTitle)) then
+        if (imgui.Button(NumberSubPanel.Constants.BackspaceButtonTitle)) then
             self:backspace()
         end
         imgui.SetWindowFontScale(numberFontScale)
@@ -80,7 +81,7 @@ do
         imgui.Dummy(Globals.defaultDummySize * rightSideDummyScale, Globals.defaultDummySize)
         imgui.SameLine()
         imgui.SetWindowFontScale(1.0 * globalFontScale)
-        if (imgui.Button(self.Constants.ClearButtonTitle)) then
+        if (imgui.Button(NumberSubPanel.Constants.ClearButtonTitle)) then
             self:clear()
         end
         imgui.SetWindowFontScale(numberFontScale)

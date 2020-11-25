@@ -83,6 +83,7 @@ do
 		Globals.ImguiUtils:renderActiveInactiveButton(
 			Datarefs.transponderModeToDescriptor[mode + 1],
 			self.modeDataref:getLinkedValue() == mode,
+			true,
 			function()
 				self.modeDataref:emitNewValue(mode)
 			end
@@ -93,7 +94,9 @@ do
 	function TransponderCodeSubPanel:_buildCurrentTransponderLine(nextTransponderCodeIsSettable)
 		imgui.PushStyleVar_2(imgui.constant.StyleVar.FramePadding, 0.0, 0.0)
 
-		imgui.TextUnformatted(self.descriptor .. ":    ")
+		imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.greyText)
+		imgui.TextUnformatted(self.descriptor .. "     ")
+		imgui.PopStyleColor()
 
 		imgui.SameLine()
 		imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
@@ -146,7 +149,7 @@ do
 
 		imgui.SetWindowFontScale(1.0 * globalFontScale)
 
-		imgui.TextUnformatted("Next " .. self.descriptor .. ":   ")
+		imgui.TextUnformatted("Next " .. self.descriptor .. "    ")
 
 		if (nextTransponderCodeIsSettable) then
 			imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)

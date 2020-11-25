@@ -58,10 +58,6 @@ for i = 1, #licensesOfDependencies do
     )
 end
 
-Globals.trim = function(str)
-    return str:gsub("^%s*(.-)%s*$", "%1")
-end
-
 Globals.replaceCharacter = function(str, pos, newCharacter)
     return str:sub(1, pos - 1) .. newCharacter .. str:sub(pos + 1)
 end
@@ -95,6 +91,7 @@ Globals.Colors = {
     a320Red = 0xFF4444FF,
     white = 0xFFFFFFFF,
     black = 0xFF000000,
+    greyText = 0xFFAAAAAA,
     defaultImguiBackground = 0xFF121110,
     defaultImguiButtonBackground = 0xFF6F4624
 }
@@ -102,17 +99,29 @@ Globals.Colors = {
 local ImguiUtils
 do
     ImguiUtils = {}
-    function ImguiUtils:renderActiveInactiveButton(buttonTitle, active, onPressFunction)
-        if (active) then
-            imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
+    function ImguiUtils:renderActiveInactiveButton(buttonTitle, active, enabled, onPressFunction)
+        if (enabled) then
+            if (active) then
+                imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
+            else
+                imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Blue)
+            end
         else
-            imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Blue)
+            imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF444444)
+            imgui.PushStyleColor(imgui.constant.Col.Button, 0xFF222222)
+            imgui.PushStyleColor(imgui.constant.Col.ButtonActive, 0xFF222222)
+            imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, 0xFF222222)
         end
 
-        if (imgui.Button(buttonTitle)) then
+        if (imgui.Button(buttonTitle) and enabled) then
             onPressFunction()
         end
 
+        if (not enabled) then
+            imgui.PopStyleColor()
+            imgui.PopStyleColor()
+            imgui.PopStyleColor()
+        end
         imgui.PopStyleColor()
     end
 end

@@ -1,9 +1,10 @@
-local IniEditor = require("vhf_helper.shared_components.ini_editor")
-local Utilities = require("vhf_helper.shared_components.utilities")
+local IniEditor = require("shared_components.ini_editor")
+local Utilities = require("shared_components.utilities")
 
 TestIniEditor = {
     TestKeyMatcher = "^.-Key$",
     TestFilePath = ".\\test\\shared_components\\test_ini_file.ini",
+    TestFileDuplicateKeysPath = ".\\test\\shared_components\\test_ini_file_duplicate_keys.ini",
     ActualLoadPath = SCRIPT_DIRECTORY .. "test_ini_file.ini"
 }
 
@@ -12,6 +13,13 @@ function TestIniEditor:setUp()
 
     self.object = IniEditor:new()
     luaUnit.assertIsTrue(self.object:loadFromFile(self.ActualLoadPath))
+end
+
+function TestIniEditor:testIgnoresDuplicateKeysWhenEnabled()
+    self.object = IniEditor:new()
+    luaUnit.assertIsTrue(
+        self.object:loadFromFile(self.TestFileDuplicateKeysPath, IniEditor.LoadModes.IgnoreDuplicateKeys)
+    )
 end
 
 function TestIniEditor:testLoadingFromFileWorks()

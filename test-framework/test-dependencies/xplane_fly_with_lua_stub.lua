@@ -29,11 +29,15 @@ local imguiStub = require("imgui_stub")
 SCRIPT_DIRECTORY = os.getenv("TEMP_TEST_SCRIPT_FOLDER") .. "\\"
 
 local function resetPlatformGlobals()
+    local invalidSystem = "TEST"
+    local invalidPlaneTailnumber = "???"
     local invalidPlaneIcao = "...."
     local invalidXplaneVersion = "0"
     local defaultAircraftPath = SCRIPT_DIRECTORY
     local invalidAircraftFilename = ""
 
+    PLANE_TAILNUMBER = invalidPlaneTailnumber
+    SYSTEM = invalidSystem
     PLANE_ICAO = invalidPlaneIcao
     XPLANE_VERSION = invalidXplaneVersion
     AIRCRAFT_PATH = defaultAircraftPath

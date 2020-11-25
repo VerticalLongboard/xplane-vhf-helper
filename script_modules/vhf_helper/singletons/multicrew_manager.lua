@@ -1,13 +1,11 @@
 local Datarefs = require("vhf_helper.state.datarefs")
-local Utilities = require("vhf_helper.shared_components.utilities")
-local IniEditor = require("vhf_helper.shared_components.ini_editor")
+local Utilities = require("shared_components.utilities")
+local IniEditor = require("shared_components.ini_editor")
 
 local vhfHelperMulticrewManagerSingleton
 do
-    vhfHelperMulticrewManager = {}
-
-    function vhfHelperMulticrewManager:_reset()
-        self.Constants = {
+    vhfHelperMulticrewManager = {
+        Constants = {
             SmartCopilotConfigurationFileName = "smartcopilot.cfg",
             VhfHelperTriggerPrefix = "VHFHelper/",
             VhfHelperKeyMatcher = "^VHFHelper/.-$",
@@ -21,9 +19,11 @@ do
                 RestartRequiredAfterPatch = "RestartRequiredAfterPatch"
             }
         }
+    }
 
+    function vhfHelperMulticrewManager:_reset()
         self.lastError = nil
-        self.state = self.Constants.State.Bootstrapping
+        self.state = vhfHelperMulticrewManager.Constants.State.Bootstrapping
     end
 
     function vhfHelperMulticrewManager:getLastErrorOrNil()
@@ -42,21 +42,24 @@ do
     function vhfHelperMulticrewManager:_setupMulticrew()
         local smartCopilotCfgPath =
             vhfHelperCompatibilityManager:getCurrentAircraftBaseDirectory() ..
-            self.Constants.SmartCopilotConfigurationFileName
+            vhfHelperMulticrewManager.Constants.SmartCopilotConfigurationFileName
 
         if (not Utilities.fileExists(smartCopilotCfgPath)) then
-            self.state = self.Constants.State.SmartCopilotConfigurationMissing
+            self.state = vhfHelperMulticrewManager.Constants.State.SmartCopilotConfigurationMissing
             return
         end
 
         local iniEditor = IniEditor:new()
-        if (not iniEditor:loadFromFile(smartCopilotCfgPath)) then
-            self.state = self.Constants.State.SmartCopilotConfigurationInvalid
+        if (not iniEditor:loadFromFile(smartCopilotCfgPath, IniEditor.LoadModes.IgnoreDuplicateKeys)) then
+            self.state = vhfHelperMulticrewManager.Constants.State.SmartCopilotConfigurationInvalid
             self.lastError = iniEditor:getLastErrorOrNil()
             return
         end
-        if (iniEditor:getReadOnlyStructuredContent()[self.Constants.SmartCopilotTriggerSectionName] == nil) then
-            self.state = self.Constants.State.SmartCopilotConfigurationInvalid
+        if
+            (iniEditor:getReadOnlyStructuredContent()[vhfHelperMulticrewManager.Constants.SmartCopilotTriggerSectionName] ==
+                nil)
+         then
+            self.state = vhfHelperMulticrewManager.Constants.State.SmartCopilotConfigurationInvalid
             return
         end
 
@@ -65,7 +68,7 @@ do
         for _, linkedDataref in pairs(Datarefs.allLinkedDatarefs) do
             if
                 (not iniEditor:doesKeyValueExist(
-                    self.Constants.SmartCopilotTriggerSectionName,
+                    vhfHelperMulticrewManager.Constants.SmartCopilotTriggerSectionName,
                     linkedDataref:getInterchangeDatarefName(),
                     "0"
                 ))
@@ -74,7 +77,8 @@ do
             end
         end
 
-        local allVhfHelperKeyValueLines = iniEditor:getAllKeyValueLinesByKeyMatcher(self.Constants.VhfHelperKeyMatcher)
+        local allVhfHelperKeyValueLines =
+            iniEditor:getAllKeyValueLinesByKeyMatcher(vhfHelperMulticrewManager.Constants.VhfHelperKeyMatcher)
 
         if (#allVhfHelperKeyValueLines ~= #Datarefs.allLinkedDatarefs) then
             patchRequired = true
@@ -82,12 +86,12 @@ do
 
         if (patchRequired) then
             if (not self:_patchSmartCopilotConfiguration(iniEditor)) then
-                self.state = self.Constants.State.SmartCopilotConfigurationPatchingFailed
+                self.state = vhfHelperMulticrewManager.Constants.State.SmartCopilotConfigurationPatchingFailed
             else
-                self.state = self.Constants.State.RestartRequiredAfterPatch
+                self.state = vhfHelperMulticrewManager.Constants.State.RestartRequiredAfterPatch
             end
         else
-            self.state = self.Constants.State.MulticrewAvailable
+            self.state = vhfHelperMulticrewManager.Constants.State.MulticrewAvailable
         end
     end
 
@@ -95,11 +99,11 @@ do
     end
 
     function vhfHelperMulticrewManager:_patchSmartCopilotConfiguration(iniEditor)
-        iniEditor:removeAllKeyValueLinesByKeyMatcher(self.Constants.VhfHelperKeyMatcher)
+        iniEditor:removeAllKeyValueLinesByKeyMatcher(vhfHelperMulticrewManager.Constants.VhfHelperKeyMatcher)
 
         for _, linkedDataref in pairs(Datarefs.allLinkedDatarefs) do
             iniEditor:addKeyValueLine(
-                self.Constants.SmartCopilotTriggerSectionName,
+                vhfHelperMulticrewManager.Constants.SmartCopilotTriggerSectionName,
                 linkedDataref:getInterchangeDatarefName(),
                 "0"
             )

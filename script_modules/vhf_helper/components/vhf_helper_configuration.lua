@@ -1,4 +1,4 @@
-local Configuration = require("vhf_helper.shared_components.configuration")
+local Configuration = require("shared_components.configuration")
 local Globals = require("vhf_helper.globals")
 local LuaIniParser = require("LIP")
 

@@ -1,0 +1,26 @@
+I
+1100 Version
+ACF
+
+PROPERTIES_BEGIN
+P acf/_max_vac 8.0
+P acf/_max_xmsn_P 1.0
+P acf/_max_xmsn_T 1.0
+P acf/_min_n1 12.0
+P acf/_min_n2 15.0
+P acf/_min_rwy_len 1500.0
+P acf/_min_vec_on_ground 0.0
+P _cgpt/4/_w_test 0.0
+P _cgpt/4/_z_ref 0.0
+P _cgpt/5/_name fuel tank #5
+P _cgpt/5/_w_max 0.0
+P _cgpt/5/_w_now 1.0
+P _cgpt/5/_w_test 0.0
+P _cgpt/5/_z_ref 0.0
+P _cgpt/6/_name fuel tank #6
+
+P acf/_author Test Author - https://github.com/VerticalLongboard
+
+PROPERTIES_END
+PANEL_2D_BEGIN
+PANEL_2D_END

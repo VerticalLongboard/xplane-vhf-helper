@@ -61,7 +61,9 @@ do
     function VhfFrequencySubPanel:_buildCurrentVhfLine(vhfNumber, nextVhfFrequencyIsSettable)
         imgui.PushStyleVar_2(imgui.constant.StyleVar.FramePadding, 0.0, 0.0)
 
-        imgui.TextUnformatted(self.descriptor .. tonumber(vhfNumber) .. ": ")
+        imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.greyText)
+        imgui.TextUnformatted(self.descriptor .. tonumber(vhfNumber) .. "  ")
+        imgui.PopStyleColor()
 
         imgui.SameLine()
         imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
@@ -126,7 +128,7 @@ do
 
         imgui.Separator()
 
-        imgui.TextUnformatted("Next " .. self.descriptor .. ": ")
+        imgui.TextUnformatted("Next " .. self.descriptor .. "  ")
 
         if (nextVhfFrequencyIsSettable) then
             imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)

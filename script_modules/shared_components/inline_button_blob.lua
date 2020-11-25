@@ -59,7 +59,6 @@ do
     end
 
     function InlineButtonBlob:addCustomCallbackButton(buttonTitleAsString, onPressCallbackFunction)
-        logMsg("CUSTOM:" .. buttonTitleAsString .. " callback=" .. tostring(onPressCallbackFunction))
         self:_addDefaultBlockHeader(self.Constants.CustomCallbackButtonCode, 3)
 
         self:_addBasicButtonSubHeader(buttonTitleAsString or "<NIL button title>")
@@ -74,14 +73,18 @@ do
         table.insert(self.blobTable, backgroundColor or "<NIL color>")
     end
 
+    TRACK_ISSUE(
+        "Tech Debt",
+        "InlineButtonBlob is still using non-default colors. Disabled for now, but to share this component with other projects, you'll need to find something."
+    )
     function InlineButtonBlob:renderToCanvas()
         -- ImGUI unfortunately adds newlines after widgets _by default_
         local lastItemTriggeredANewline = true
 
         imgui.PushStyleVar_2(imgui.constant.StyleVar.ItemSpacing, 0.0, 0.0)
         imgui.PushStyleVar_2(imgui.constant.StyleVar.FramePadding, 0.0, 0.0)
-        imgui.PushStyleColor(imgui.constant.Col.ButtonActive, 0xFF000000)
-        imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, 0xFF202020)
+        -- imgui.PushStyleColor(imgui.constant.Col.ButtonActive, 0xFF000000)
+        -- imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, 0xFF202020)
 
         local index = 1
         while index < #self.blobTable do
@@ -128,8 +131,8 @@ do
             index = index + skipDistance
         end
 
-        imgui.PopStyleColor()
-        imgui.PopStyleColor()
+        -- imgui.PopStyleColor()
+        -- imgui.PopStyleColor()
         imgui.PopStyleVar()
         imgui.PopStyleVar()
     end

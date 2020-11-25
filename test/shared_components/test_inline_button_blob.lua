@@ -1,5 +1,5 @@
 imguiStub = require("imgui_stub")
-InlineButtonBlob = require("vhf_helper.shared_components.inline_button_blob")
+InlineButtonBlob = require("shared_components.inline_button_blob")
 
 TestInlineButtonBlob = {}
 

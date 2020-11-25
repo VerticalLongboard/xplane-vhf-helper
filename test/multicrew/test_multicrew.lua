@@ -1,5 +1,5 @@
 local MulticrewManager = require("vhf_helper.singletons.multicrew_manager")
-local Utilities = require("vhf_helper.shared_components.utilities")
+local Utilities = require("shared_components.utilities")
 
 TestMulticrew = {
     Constants = {}
