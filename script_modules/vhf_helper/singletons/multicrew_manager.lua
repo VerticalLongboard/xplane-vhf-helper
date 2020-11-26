@@ -1,6 +1,7 @@
 local Datarefs = require("vhf_helper.state.datarefs")
 local Utilities = require("shared_components.utilities")
 local IniEditor = require("shared_components.ini_editor")
+local Notifications = require("vhf_helper.state.notifications")
 
 local vhfHelperMulticrewManagerSingleton
 do

@@ -23,30 +23,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 --]]
-local Globals = require("vhf_helper.globals")
+require("shared_components.lua_compatibility_wrapper")
 TRACK_ISSUE(
     "Lua",
-    "Switching from Lua 5.1 to 5.4 broke compatibility with LuaUnit and almost any table.insert call. Also, loadstring does not longer exist.",
+    "Switching from Lua 5.1 to 5.4 broke compatibility with almost any table.insert call. Also, loadstring got renamed.",
     "Redefine basic language features according to current interpreter version."
 )
-require("shared_components.lua_compatibility_wrapper")
 
-Globals.requireAllAndBootstrap({"vhf_helper.public_interface"})
-Globals.requireAllAndBootstrap(
+local Globals = require("vhf_helper.globals")
+Globals.requireAllAndBootstrapInOrder(
     {
-        -- "vhf_helper.state.notifications",
+        "vhf_helper.public_interface",
+        "vhf_helper.state.config",
+        "vhf_helper.state.notifications",
         "vhf_helper.state.validation",
         "vhf_helper.state.datarefs",
         "vhf_helper.state.panels",
-        "vhf_helper.state.config",
         "vhf_helper.singletons.compatibility_manager",
         "vhf_helper.singletons.multicrew_manager",
         "vhf_helper.singletons.main_window",
         "vhf_helper.singletons.side_window",
-        "vhf_helper.singletons.loop"
+        "vhf_helper.singletons.loop",
+        "vhf_helper.package_export"
     }
 )
-Globals.requireAllAndBootstrap({"vhf_helper.package_export"})
 
 TRACK_ISSUE(
     "FlyWithLua",

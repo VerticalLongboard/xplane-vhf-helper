@@ -25,7 +25,6 @@ do
     )
     function vhfHelperLoop:bootstrap()
         self:_reset()
-        Config.Config:load()
 
         local windowIsSupposedToBeVisible = false
         if (Config.Config:getInitialWindowVisibility() == true) then

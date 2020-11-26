@@ -18,26 +18,23 @@ do
 
     Globals.OVERRIDE(VhfHelperNotificationManager.acknowledge)
     function VhfHelperNotificationManager:acknowledge(notificationId)
+        logMsg("ack nid=" .. notificationId)
         self:_saveToConfigIfStateChanges(NotificationManager.acknowledge, notificationId)
     end
 
     Globals._NEWFUNC(VhfHelperNotificationManager._saveToConfigIfStateChanges)
     function VhfHelperNotificationManager:_saveToConfigIfStateChanges(managerFunction, notificationId)
-        -- local oldPending = self:isPending(notificationId)
-        -- logMsg("-----------------" .. notificationId)
-        -- managerFunction(self, notificationId)
-        -- if (self:isPending(notificationId) == oldPending) then
-        --     return
-        -- end
-        -- if (Config.Config.Content.Notifications == nil) then
-        --     Config.Config.Content["Notifications"] = {}
-        -- end
-        -- self:saveState(Config.Config.Content.Notifications)
-        -- logMsg(
-        --     "HM:" ..
-        --         notificationId .. " value in state=" .. tostring(Config.Config.Content.Notifications[notificationId])
-        -- )
-        -- Config.Config:markDirty()
+        local oldPending = self:isPending(notificationId)
+        managerFunction(self, notificationId)
+        if (self:isPending(notificationId) == oldPending) then
+            return
+        end
+        if (Config.Config.Content.Notifications == nil) then
+            Config.Config.Content["Notifications"] = {}
+        end
+
+        self:saveState(Config.Config.Content.Notifications)
+        Config.Config:markDirty()
     end
 end
 

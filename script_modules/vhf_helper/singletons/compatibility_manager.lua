@@ -1,8 +1,18 @@
 local AircraftCompatibilityId = require("vhf_helper.components.aircraft_compatibility_id")
+local Notifications = require("vhf_helper.state.notifications")
+local Utilities = require("shared_components.utilities")
 
 local vhfHelperCompatibilityManagerSingleton
 do
-    vhfHelperCompatibilityManager = {}
+    vhfHelperCompatibilityManager = {
+        Constants = {
+            ConfigurationVersion = 1,
+            CompatibilityUpdateNotificationPrefix = "CompatibilityManager_ReadCompatibilityInformation_"
+        },
+        Notifications = {
+            CompatibilityUpdate = nil
+        }
+    }
 
     function vhfHelperCompatibilityManager:_reset()
         self.planeCompatibilityId = nil
@@ -46,6 +56,19 @@ do
             self.currentConfiguration.isDefaultPlane = true
             logMsg(("Plane Compatibility: Using default plane=%s"):format(self.currentConfiguration.readableName))
         end
+
+        Notifications.notificationManager:postOnce(self:_getCompatibilityUpdateNotificationId())
+    end
+
+    function vhfHelperCompatibilityManager:_getCompatibilityUpdateNotificationId()
+        if (vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate == nil) then
+            vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate =
+                vhfHelperCompatibilityManager.Constants.CompatibilityUpdateNotificationPrefix ..
+                tostring(vhfHelperCompatibilityManager.Constants.ConfigurationVersion) ..
+                    "_" .. Utilities.encodeByteToHex(self:getPlaneCompatibilityIdString())
+        end
+
+        return vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate
     end
 
     function vhfHelperCompatibilityManager:_addConfigurationForIdWithReadableName(configuration, id, readableName)

@@ -84,4 +84,22 @@ Utilities.openUrlInLocalDefaultBrowser = function(url)
     return true
 end
 
+Utilities.encodeHexToByte = function(str)
+    return (str:gsub(
+        "..",
+        function(twoHexCharacters)
+            return string.char(tonumber(twoHexCharacters, 16))
+        end
+    ))
+end
+
+Utilities.encodeByteToHex = function(str)
+    return (str:gsub(
+        ".",
+        function(character)
+            return string.format("%02X", string.byte(character))
+        end
+    ))
+end
+
 return Utilities

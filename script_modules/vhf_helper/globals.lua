@@ -23,7 +23,7 @@ Globals.popDefaultButtonColorsFromImguiStack = function()
     imgui.PopStyleColor()
 end
 
-Globals.requireAllAndBootstrap = function(luaRequireStringTable)
+Globals.requireAllAndBootstrapInOrder = function(luaRequireStringTable)
     for _, luaRequireString in pairs(luaRequireStringTable) do
         local requiredScript = require(luaRequireString)
         requiredScript.bootstrap()

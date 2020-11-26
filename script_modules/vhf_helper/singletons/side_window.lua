@@ -3,7 +3,7 @@ local Config = require("vhf_helper.state.config")
 local Configuration = require("shared_components.configuration")
 local Utilities = require("shared_components.utilities")
 local InlineButtonBlob = require("shared_components.inline_button_blob")
--- local Notifications = require("vhf_helper.state.notifications")
+local Notifications = require("vhf_helper.state.notifications")
 
 TRACK_ISSUE(
     "FlyWithLua",
@@ -64,13 +64,11 @@ do
             defaultWindowName = Globals.sidePanelName
         },
         Notifications = {
-            HaveALookAtMe = "SideWindow.HaveALookAtMe"
+            HaveALookAtMe = "SideWindow_HaveALookAtMe"
         }
     }
 
     function vhfHelperSideWindow:_reset()
-        -- Notifications.notificationManager:postOnce(vhfHelperSideWindow.Notifications.HaveALookAtMe)
-
         self.window = nil
 
         vhfHelperSideWindow.Constants.MulticrewStateToMessage = {}
@@ -84,7 +82,7 @@ do
                 vhfHelperMulticrewManager.Constants.State.SmartCopilotConfigurationMissing
             ] = {
             "No SmartCopilot configuration found for your current aircraft.",
-            Globals.Colors.a320Blue
+            Globals.Colors.a320Orange
         }
         vhfHelperSideWindow.Constants.MulticrewStateToMessage[
                 vhfHelperMulticrewManager.Constants.State.SmartCopilotConfigurationInvalid
@@ -110,8 +108,7 @@ do
         self.PlaneCompatibilityBlob:addNewline()
         self.PlaneCompatibilityBlob:addTextWithoutNewline("describe your findings at Github:")
         self.PlaneCompatibilityBlob:addNewline()
-        self.PlaneCompatibilityLink = ClickableFeedbackBrowserLink:new()
-        self.PlaneCompatibilityLink:addLinkToBlob(
+        ClickableFeedbackBrowserLink:new():addLinkToBlob(
             self.PlaneCompatibilityBlob,
             "Compatibility: https://github.com/VerticalLongboard/xplane-vhf-helper/...",
             self:_getUrlWithDiagnosticParams(
@@ -122,7 +119,7 @@ do
         )
 
         TRACK_ISSUE("Feature", "Add version number to build.")
-        local manuallyUpdatedVersionNumberDontUseForTooLong = "v1.0.16"
+        local manuallyUpdatedVersionNumberDontUseForTooLong = "v1.0.18"
         self.UpdatesBlob = InlineButtonBlob:new()
         self.UpdatesBlob:addTextWithoutNewline(
             ("You are using VR Radio Helper %s"):format(manuallyUpdatedVersionNumberDontUseForTooLong)
@@ -130,8 +127,7 @@ do
         self.UpdatesBlob:addNewline()
         self.UpdatesBlob:addTextWithoutNewline("For news and updates, see the official Github page:")
         self.UpdatesBlob:addNewline()
-        self.UpdatesLink = ClickableFeedbackBrowserLink:new()
-        self.UpdatesLink:addLinkToBlob(
+        ClickableFeedbackBrowserLink:new():addLinkToBlob(
             self.UpdatesBlob,
             "Latest Release: https://github.com/VerticalLongboard/xplane-vhf-helper/...",
             "https://github.com/VerticalLongboard/xplane-vhf-helper/releases/latest"
@@ -142,8 +138,7 @@ do
             "How does VR Radio Helper work for you? Please leave your feedback at Github:"
         )
         self.FeedbackLinkBlob:addNewline()
-        self.FeedbackLink = ClickableFeedbackBrowserLink:new()
-        self.FeedbackLink:addLinkToBlob(
+        ClickableFeedbackBrowserLink:new():addLinkToBlob(
             self.FeedbackLinkBlob,
             "Feedback: https://github.com/VerticalLongboard/xplane-vhf-helper/...",
             self:_getUrlWithDiagnosticParams(
@@ -167,6 +162,7 @@ do
 
     function vhfHelperSideWindow:bootstrap()
         self:_reset()
+        Notifications.notificationManager:postOnce(vhfHelperSideWindow.Notifications.HaveALookAtMe)
     end
 
     function vhfHelperSideWindow:create()
@@ -175,7 +171,6 @@ do
         end
 
         self:_reset()
-        -- Notifications.notificationManager:postOnce(vhfHelperSideWindow.Notifications.HaveALookAtMe)
 
         local minWidthWithoutScrollbars = nil
         local minHeightWithoutScrollbars = nil
@@ -196,6 +191,9 @@ do
         float_wnd_set_title(self.window, vhfHelperSideWindow.Constants.defaultWindowName)
         float_wnd_set_imgui_builder(self.window, "renderVhfHelperSideWindowToCanvas")
         float_wnd_set_onclose(self.window, "closeVhfHelperSideWindow")
+
+        Notifications.notificationManager:acknowledge(vhfHelperSideWindow.Notifications.HaveALookAtMe)
+        Notifications.notificationManager:acknowledge(vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate)
     end
 
     function vhfHelperSideWindow:destroy()
@@ -263,7 +261,7 @@ do
         local cc = vhfHelperCompatibilityManager:getCurrentConfiguration()
 
         if (cc.isDefaultPlane) then
-            imgui.TextUnformatted("No compatibility information found.")
+            imgui.TextUnformatted("No compatibility information for your current plane found.")
             imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
             imgui.TextUnformatted("All features are enabled, but may not work correctly.")
             imgui.PopStyleColor()
@@ -291,16 +289,21 @@ do
         self:_renderSectionHeader("Feedback :-)")
         self.FeedbackLinkBlob:renderToCanvas()
 
-        -- if (Notifications ~= nil) then
-        --     if (Notifications.notificationManager ~= nil) then
-        --         imgui.TextUnformatted("")
-        --         self:_renderSectionHeader("DEBUG: Notifications")
+        if (Notifications ~= nil) then
+            if (Notifications.notificationManager ~= nil) then
+                imgui.TextUnformatted("")
+                self:_renderSectionHeader("DEBUG: Notifications")
 
-        --         for nid, pending in pairs(Notifications.notificationManager.notifications) do
-        --             imgui.TextUnformatted(("nid=%s state=%s"):format(nid, tostring(pending)))
-        --         end
-        --     end
-        -- end
+                for nid, pending in pairs(Notifications.notificationManager.notifications) do
+                    imgui.TextUnformatted(
+                        Utilities.newlineBreakStringAtWidth(
+                            ("nid=%s state=%s"):format(nid, tostring(pending)),
+                            maxStringWidth
+                        )
+                    )
+                end
+            end
+        end
 
         Globals.popDefaultButtonColorsFromImguiStack()
     end
