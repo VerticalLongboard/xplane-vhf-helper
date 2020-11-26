@@ -51,8 +51,8 @@ do
         return self.notifications[notificationId] == NotificationManager.Constants.NotificationStates.Pending
     end
     function NotificationManager:acknowledge(notificationId)
+        assert(notificationId)
         if (self.notifications[notificationId] == nil) then
-            logMsg("nid=" .. notificationId .. " not found")
             return
         end
         self.notifications[notificationId] = NotificationManager.Constants.NotificationStates.Acknowledged

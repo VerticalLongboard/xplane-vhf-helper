@@ -192,8 +192,14 @@ do
         float_wnd_set_imgui_builder(self.window, "renderVhfHelperSideWindowToCanvas")
         float_wnd_set_onclose(self.window, "closeVhfHelperSideWindow")
 
+        self.pendingMulticrewNotification =
+            Notifications.notificationManager:isPending(vhfHelperMulticrewManager.Notifications.StateChange)
+        self.pendingCompatibilityNotification =
+            Notifications.notificationManager:isPending(vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate)
+
         Notifications.notificationManager:acknowledge(vhfHelperSideWindow.Notifications.HaveALookAtMe)
         Notifications.notificationManager:acknowledge(vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate)
+        Notifications.notificationManager:acknowledge(vhfHelperMulticrewManager.Notifications.StateChange)
     end
 
     function vhfHelperSideWindow:destroy()
@@ -244,16 +250,20 @@ do
 
         local maxStringWidth = 60
 
-        imgui.PushStyleColor(
-            imgui.constant.Col.Text,
-            vhfHelperSideWindow.Constants.MulticrewStateToMessage[multicrewState][2]
-        )
+        if (self.pendingMulticrewNotification) then
+            imgui.PushStyleColor(
+                imgui.constant.Col.Text,
+                vhfHelperSideWindow.Constants.MulticrewStateToMessage[multicrewState][2]
+            )
+        end
         imgui.TextUnformatted(vhfHelperSideWindow.Constants.MulticrewStateToMessage[multicrewState][1])
         local lastMulticrewError = vhfHelperMulticrewManager:getLastErrorOrNil()
         if (lastMulticrewError ~= nil) then
             imgui.TextUnformatted(Utilities.newlineBreakStringAtWidth(lastMulticrewError, maxStringWidth))
         end
-        imgui.PopStyleColor()
+        if (self.pendingMulticrewNotification) then
+            imgui.PopStyleColor()
+        end
 
         imgui.TextUnformatted("")
         self:_renderSectionHeader("Plane Compatibility")
@@ -262,9 +272,13 @@ do
 
         if (cc.isDefaultPlane) then
             imgui.TextUnformatted("No compatibility information for your current plane found.")
-            imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
+            if (self.pendingCompatibilityNotification) then
+                imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
+            end
             imgui.TextUnformatted("All features are enabled, but may not work correctly.")
-            imgui.PopStyleColor()
+            if (self.pendingCompatibilityNotification) then
+                imgui.PopStyleColor()
+            end
         else
             imgui.TextUnformatted("Your plane looks like a")
             imgui.SameLine()
@@ -272,9 +286,13 @@ do
             imgui.TextUnformatted(("%s"):format(cc.readableName))
             imgui.PopStyleColor()
             if (cc.hasKnownIssues) then
-                imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
+                if (self.pendingCompatibilityNotification) then
+                    imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
+                end
                 imgui.TextUnformatted(("Known Issues: %s"):format(cc.knownIssuesText))
-                imgui.PopStyleColor()
+                if (self.pendingCompatibilityNotification) then
+                    imgui.PopStyleColor()
+                end
             end
         end
 
@@ -289,21 +307,21 @@ do
         self:_renderSectionHeader("Feedback :-)")
         self.FeedbackLinkBlob:renderToCanvas()
 
-        if (Notifications ~= nil) then
-            if (Notifications.notificationManager ~= nil) then
-                imgui.TextUnformatted("")
-                self:_renderSectionHeader("DEBUG: Notifications")
+        -- if (Notifications ~= nil) then
+        --     if (Notifications.notificationManager ~= nil) then
+        --         imgui.TextUnformatted("")
+        --         self:_renderSectionHeader("DEBUG: Notifications")
 
-                for nid, pending in pairs(Notifications.notificationManager.notifications) do
-                    imgui.TextUnformatted(
-                        Utilities.newlineBreakStringAtWidth(
-                            ("nid=%s state=%s"):format(nid, tostring(pending)),
-                            maxStringWidth
-                        )
-                    )
-                end
-            end
-        end
+        --         for nid, pending in pairs(Notifications.notificationManager.notifications) do
+        --             imgui.TextUnformatted(
+        --                 Utilities.newlineBreakStringAtWidth(
+        --                     ("nid=%s state=%s"):format(nid, tostring(pending)),
+        --                     maxStringWidth
+        --                 )
+        --             )
+        --         end
+        --     end
+        -- end
 
         Globals.popDefaultButtonColorsFromImguiStack()
     end

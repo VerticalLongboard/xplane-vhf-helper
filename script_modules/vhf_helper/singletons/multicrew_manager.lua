@@ -2,6 +2,7 @@ local Datarefs = require("vhf_helper.state.datarefs")
 local Utilities = require("shared_components.utilities")
 local IniEditor = require("shared_components.ini_editor")
 local Notifications = require("vhf_helper.state.notifications")
+local Config = require("vhf_helper.state.config")
 
 local vhfHelperMulticrewManagerSingleton
 do
@@ -19,6 +20,9 @@ do
                 SmartCopilotConfigurationPatchingFailed = "SmartCopilotConfigurationPatchingFailed",
                 RestartRequiredAfterPatch = "RestartRequiredAfterPatch"
             }
+        },
+        Notifications = {
+            StateChange = nil
         }
     }
 
@@ -34,6 +38,33 @@ do
     function vhfHelperMulticrewManager:bootstrap()
         self:_reset()
         self:_setupMulticrew()
+
+        self:getStateChangeNotificationId()
+
+        local lastState = nil
+        local stateKey =
+            "State_" .. Utilities.encodeByteToHex(vhfHelperCompatibilityManager:getPlaneCompatibilityIdString())
+        if (Config.Config.Content.Multicrew ~= nil) then
+            if (Config.Config.Content.Multicrew[stateKey] ~= nil) then
+                lastState = Config.Config.Content.Multicrew[stateKey]
+            end
+        end
+
+        if (lastState == nil or self.state ~= lastState) then
+            Notifications.notificationManager:repost(self:getStateChangeNotificationId())
+        end
+
+        Config.Config:setValue("Multicrew", stateKey, self.state)
+    end
+
+    function vhfHelperMulticrewManager:getStateChangeNotificationId()
+        if (vhfHelperMulticrewManager.Notifications.StateChange == nil) then
+            vhfHelperMulticrewManager.Notifications.StateChange =
+                "MulticrewManager_StateUpdate_" ..
+                Utilities.encodeByteToHex(vhfHelperCompatibilityManager:getPlaneCompatibilityIdString())
+        end
+
+        return vhfHelperMulticrewManager.Notifications.StateChange
     end
 
     function vhfHelperMulticrewManager:everyFrameLoop()

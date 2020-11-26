@@ -18,7 +18,6 @@ do
 
     Globals.OVERRIDE(VhfHelperNotificationManager.acknowledge)
     function VhfHelperNotificationManager:acknowledge(notificationId)
-        logMsg("ack nid=" .. notificationId)
         self:_saveToConfigIfStateChanges(NotificationManager.acknowledge, notificationId)
     end
 

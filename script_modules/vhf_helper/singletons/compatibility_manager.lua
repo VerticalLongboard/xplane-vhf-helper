@@ -1,6 +1,7 @@
 local AircraftCompatibilityId = require("vhf_helper.components.aircraft_compatibility_id")
 local Notifications = require("vhf_helper.state.notifications")
 local Utilities = require("shared_components.utilities")
+local Config = require("vhf_helper.state.config")
 
 local vhfHelperCompatibilityManagerSingleton
 do

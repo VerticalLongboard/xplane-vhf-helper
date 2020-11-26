@@ -20,12 +20,17 @@ do
         self.__index = self
 
         self:_generateIdStringNow()
+        -- self:_generateIdHashNow()
         return newInstanceWithState
     end
 
     function AircraftCompatibilityId:getIdString()
         return self.idString
     end
+
+    -- function AircraftCompatibilityId:getIdHash()
+    --     return self.idHash
+    -- end
 
     function AircraftCompatibilityId:_generateIdStringNow()
         local acfReader = AcfReader:new()
@@ -57,6 +62,10 @@ do
             self.acfPropertyName or NoInfoMarker
         )
     end
+
+    -- function AircraftCompatibilityId:_generateIdHashNow()
+    --     self.idHash = MD5.sumhexa(self.idString)
+    -- end
 end
 
 return AircraftCompatibilityId
