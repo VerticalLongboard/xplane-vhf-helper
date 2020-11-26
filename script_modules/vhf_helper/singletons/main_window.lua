@@ -134,6 +134,8 @@ do
         )
         imgui.SameLine()
 
+        imgui.Dummy(Globals.defaultDummySize * 0.95, 0.0)
+        imgui.SameLine()
         if (imgui.Button(">")) then
             self.toggleSideWindowSoon = true
         end
