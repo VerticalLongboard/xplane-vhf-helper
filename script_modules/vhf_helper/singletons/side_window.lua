@@ -70,6 +70,17 @@ do
 
     function vhfHelperSideWindow:_reset()
         self.window = nil
+    end
+
+    function vhfHelperSideWindow:_createUiItems()
+        self.pendingMulticrewNotification =
+            Notifications.notificationManager:isPending(vhfHelperMulticrewManager.Notifications.StateChange)
+        self.pendingCompatibilityNotification =
+            Notifications.notificationManager:isPending(vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate)
+
+        Notifications.notificationManager:acknowledge(vhfHelperSideWindow.Notifications.HaveALookAtMe)
+        Notifications.notificationManager:acknowledge(vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate)
+        Notifications.notificationManager:acknowledge(vhfHelperMulticrewManager.Notifications.StateChange)
 
         vhfHelperSideWindow.Constants.MulticrewStateToMessage = {}
         vhfHelperSideWindow.Constants.MulticrewStateToMessage[
@@ -104,9 +115,16 @@ do
         }
 
         self.PlaneCompatibilityBlob = InlineButtonBlob:new()
-        self.PlaneCompatibilityBlob:addTextWithoutNewline("If you think that something doesn't work correctly,")
+        local compatColor = Globals.Colors.white
+        if (self.pendingCompatibilityNotification) then
+            compatColor = Globals.Colors.a320Orange
+        end
+        self.PlaneCompatibilityBlob:addColorTextWithoutNewline(
+            "If you think that something doesn't work correctly,",
+            compatColor
+        )
         self.PlaneCompatibilityBlob:addNewline()
-        self.PlaneCompatibilityBlob:addTextWithoutNewline("describe your findings at Github:")
+        self.PlaneCompatibilityBlob:addColorTextWithoutNewline("describe your findings at Github:", compatColor)
         self.PlaneCompatibilityBlob:addNewline()
         ClickableFeedbackBrowserLink:new():addLinkToBlob(
             self.PlaneCompatibilityBlob,
@@ -171,6 +189,7 @@ do
         end
 
         self:_reset()
+        self:_createUiItems()
 
         local minWidthWithoutScrollbars = nil
         local minHeightWithoutScrollbars = nil
@@ -191,15 +210,6 @@ do
         float_wnd_set_title(self.window, vhfHelperSideWindow.Constants.defaultWindowName)
         float_wnd_set_imgui_builder(self.window, "renderVhfHelperSideWindowToCanvas")
         float_wnd_set_onclose(self.window, "closeVhfHelperSideWindow")
-
-        self.pendingMulticrewNotification =
-            Notifications.notificationManager:isPending(vhfHelperMulticrewManager.Notifications.StateChange)
-        self.pendingCompatibilityNotification =
-            Notifications.notificationManager:isPending(vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate)
-
-        Notifications.notificationManager:acknowledge(vhfHelperSideWindow.Notifications.HaveALookAtMe)
-        Notifications.notificationManager:acknowledge(vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate)
-        Notifications.notificationManager:acknowledge(vhfHelperMulticrewManager.Notifications.StateChange)
     end
 
     function vhfHelperSideWindow:destroy()
