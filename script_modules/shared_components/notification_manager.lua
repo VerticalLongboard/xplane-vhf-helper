@@ -2,7 +2,14 @@ local Utilities = require("shared_components.utilities")
 
 local NotificationManager
 do
-    NotificationManager = {}
+    NotificationManager = {
+        Constants = {
+            NotificationStates = {
+                Pending = "pending",
+                Acknowledged = "acknowledged"
+            }
+        }
+    }
 
     function NotificationManager:new()
         local newInstanceWithState = {
@@ -18,10 +25,7 @@ do
             return
         end
 
-        local newNotification = {
-            isPending = true
-        }
-
+        local newNotification = NotificationManager.Constants.NotificationStates.Pending
         self.notifications[notificationId] = newNotification
     end
 
@@ -31,12 +35,12 @@ do
             return
         end
 
-        self.notifications[notificationId].isPending = true
+        self.notifications[notificationId] = NotificationManager.Constants.NotificationStates.Pending
     end
 
     function NotificationManager:saveState(state)
-        for nid, notification in pairs(self.notifications) do
-            state[nid] = notification.isPending
+        for nid, notificationState in pairs(self.notifications) do
+            state[nid] = notificationState
         end
     end
 
@@ -44,10 +48,8 @@ do
         if (state == nil) then
             return
         end
-        for nid, pending in pairs(state) do
-            self.notifications[nid] = {
-                isPending = pending
-            }
+        for nid, notificationState in pairs(state) do
+            self.notifications[nid] = notificationState
         end
     end
 
@@ -55,14 +57,14 @@ do
         if (self.notifications[notificationId] == nil) then
             return false
         end
-        return self.notifications[notificationId].isPending
+        return self.notifications[notificationId] == NotificationManager.Constants.NotificationStates.Pending
     end
 
     function NotificationManager:acknowledge(notificationId)
         if (self.notifications[notificationId] == nil) then
             return
         end
-        self.notifications[notificationId].isPending = false
+        self.notifications[notificationId] = NotificationManager.Constants.NotificationStates.Acknowledged
     end
 end
 

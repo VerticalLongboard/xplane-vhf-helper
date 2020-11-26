@@ -86,6 +86,8 @@ local isNewTransponderCodeValid = function(ild, newValue)
     return Validation.transponderCodeValidator:validate(tostring(newValue)) ~= nil
 end
 
+TRACK_ISSUE("Feature", "When local dataref values are invalid, show minus signs ---")
+
 local transponderModeToDescriptor = {}
 table.insert(transponderModeToDescriptor, "OFF")
 table.insert(transponderModeToDescriptor, "STBY")

@@ -35,6 +35,9 @@ do
         self:_setupMulticrew()
     end
 
+    function vhfHelperMulticrewManager:everyFrameLoop()
+    end
+
     function vhfHelperMulticrewManager:getState()
         return self.state
     end
@@ -93,9 +96,6 @@ do
         else
             self.state = vhfHelperMulticrewManager.Constants.State.MulticrewAvailable
         end
-    end
-
-    function vhfHelperMulticrewManager:everyFrameLoop()
     end
 
     function vhfHelperMulticrewManager:_patchSmartCopilotConfiguration(iniEditor)

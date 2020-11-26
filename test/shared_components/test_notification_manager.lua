@@ -1,6 +1,11 @@
 NotificationManager = require("shared_components.notification_manager")
 
-TestNotificationManager = {}
+TestNotificationManager = {
+    States = {
+        Pending = NotificationManager.Constants.NotificationStates.Pending,
+        Acknowledged = NotificationManager.Constants.NotificationStates.Acknowledged
+    }
+}
 
 function TestNotificationManager:testPostedNotificationsArePendingAndNeedToBeAcknowledgedOnlyOnce()
     local nid = "dakl;f;kadlsf"
@@ -36,8 +41,8 @@ function TestNotificationManager:testStateIsSavedAndLoadedCorrectly()
 
     local state = {}
     nm:saveState(state)
-    luaUnit.assertIsFalse(state[nid])
-    luaUnit.assertIsTrue(state[nid2])
+    luaUnit.assertEquals(state[nid], self.States.Acknowledged)
+    luaUnit.assertEquals(state[nid2], self.States.Pending)
 
     local nm2 = NotificationManager:new()
     nm2:loadState(state)

@@ -76,15 +76,6 @@ do
             ldr:loopUpdate()
         end
 
-        if (Config.Config.Content.Notifications ~= nil) then
-            logMsg(
-                "HM:" ..
-                    "SideWindow.HaveALookAtMe" ..
-                        " value in state=" ..
-                            tostring(Config.Config.Content.Notifications["SideWindow.HaveALookAtMe"]) ..
-                                " ISDIRYT=" .. tostring(Config.Config.isDirty)
-            )
-        end
         Config.Config:save()
     end
 

@@ -3,7 +3,8 @@ local Config = require("vhf_helper.state.config")
 
 local M = {}
 M.bootstrap = function()
-    M.notificationManager = VhfHelperNotificationManager:new()
-    M.notificationManager:loadState(Config.Config.Content.Notifications)
+    -- M.notificationManager = VhfHelperNotificationManager:new()
+    logMsg("config notifications?=" .. tostring(Config.Config.Content.Notifications))
+    -- M.notificationManager:loadState(Config.Config.Content.Notifications)
 end
 return M

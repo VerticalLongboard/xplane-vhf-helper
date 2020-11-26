@@ -32,11 +32,14 @@ function LuaIniParserStub:setFileContentBeforeLoad(value)
 end
 
 function LuaIniParserStub.load(fileName)
+	logMsg("loading path=" .. fileName .. " content=" .. require("luaunit").prettystr(LuaIniParserStub.fileContent))
 	return LuaIniParserStub.fileContent
 end
 
 function LuaIniParserStub.save(fileName, data)
-	fileContent = data
+	LuaIniParserStub.fileContent = data
 end
+
+LuaIniParserStub.isStub = true
 
 return LuaIniParserStub

@@ -25,6 +25,7 @@ SOFTWARE.
 --]]
 local flyWithLuaStub = require("xplane_fly_with_lua_stub")
 local imguiStub = require("imgui_stub")
+local LuaIniParserStub = require("LIP")
 
 TestHighLevelBehaviour = {
 	Constants = {
@@ -73,7 +74,7 @@ function TestHighLevelBehaviour:_switchToOtherTransponder(linkedDatarefId, newTr
 	luaUnit.assertEquals(d.data, tonumber(newTransponderString))
 end
 
-function TestHighLevelBehaviour:createInternalDatarefsAndBootstrap()
+function TestHighLevelBehaviour:_createInternalDatarefs()
 	flyWithLuaStub:reset()
 	flyWithLuaStub:createSharedDatarefHandle(
 		TestDatarefs.Constants.firstComFreq,
@@ -106,7 +107,13 @@ function TestHighLevelBehaviour:createInternalDatarefsAndBootstrap()
 		flyWithLuaStub.Constants.DatarefTypeInteger,
 		TestDatarefs.Constants.initialTransponderMode
 	)
+end
 
+function TestHighLevelBehaviour:bootstrapVhfHelperWithConfiguration(iniConfigurationContent)
+	self:_createInternalDatarefs()
+	logMsg("ini=" .. tostring(iniConfigurationContent))
+	-- LuaIniParserStub.reset()
+	LuaIniParserStub.setFileContentBeforeLoad(iniConfigurationContent)
 	local vhfHelper = dofile("scripts/vhf_helper.lua")
 	flyWithLuaStub:bootstrapAllMacros()
 	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
@@ -114,8 +121,27 @@ end
 
 TRACK_ISSUE("Test", "Missing test for: Default visibility set to true in INI shows window")
 function TestHighLevelBehaviour:setUp()
-	self:createInternalDatarefsAndBootstrap()
+	self:bootstrapVhfHelperWithConfiguration(nil)
 	flyWithLuaStub:activateMacro(vhfHelperPackageExport.test.vhfHelperLoop.Constants.defaultMacroName, true)
+end
+
+function TestHighLevelBehaviour:testWindowShowsUpWhenConfigurationSaysSo()
+	-- LuaIniParserStub.reset()
+	-- local iniContent = {}
+	-- iniContent.Windows = {}
+	-- iniContent.Windows.MainWindowInitiallyVisible = "yes"
+	-- LuaIniParserStub:setFileContentBeforeLoad(iniContent)
+
+	local dummyIniFilePath = SCRIPT_DIRECTORY .. "vhf_helper.ini"
+	local iniFile = io.open(dummyIniFilePath, "w+b")
+	iniFile:close()
+
+	-- local vhfHelper = dofile("scripts/vhf_helper.lua")
+	-- flyWithLuaStub:bootstrapAllMacros()
+	-- flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
+	-- luaUnit.assertIsTrue(
+	-- 	flyWithLuaStub:isMacroActive(vhfHelperPackageExport.test.vhfHelperLoop.Constants.defaultMacroName)
+	-- )
 end
 
 function TestHighLevelBehaviour:testClosingThePanelChangesPanelConfigurationAccordingly()

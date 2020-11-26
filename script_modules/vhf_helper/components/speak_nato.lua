@@ -45,7 +45,7 @@ SpeakNato._getNatoStringForNumbers = function(string)
     return string
 end
 
-TRACK_ISSUE("Tech Debt", "This function is not yet required. It's waste, implemented too soon.")
+TRACK_ISSUE("Tech Debt", "This function is not yet required. It's waste, implemented too soon.", "But it sounded good.")
 SpeakNato._getNatoStringForLetters = function(string)
     string = string:gsub("A", " alfah ")
     string = string:gsub("B", " brahvoh ")

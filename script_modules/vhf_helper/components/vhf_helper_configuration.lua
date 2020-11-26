@@ -1,6 +1,5 @@
 local Configuration = require("shared_components.configuration")
 local Globals = require("vhf_helper.globals")
-local LuaIniParser = require("LIP")
 
 local VhfHelperConfiguration
 do
@@ -48,6 +47,14 @@ do
     Globals._NEWFUNC(VhfHelperConfiguration.setSpeakRemoteNumbers)
     function VhfHelperConfiguration:setSpeakRemoteNumbers(booleanValue)
         self:setValue("Audio", "SpeakRemoteNumbers", Configuration.getValueFromBoolean(booleanValue))
+    end
+
+    Globals.OVERRIDE(VhfHelperConfiguration.save)
+    function VhfHelperConfiguration:save()
+        if (self.isDirty) then
+            logMsg("VHF Helper: Saving configuration due to recent change.")
+        end
+        Configuration.save(self)
     end
 end
 return VhfHelperConfiguration

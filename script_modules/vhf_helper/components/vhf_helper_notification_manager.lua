@@ -8,40 +8,36 @@ do
 
     Globals.OVERRIDE(VhfHelperNotificationManager.postOnce)
     function VhfHelperNotificationManager:postOnce(notificationId)
-        self:_saveToConfigIfStateChanged(NotificationManager.postOnce, notificationId)
+        self:_saveToConfigIfStateChanges(NotificationManager.postOnce, notificationId)
     end
 
     Globals.OVERRIDE(VhfHelperNotificationManager.repost)
     function VhfHelperNotificationManager:repost(notificationId)
-        self:_saveToConfigIfStateChanged(NotificationManager.repost, notificationId)
+        self:_saveToConfigIfStateChanges(NotificationManager.repost, notificationId)
     end
 
     Globals.OVERRIDE(VhfHelperNotificationManager.acknowledge)
     function VhfHelperNotificationManager:acknowledge(notificationId)
-        self:_saveToConfigIfStateChanged(NotificationManager.acknowledge, notificationId)
+        self:_saveToConfigIfStateChanges(NotificationManager.acknowledge, notificationId)
     end
 
-    Globals._NEWFUNC(VhfHelperNotificationManager._saveToConfig)
-    function VhfHelperNotificationManager:_saveToConfigIfStateChanged(managerFunction, notificationId)
-        local oldPending = self:isPending(notificationId)
-
-        logMsg("-----------------" .. notificationId)
-        managerFunction(self, notificationId)
-
-        if (self:isPending(notificationId) == oldPending) then
-            return
-        end
-
-        if (Config.Config.Content.Notifications == nil) then
-            Config.Config.Content["Notifications"] = {}
-        end
-
-        self:saveState(Config.Config.Content.Notifications)
-        logMsg(
-            "HM:" ..
-                notificationId .. " value in state=" .. tostring(Config.Config.Content.Notifications[notificationId])
-        )
-        Config.Config:markDirty()
+    Globals._NEWFUNC(VhfHelperNotificationManager._saveToConfigIfStateChanges)
+    function VhfHelperNotificationManager:_saveToConfigIfStateChanges(managerFunction, notificationId)
+        -- local oldPending = self:isPending(notificationId)
+        -- logMsg("-----------------" .. notificationId)
+        -- managerFunction(self, notificationId)
+        -- if (self:isPending(notificationId) == oldPending) then
+        --     return
+        -- end
+        -- if (Config.Config.Content.Notifications == nil) then
+        --     Config.Config.Content["Notifications"] = {}
+        -- end
+        -- self:saveState(Config.Config.Content.Notifications)
+        -- logMsg(
+        --     "HM:" ..
+        --         notificationId .. " value in state=" .. tostring(Config.Config.Content.Notifications[notificationId])
+        -- )
+        -- Config.Config:markDirty()
     end
 end
 

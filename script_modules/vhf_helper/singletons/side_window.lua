@@ -122,12 +122,13 @@ do
         )
 
         TRACK_ISSUE("Feature", "Add version number to build.")
+        local manuallyUpdatedVersionNumberDontUseForTooLong = "v1.0.16"
         self.UpdatesBlob = InlineButtonBlob:new()
-        self.UpdatesBlob:addTextWithoutNewline(("You are using VR Radio Helper %s"):format("UNKNOWN_VERSION"))
-        self.UpdatesBlob:addNewline()
         self.UpdatesBlob:addTextWithoutNewline(
-            ("For news and updates, see the official Github page:"):format("UNKNOWN_VERSION")
+            ("You are using VR Radio Helper %s"):format(manuallyUpdatedVersionNumberDontUseForTooLong)
         )
+        self.UpdatesBlob:addNewline()
+        self.UpdatesBlob:addTextWithoutNewline("For news and updates, see the official Github page:")
         self.UpdatesBlob:addNewline()
         self.UpdatesLink = ClickableFeedbackBrowserLink:new()
         self.UpdatesLink:addLinkToBlob(
@@ -174,6 +175,7 @@ do
         end
 
         self:_reset()
+        -- Notifications.notificationManager:postOnce(vhfHelperSideWindow.Notifications.HaveALookAtMe)
 
         local minWidthWithoutScrollbars = nil
         local minHeightWithoutScrollbars = nil
@@ -289,13 +291,16 @@ do
         self:_renderSectionHeader("Feedback :-)")
         self.FeedbackLinkBlob:renderToCanvas()
 
+        if (Notifications.notificationManager ~= nil) then
+            imgui.TextUnformatted("")
+            self:_renderSectionHeader("DEBUG: Notifications")
+
+            for nid, pending in pairs(Notifications.notificationManager.notifications) do
+                imgui.TextUnformatted(("nid=%s state=%s"):format(nid, tostring(pending)))
+            end
+        end
+
         Globals.popDefaultButtonColorsFromImguiStack()
-
-        -- imgui.TextUnformatted(tostring(Notifications.notificationManager))
-
-        -- for nid, pending in pairs(Notifications.notificationManager.notifications) do
-        --     imgui.TextUnformatted(("nid=%s pending=%s"):format(nid, tostring(pending)))
-        -- end
     end
 
     function vhfHelperSideWindow:_renderSectionHeader(title)

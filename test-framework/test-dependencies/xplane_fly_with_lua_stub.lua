@@ -34,7 +34,7 @@ local function resetPlatformGlobals()
     local invalidPlaneIcao = "...."
     local invalidXplaneVersion = "0"
     local defaultAircraftPath = SCRIPT_DIRECTORY
-    local invalidAircraftFilename = ""
+    local invalidAircraftFilename = "does_not_exist.acf"
 
     PLANE_TAILNUMBER = invalidPlaneTailnumber
     SYSTEM = invalidSystem
