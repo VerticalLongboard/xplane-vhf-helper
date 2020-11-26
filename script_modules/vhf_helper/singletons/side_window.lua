@@ -153,6 +153,7 @@ do
 
         self.FeedbackLinkBlob = InlineButtonBlob:new()
         self.FeedbackLinkBlob:addTextWithoutNewline("How does VR Radio Helper work for you?")
+        self.FeedbackLinkBlob:addNewline()
         self.FeedbackLinkBlob:addTextWithoutNewline("Please leave your feedback at Github:")
         self.FeedbackLinkBlob:addNewline()
         ClickableFeedbackBrowserLink:new():addLinkToBlob(
@@ -284,7 +285,7 @@ do
             if (self.pendingCompatibilityNotification) then
                 imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
             end
-            imgui.TextUnformatted("All features are enabled, but may not work correctly.")
+            imgui.TextUnformatted("All features are enabled, but some may not work correctly.")
             if (self.pendingCompatibilityNotification) then
                 imgui.PopStyleColor()
             end

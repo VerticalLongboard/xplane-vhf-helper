@@ -23,19 +23,10 @@ VR Radio Helper:
 To make it multicrew-ready (do that in **BOTH** pilot's airplanes):
 
 * Install SmartCopilot: https://sky4crew.com/smartcopilot/ and install aircraft-specific `smartcopilot.cfg`
-* Add the following line to `<X-Plane 11 Folder>/ ... /<Airplane folder>/smartcopilot.cfg`, under **[TRIGGERS]**
-```text
-[TRIGGERS]
-VHFHelper/InterchangeCOM1Frequency = 0
-VHFHelper/InterchangeCOM2Frequency = 0
-VHFHelper/InterchangeNAV1Frequency = 0
-VHFHelper/InterchangeNAV2Frequency = 0
-VHFHelper/InterchangeTransponderCode = 0
-VHFHelper/InterchangeTransponderMode = 0
-```
 
 ## Usage
 * Go to `Plugins/FlyWithLua/FlyWithLua Macros/VR Radio Helper`.
+* Check if multicrew support is available (click the `>` button) if you wish to fly with a co-pilot.
 * Place and scale the window wherever you like (in 2D and VR).
 * Use the number buttons to enter the new VHF frequency. The last two digits are subject to auto completion.
 * Press `NAV` or `XPDR` to change to NAV and transponder panels.
