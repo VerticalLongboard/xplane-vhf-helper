@@ -45,6 +45,16 @@ Globals.IssueWorkarounds = {
     }
 }
 
+Globals.pushDefaultsToImguiStack = function()
+    imgui.PushStyleVar(imgui.constant.StyleVar.FrameRounding, 2.0)
+    Globals.pushDefaultButtonColorsToImguiStack()
+end
+
+Globals.popDefaultsFromImguiStack = function()
+    Globals.popDefaultButtonColorsFromImguiStack()
+    imgui.PopStyleVar()
+end
+
 Globals.pushDefaultButtonColorsToImguiStack = function()
     local slightlyBrighterDefaultButtonColor = 0xFF7F5634
     imgui.PushStyleColor(imgui.constant.Col.ButtonActive, Globals.Colors.defaultImguiButtonBackground)
@@ -154,13 +164,56 @@ do
         imgui.PopStyleColor()
     end
 
+    function ImguiUtils:renderButtonWithColors(
+        buttonTitle,
+        textColor,
+        buttonColor,
+        buttonActiveColor,
+        buttonHoveredColor)
+        imgui.PushStyleColor(imgui.constant.Col.Text, textColor)
+        if (buttonColor ~= nil) then
+            imgui.PushStyleColor(imgui.constant.Col.Button, buttonColor)
+        end
+        if (buttonActiveColor ~= nil) then
+            imgui.PushStyleColor(imgui.constant.Col.ButtonActive, buttonActiveColor)
+        end
+        if (buttonHoveredColor ~= nil) then
+            imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, buttonHoveredColor)
+        end
+
+        local result = imgui.Button(buttonTitle)
+
+        imgui.PopStyleColor()
+        if (buttonColor ~= nil) then
+            imgui.PopStyleColor()
+        end
+        if (buttonActiveColor ~= nil) then
+            imgui.PopStyleColor()
+        end
+        if (buttonHoveredColor ~= nil) then
+            imgui.PopStyleColor()
+        end
+
+        return result
+    end
+
+    function ImguiUtils:renderEnabledButton(buttonTitle, enabled)
+        if (enabled == false) then
+            return ImguiUtils:renderButtonWithColors(buttonTitle, 0xFF444444, 0xFF222222, 0xFF222222, 0xFF222222)
+        else
+            return imgui.Button(buttonTitle)
+        end
+    end
+
     function ImguiUtils:pushDisabledButtonColors()
+        imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF444444)
         imgui.PushStyleColor(imgui.constant.Col.Button, 0xFF222222)
         imgui.PushStyleColor(imgui.constant.Col.ButtonActive, 0xFF222222)
         imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, 0xFF222222)
     end
 
     function ImguiUtils:popDisabledButtonColors()
+        imgui.PopStyleColor()
         imgui.PopStyleColor()
         imgui.PopStyleColor()
         imgui.PopStyleColor()

@@ -9,23 +9,31 @@ function TestNotificationManager:testPostedNotificationsArePendingAndNeedToBeAck
     local nid = "dakl;f;kadlsf"
     local nm = NotificationManager:new()
     luaUnit.assertIsFalse(nm:isPending(nid))
+    luaUnit.assertIsFalse(nm:areAnyNotificationsPending())
     nm:postOnce(nid)
     luaUnit.assertIsTrue(nm:isPending(nid))
+    luaUnit.assertIsTrue(nm:areAnyNotificationsPending())
     nm:acknowledge(nid)
     luaUnit.assertIsFalse(nm:isPending(nid))
+    luaUnit.assertIsFalse(nm:areAnyNotificationsPending())
     nm:postOnce(nid)
     luaUnit.assertIsFalse(nm:isPending(nid))
+    luaUnit.assertIsFalse(nm:areAnyNotificationsPending())
 end
 function TestNotificationManager:testRepostedNotificationsArePendingAgain()
     local nid = "dakl;f;kadlsf"
     local nm = NotificationManager:new()
     luaUnit.assertIsFalse(nm:isPending(nid))
+    luaUnit.assertIsFalse(nm:areAnyNotificationsPending())
     nm:repost(nid)
     luaUnit.assertIsTrue(nm:isPending(nid))
+    luaUnit.assertIsTrue(nm:areAnyNotificationsPending())
     nm:acknowledge(nid)
     luaUnit.assertIsFalse(nm:isPending(nid))
+    luaUnit.assertIsFalse(nm:areAnyNotificationsPending())
     nm:repost(nid)
     luaUnit.assertIsTrue(nm:isPending(nid))
+    luaUnit.assertIsTrue(nm:areAnyNotificationsPending())
 end
 function TestNotificationManager:testStateIsSavedAndLoadedCorrectly()
     local nid = "dakl;f;kadlsf"

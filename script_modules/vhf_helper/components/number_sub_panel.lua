@@ -64,11 +64,13 @@ do
 
         self:_renderNumberButtonsInSameLine(1, 3)
 
+        local clearingEnabled = self.enteredValue:len() > 0
+
         imgui.SameLine()
         imgui.Dummy(Globals.defaultDummySize * rightSideDummyScale, Globals.defaultDummySize)
         imgui.SameLine()
         imgui.SetWindowFontScale(1.0 * globalFontScale)
-        if (imgui.Button(NumberSubPanel.Constants.BackspaceButtonTitle)) then
+        if (Globals.ImguiUtils:renderEnabledButton(NumberSubPanel.Constants.BackspaceButtonTitle, clearingEnabled)) then
             self:backspace()
         end
         imgui.SetWindowFontScale(numberFontScale)
@@ -81,7 +83,7 @@ do
         imgui.Dummy(Globals.defaultDummySize * rightSideDummyScale, Globals.defaultDummySize)
         imgui.SameLine()
         imgui.SetWindowFontScale(1.0 * globalFontScale)
-        if (imgui.Button(NumberSubPanel.Constants.ClearButtonTitle)) then
+        if (Globals.ImguiUtils:renderEnabledButton(NumberSubPanel.Constants.ClearButtonTitle, clearingEnabled)) then
             self:clear()
         end
         imgui.SetWindowFontScale(numberFontScale)
@@ -107,7 +109,6 @@ do
 
         if (numberCharacter == nil) then
             Globals.ImguiUtils.pushDisabledButtonColors()
-            imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF444444)
         end
 
         if
@@ -119,7 +120,6 @@ do
 
         if (numberCharacter == nil) then
             Globals.ImguiUtils.popDisabledButtonColors()
-            imgui.PopStyleColor()
         end
     end
 end

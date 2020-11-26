@@ -1,3 +1,4 @@
+IS_TEST = "yes"
 local issueTracker = require("issue_tracker")
 require("lua_platform")
 TRACK_ISSUE(

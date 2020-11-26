@@ -4,6 +4,7 @@ local Panels = require("vhf_helper.state.panels")
 local PublicInterface = require("vhf_helper.public_interface")
 local Utilities = require("shared_components.utilities")
 local LuaPlatform = require("lua_platform")
+local Notifications = require("vhf_helper.state.notifications")
 
 TRACK_ISSUE(
     "FlyWithLua",
@@ -110,13 +111,13 @@ do
         "Delay creation till finishing the current render function via storing an additional boolean."
     )
     function vhfHelperMainWindow:renderToCanvas()
-        Globals.pushDefaultButtonColorsToImguiStack()
+        Globals.pushDefaultsToImguiStack()
 
         self.currentPanel:renderToCanvas()
 
         imgui.Separator()
         imgui.Separator()
-        imgui.SetWindowFontScale(0.9 * globalFontScale)
+        imgui.SetWindowFontScale(0.8 * globalFontScale)
         self:_renderPanelButton(Panels.comFrequencyPanel, true)
         imgui.SameLine()
         self:_renderPanelButton(
@@ -130,13 +131,50 @@ do
         )
         imgui.SameLine()
 
-        imgui.Dummy(Globals.defaultDummySize * 0.95, 0.0)
+        imgui.Dummy(Globals.defaultDummySize * 1.3, 0.0)
         imgui.SameLine()
-        if (imgui.Button(">")) then
-            self.toggleSideWindowSoon = true
-        end
 
-        Globals.popDefaultButtonColorsFromImguiStack()
+        self:_renderSidePanelButton()
+
+        Globals.popDefaultsFromImguiStack()
+    end
+
+    function vhfHelperMainWindow:_getBlinkingWhiteColor()
+        if (IS_TEST ~= nil) then
+            return 0xFF000000
+        else
+            local brightness = (math.sin(LuaPlatform.Time.now() * 10.0) + 1.0) * 0.5
+            brightness = brightness * 255
+
+            local bitRed = bit.lshift(brightness, 0)
+            local bitGreen = bit.lshift(brightness, 8)
+            local bitBlue = bit.lshift(brightness, 16)
+            local color = 0xFF000000
+            local color = bit.bor(color, bitRed)
+            local color = bit.bor(color, bitGreen)
+            local color = bit.bor(color, bitBlue)
+            return color
+        end
+    end
+
+    function vhfHelperMainWindow:_renderSidePanelButton()
+        if (Notifications.notificationManager:areAnyNotificationsPending()) then
+            if
+                (Globals.ImguiUtils:renderButtonWithColors(
+                    ">",
+                    Globals.Colors.black,
+                    self:_getBlinkingWhiteColor(),
+                    Globals.Colors.white,
+                    Globals.Colors.white
+                ))
+             then
+                self.toggleSideWindowSoon = true
+            end
+        else
+            if (imgui.Button(">")) then
+                self.toggleSideWindowSoon = true
+            end
+        end
     end
 
     function vhfHelperMainWindow:everyFrameLoop()

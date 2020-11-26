@@ -57,5 +57,13 @@ do
         end
         self.notifications[notificationId] = NotificationManager.Constants.NotificationStates.Acknowledged
     end
+    function NotificationManager:areAnyNotificationsPending()
+        for nid, notificationState in pairs(self.notifications) do
+            if (notificationState == NotificationManager.Constants.NotificationStates.Pending) then
+                return true
+            end
+        end
+        return false
+    end
 end
 return NotificationManager
