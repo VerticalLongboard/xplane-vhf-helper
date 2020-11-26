@@ -49,13 +49,13 @@ do
         return partialString
     end
 
-    Globals.OVERRIDE(TransponderValidator.getValidNumberCharacterOrUnderscore)
-    function TransponderValidator:getValidNumberCharacterOrUnderscore(stringEnteredSoFar, number)
+    Globals.OVERRIDE(TransponderValidator.getValidNumberCharacterOrNil)
+    function TransponderValidator:getValidNumberCharacterOrNil(stringEnteredSoFar, number)
         local numberAsString = tostring(number)
         local afterEnteringNumber = stringEnteredSoFar .. numberAsString
         local autocompleted = self:autocomplete(afterEnteringNumber)
         if (self:validate(autocompleted) == nil) then
-            return Globals.underscoreCharacter
+            return nil
         end
 
         return numberAsString

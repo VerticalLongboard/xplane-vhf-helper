@@ -68,25 +68,25 @@ function TestComFrequencyValidation:testLessThanFourDigitFrequencyIsNotAutocompl
 end
 
 function TestComFrequencyValidation:testValidFrequencyCanBeEntered()
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("", 1), "1")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("1", 2), "2")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("12", 4), "4")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("124", 5), "5")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("124.5", 7), "7")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("124.57", 5), "5")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("", 1), "1")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("1", 2), "2")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("12", 4), "4")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("124", 5), "5")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("124.5", 7), "7")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("124.57", 5), "5")
 end
 
 function TestComFrequencyValidation:testInvalidFrequencyFirstDigitsCanNotBeEntered()
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("", 1), "1")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("1", 4), "_")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("", 1), "1")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("1", 4), nil)
 end
 
 function TestComFrequencyValidation:testInvalidFrequencyLastDigitsCanNotBeEntered()
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("", 1), "1")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("1", 3), "3")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("13", 6), "6")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("136", 9), "9")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("136.9", 8), "_")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("", 1), "1")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("1", 3), "3")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("13", 6), "6")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("136", 9), "9")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("136.9", 8), nil)
 end
 
 TestNavFrequencyValidation = {}
@@ -134,33 +134,33 @@ function TestNavFrequencyValidation:testLessThanFourDigitFrequencyIsNotAutocompl
 end
 
 function TestNavFrequencyValidation:testValidFrequencyCanBeEntered()
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("", 1), "1")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("1", 0), "0")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("10", 8), "8")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("108", 2), "2")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("108.2", 5), "5")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("108.25", 0), "0")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("", 1), "1")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("1", 0), "0")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("10", 8), "8")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("108", 2), "2")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("108.2", 5), "5")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("108.25", 0), "0")
 end
 
 function TestNavFrequencyValidation:testInvalidFrequencyFirstDigitsCanNotBeEntered()
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("", 1), "1")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("1", 2), "_")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("", 1), "1")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("1", 2), nil)
 end
 
 function TestNavFrequencyValidation:testInvalidFrequencyLastDigitsCanNotBeEntered()
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("", 1), "1")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("1", 1), "1")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("11", 7), "7")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("117", 9), "9")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("117.9", 6), "_")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("", 1), "1")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("1", 1), "1")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("11", 7), "7")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("117", 9), "9")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("117.9", 6), nil)
 end
 
 function TestNavFrequencyValidation:testInvalidFrequencyOutsideOf200ChannelsCanNotBeEntered()
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("", 1), "1")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("1", 1), "1")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("11", 3), "3")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("113", 4), "4")
-	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrUnderscore("113.4", 6), "_")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("", 1), "1")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("1", 1), "1")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("11", 3), "3")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("113", 4), "4")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("113.4", 6), nil)
 end
 
 TestTransponderCodeValidation = {}

@@ -51,7 +51,6 @@ do
         end
     end
 
-    TRACK_ISSUE("NumberSubPanel", "Make disabled buttons appear disabled")
     function NumberSubPanel:_renderNumberPanel()
         local numberFontScale = 1.3 * globalFontScale
         imgui.SetWindowFontScale(numberFontScale)
@@ -103,26 +102,22 @@ do
 
     TRACK_ISSUE("Tech Debt", "Remove underscoreCharacter from all validator functions since it's no longer needed.")
     function NumberSubPanel:_createNumberButtonAndReactToClicks(number)
-        local numberCharacter = self.inputPanelValidator:getValidNumberCharacterOrUnderscore(self.enteredValue, number)
+        local numberCharacter = self.inputPanelValidator:getValidNumberCharacterOrNil(self.enteredValue, number)
         local enabled = true
 
-        if (numberCharacter == Globals.underscoreCharacter) then
-            enabled = false
-        end
-        if (not enabled) then
+        if (numberCharacter == nil) then
             Globals.ImguiUtils.pushDisabledButtonColors()
             imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF444444)
         end
 
         if
             (imgui.Button(tostring(number), Globals.defaultDummySize, Globals.defaultDummySize) and
-                numberCharacter ~= Globals.underscoreCharacter and
-                enabled)
+                numberCharacter ~= nil)
          then
             self:addCharacter(numberCharacter)
         end
 
-        if (not enabled) then
+        if (numberCharacter == nil) then
             Globals.ImguiUtils.popDisabledButtonColors()
             imgui.PopStyleColor()
         end

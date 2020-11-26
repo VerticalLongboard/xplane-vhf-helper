@@ -1,8 +1,5 @@
-TRACK_ISSUE = TRACK_ISSUE or function(component, description, workaround)
-    end
-
-require("lua_platform")
 local issueTracker = require("issue_tracker")
+require("lua_platform")
 TRACK_ISSUE(
     "Lua",
     "Switching from Lua 5.1 to 5.4 broke compatibility with LuaUnit and almost any table.insert call. Also, loadstring does not longer exist.",

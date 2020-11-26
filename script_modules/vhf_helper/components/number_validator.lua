@@ -18,7 +18,7 @@ do
         assert(nil)
     end
 
-    function NumberValidator:getValidNumberCharacterOrUnderscore(stringEnteredSoFar, number)
+    function NumberValidator:getValidNumberCharacterOrNil(stringEnteredSoFar, number)
         assert(nil)
     end
 end

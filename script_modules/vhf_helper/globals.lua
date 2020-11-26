@@ -19,13 +19,11 @@ TRACK_ISSUE(
     "The close function is called asynchronously (when clicking the red close button) so quickly closing and opening the panel will close it again quickly after.",
     "Avoid windows being closed right after being opened."
 )
-
 local MininumWindowOpenCloseTimeSec = 1
 
 Globals.IssueWorkarounds = {
     FlyWithLua = {
         timeTagWindowCreatedNow = function(window)
-            logMsg("plat time=" .. tostring(LuaPlatform.Time.now()) .. " window=" .. tostring(window))
             window.IssueWorkarounds = {FlyWithLua = {lastWindowCreationTime = LuaPlatform.Time.now()}}
         end,
         shouldCloseWindowNow = function(window)

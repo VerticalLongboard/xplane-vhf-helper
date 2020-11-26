@@ -145,6 +145,11 @@ function TestHighLevelBehaviour:testWindowShowsUpWhenConfigurationSaysSo()
 	)
 end
 
+function TestHighLevelBehaviour:testPressingADisabledComNumberPanelButtonDoesNotWork()
+	self:_pressButton("2")
+	self:_assertStringShowsUp("---.---")
+end
+
 function TestHighLevelBehaviour:testPlaneCompatibilityIdMakesSense()
 	luaUnit.assertEquals(
 		vhfHelperPackageExport.test.vhfHelperCompatibilityManager:getPlaneCompatibilityIdString(),

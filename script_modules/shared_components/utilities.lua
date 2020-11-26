@@ -1,3 +1,5 @@
+LuaPlatform = require("lua_platform")
+
 local Utilities = {}
 
 Utilities.prefixAllLines = function(linesString, prefix)
@@ -5,17 +7,17 @@ Utilities.prefixAllLines = function(linesString, prefix)
 end
 
 Utilities.fileExists = function(filePath)
-    local file = io.open(filePath, "r")
+    local file = LuaPlatform.IO.open(filePath, LuaPlatform.IO.Constants.Modes.Read)
     if file == nil then
         return false
     end
 
-    io.close(file)
+    file:close()
     return true
 end
 
 Utilities.readAllContentFromFile = function(filePath)
-    local file = io.open(filePath, "r")
+    local file = LuaPlatform.IO.open(filePath, LuaPlatform.IO.Constants.Modes.Read)
     assert(file)
     local content = file:read("*a")
     file:close()
@@ -23,7 +25,7 @@ Utilities.readAllContentFromFile = function(filePath)
 end
 
 Utilities.overwriteContentInFile = function(filePath, newContent)
-    local file = io.open(filePath, "w")
+    local file = LuaPlatform.IO.open(filePath, LuaPlatform.IO.Constants.Modes.Overwrite)
     assert(file)
     file:write(newContent)
     file:close()

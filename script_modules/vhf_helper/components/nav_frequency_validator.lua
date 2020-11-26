@@ -37,10 +37,10 @@ do
         return partialFrequencyString
     end
 
-    Globals.OVERRIDE(NavFrequencyValidator.getValidNumberCharacterOrUnderscore)
-    function NavFrequencyValidator:getValidNumberCharacterOrUnderscore(frequencyEnteredSoFar, number)
+    Globals.OVERRIDE(NavFrequencyValidator.getValidNumberCharacterOrNil)
+    function NavFrequencyValidator:getValidNumberCharacterOrNil(frequencyEnteredSoFar, number)
         if (string.len(frequencyEnteredSoFar) == 7) then
-            return Globals.underscoreCharacter
+            return nil
         end
 
         local character = tostring(number)
@@ -48,30 +48,30 @@ do
 
         if (freqStringLength == 0) then
             if (number ~= 1) then
-                character = Globals.underscoreCharacter
+                character = nil
             end
         elseif (freqStringLength == 1) then
             if (number > 1) then
-                character = Globals.underscoreCharacter
+                character = nil
             end
         elseif (freqStringLength == 2) then
             majorTenDigit = frequencyEnteredSoFar:sub(2, 2)
             if (majorTenDigit == "0") then
                 if (number < 8) then
-                    character = Globals.underscoreCharacter
+                    character = nil
                 end
             elseif (majorTenDigit == "1") then
                 if (number > 7) then
-                    character = Globals.underscoreCharacter
+                    character = nil
                 end
             end
         elseif (freqStringLength == 5) then
             if (number ~= 0 and number ~= 5) then
-                character = Globals.underscoreCharacter
+                character = nil
             end
         elseif (freqStringLength == 6) then
             if (number ~= 0) then
-                character = Globals.underscoreCharacter
+                character = nil
             end
         end
 
