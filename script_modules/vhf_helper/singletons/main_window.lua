@@ -139,6 +139,10 @@ do
         Globals.popDefaultsFromImguiStack()
     end
 
+    TRACK_ISSUE(
+        "Lua",
+        "FlyWithLua is supposed to run Lua 5.1, which locally does not support bit operations via bit.* functions. Disable in tests for now."
+    )
     function vhfHelperMainWindow:_getBlinkingWhiteColor()
         if (IS_TEST ~= nil) then
             return 0xFF000000

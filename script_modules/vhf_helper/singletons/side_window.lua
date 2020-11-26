@@ -240,12 +240,6 @@ do
         self:show(self.window == nil)
     end
 
-    -- READ_SOMETHING = 0
-    -- dataref("READ_SOMETHING", "sim/cockpit2/gauges/actuators/barometer_setting_in_hg_pilot", "readable")
-    -- READ_SOMETHING2 = 0
-    -- dataref("READ_SOMETHING2", "sim/cockpit2/gauges/actuators/barometer_setting_in_hg_copilot", "readable")
-    -- READ_SOMETHING3 = 0
-    -- dataref("READ_SOMETHING3", "sim/cockpit2/gauges/actuators/barometer_setting_in_hg_stby", "readable")
 
     function vhfHelperSideWindow:renderToCanvas()
         Globals.pushDefaultsToImguiStack()
@@ -329,28 +323,6 @@ do
         imgui.TextUnformatted("")
         self:_renderSectionHeader("Feedback :-)")
         self.FeedbackLinkBlob:renderToCanvas()
-
-        -- imgui.TextUnformatted("")
-        -- self:_renderSectionHeader("DEBUG: Notifications")
-
-        -- for nid, pending in pairs(Notifications.notificationManager.notifications) do
-        --     imgui.TextUnformatted(
-        --         Utilities.newlineBreakStringAtWidth(("nid=%s state=%s"):format(nid, tostring(pending)), maxStringWidth)
-        --     )
-        -- end
-
-        -- imgui.TextUnformatted("")
-        -- self:_renderSectionHeader("DEBUG: Datarefs")
-
-        -- imgui.TextUnformatted(
-        --     "sim/cockpit2/gauges/actuators/barometer_setting_in_hg_pilot" .. "=" .. tostring(READ_SOMETHING)
-        -- )
-        -- imgui.TextUnformatted(
-        --     "sim/cockpit2/gauges/actuators/barometer_setting_in_hg_copilot" .. "=" .. tostring(READ_SOMETHING2)
-        -- )
-        -- imgui.TextUnformatted(
-        --     "sim/cockpit2/gauges/actuators/barometer_setting_in_hg_stby" .. "=" .. tostring(READ_SOMETHING3)
-        -- )
 
         Globals.popDefaultsFromImguiStack()
     end
