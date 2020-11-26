@@ -108,9 +108,7 @@ do
             end
         else
             imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF444444)
-            imgui.PushStyleColor(imgui.constant.Col.Button, 0xFF222222)
-            imgui.PushStyleColor(imgui.constant.Col.ButtonActive, 0xFF222222)
-            imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, 0xFF222222)
+            ImguiUtils:pushDisabledButtonColors()
         end
 
         if (imgui.Button(buttonTitle) and enabled) then
@@ -118,10 +116,20 @@ do
         end
 
         if (not enabled) then
-            imgui.PopStyleColor()
-            imgui.PopStyleColor()
-            imgui.PopStyleColor()
+            ImguiUtils:popDisabledButtonColors()
         end
+        imgui.PopStyleColor()
+    end
+
+    function ImguiUtils:pushDisabledButtonColors()
+        imgui.PushStyleColor(imgui.constant.Col.Button, 0xFF222222)
+        imgui.PushStyleColor(imgui.constant.Col.ButtonActive, 0xFF222222)
+        imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, 0xFF222222)
+    end
+
+    function ImguiUtils:popDisabledButtonColors()
+        imgui.PopStyleColor()
+        imgui.PopStyleColor()
         imgui.PopStyleColor()
     end
 end

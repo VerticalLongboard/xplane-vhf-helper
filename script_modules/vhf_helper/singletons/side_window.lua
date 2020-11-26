@@ -152,9 +152,8 @@ do
         )
 
         self.FeedbackLinkBlob = InlineButtonBlob:new()
-        self.FeedbackLinkBlob:addTextWithoutNewline(
-            "How does VR Radio Helper work for you? Please leave your feedback at Github:"
-        )
+        self.FeedbackLinkBlob:addTextWithoutNewline("How does VR Radio Helper work for you?")
+        self.FeedbackLinkBlob:addTextWithoutNewline("Please leave your feedback at Github:")
         self.FeedbackLinkBlob:addNewline()
         ClickableFeedbackBrowserLink:new():addLinkToBlob(
             self.FeedbackLinkBlob,

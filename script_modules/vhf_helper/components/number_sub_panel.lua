@@ -103,12 +103,27 @@ do
 
     function NumberSubPanel:_createNumberButtonAndReactToClicks(number)
         local numberCharacter = self.inputPanelValidator:getValidNumberCharacterOrUnderscore(self.enteredValue, number)
+        local enabled = true
+
+        if (numberCharacter == Globals.underscoreCharacter) then
+            enabled = false
+        end
+        if (not enabled) then
+            Globals.ImguiUtils.pushDisabledButtonColors()
+            imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF444444)
+        end
 
         if
-            (imgui.Button(numberCharacter, Globals.defaultDummySize, Globals.defaultDummySize) and
-                numberCharacter ~= Globals.underscoreCharacter)
+            (imgui.Button(tostring(number), Globals.defaultDummySize, Globals.defaultDummySize) and
+                numberCharacter ~= Globals.underscoreCharacter and
+                enabled)
          then
             self:addCharacter(numberCharacter)
+        end
+
+        if (not enabled) then
+            Globals.ImguiUtils.popDisabledButtonColors()
+            imgui.PopStyleColor()
         end
     end
 end
