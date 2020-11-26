@@ -137,12 +137,6 @@ end
 function flyWithLuaStub:bootstrapAllMacros()
     for _, macro in pairs(self.macros) do
         luaUnit.assertIsFalse(macro.isActiveNow)
-        logMsg(
-            "activate macro=" ..
-                macro.name ..
-                    "? initially=" ..
-                        tostring(macro.activateInitially) .. " function=" .. tostring(macro.activateFunction)
-        )
         if (macro.activateInitially) then
             macro.activateFunction()
             macro.isActiveNow = true

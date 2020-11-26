@@ -9,13 +9,12 @@ function TestAcfReader:setUp()
     luaUnit.assertIsTrue(self.object:loadFromFile(self.TestFilePath))
 end
 
-TRACK_ISSUE("Lua", "After finding out why matchers break the Lua environment, re-add this test.")
--- function TestAcfReader:testReadingAFileWorks()
---     luaUnit.assertEquals(self.object:getPropertyValue("_cgpt/5/_w_max"), "0.0")
---     luaUnit.assertEquals(self.object:getPropertyValue("acf/_min_n1"), "12.0")
---     luaUnit.assertEquals(
---         self.object:getPropertyValue("acf/_author"),
---         "Test Author - https://github.com/VerticalLongboard"
---     )
---     luaUnit.assertEquals(self.object:getPropertyValue("bla"), nil)
--- end
+function TestAcfReader:testReadingAFileWorks()
+    luaUnit.assertEquals(self.object:getPropertyValue("_cgpt/5/_w_max"), "0.0")
+    luaUnit.assertEquals(self.object:getPropertyValue("acf/_min_n1"), "12.0")
+    luaUnit.assertEquals(
+        self.object:getPropertyValue("acf/_author"),
+        "Test Author - https://github.com/VerticalLongboard"
+    )
+    luaUnit.assertEquals(self.object:getPropertyValue("bla"), nil)
+end

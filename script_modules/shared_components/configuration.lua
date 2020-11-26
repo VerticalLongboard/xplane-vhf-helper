@@ -17,49 +17,16 @@ do
             return
         end
 
-        TRACK_ISSUE(
-            "Lua",
-            MULTILINE_TEXT(
-                "At the current commit (where this issue got added), assigning nil to self.Content does NOT assign NIL.",
-                "Instead, the assignment silently fails and sets self.Content reference to it's value before.",
-                "Also, setting it to something and then nil again yields the old reference value.",
-                "Only assigning something non-nil to self.Content before changes self.Content. A bug?!"
-            )
-        )
-        -- local bla = LuaIniParser.load(self.Path)
-        -- -- logMsg("BLA=" .. tostring(bla))
-        -- -- self.Content = nil
-        -- -- self.Content = bla
-        -- -- self.Content = nil
-        -- -- self.Content = nil
-        -- TRACK_ISSUE(
-        --     "Lua",
-        --     MULTILINE_TEXT(
-        --         "At the current commit (where this issue got added), assigning nil to self.Content does NOT assign NIL.",
-        --         "Instead, the assignment silently fails and sets self.Content reference to it's value before.",
-        --         "Also, setting it to something and then nil again yields the old reference value.",
-        --         "Only assigning something non-nil to self.Content before changes self.Content. A bug?!"
-        --     )
-        -- )
-        -- self.Content = {} -- That's the one.
-        -- -- self.Content = nil -- Does NOT work. Doesn't assign nil, but instead an old value -- Un-Comment this line to trigger the bug.
-
-        -- logMsg("BLA2=" .. tostring(self.Content))
-        -- logMsg(
-        --     "loaded isStub=" ..
-        --         tostring(LuaIniParser.isStub) ..
-        --             " content=" .. require("luaunit").prettystr(self.Content) .. " from path=" .. tostring(self.Path)
-        -- )
-
-        -- self.Content = {}
         self.Content = LuaIniParser.load(self.Path)
+        self.isDirty = false
     end
 
     function Configuration:save()
         if (not self.isDirty) then
             return
         end
-        -- LuaIniParser.save(self.Path, self.Content)
+
+        LuaIniParser.save(self.Path, self.Content)
         self.isDirty = false
     end
 

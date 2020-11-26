@@ -27,14 +27,12 @@ local LuaIniParserStub = {
 	fileContent = {}
 }
 
-TRACK_ISSUE("Lua", "Passing a non-nil value to this function still reads nil and triggers the assert. I give up.")
 function LuaIniParserStub.setFileContentBeforeLoad(newFileContent)
 	luaUnit.assertNotNil(newFileContent)
 	LuaIniParserStub.fileContent = newFileContent
 end
 
 function LuaIniParserStub.load(fileName)
-	logMsg("loading path=" .. fileName .. " content=" .. require("luaunit").prettystr(LuaIniParserStub.fileContent))
 	return LuaIniParserStub.fileContent
 end
 
