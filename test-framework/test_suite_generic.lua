@@ -1,7 +1,7 @@
 TRACK_ISSUE = TRACK_ISSUE or function(component, description, workaround)
     end
 
-require("shared_components.lua_compatibility_wrapper")
+require("lua_platform")
 local issueTracker = require("issue_tracker")
 TRACK_ISSUE(
     "Lua",

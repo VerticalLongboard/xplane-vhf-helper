@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 --]]
-require("shared_components.lua_compatibility_wrapper")
+local LuaPlatform = require("lua_platform")
 TRACK_ISSUE(
     "Lua",
     "Switching from Lua 5.1 to 5.4 broke compatibility with almost any table.insert call. Also, loadstring got renamed.",

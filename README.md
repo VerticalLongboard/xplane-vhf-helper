@@ -6,7 +6,7 @@ Flying VR multicrew in X-Plane with ATC is a blast! Yet, the default X-Plane 11 
 
 VR Radio Helper:
 * Makes tuning in a new ATC or NAV frequency a breeze!
-* Works with SmartCopilot (both pilots need to install it) and synchronizes COM frequencies between two pilots
+* Works with SmartCopilot (both pilots need to install it) and synchronizes COM/NAV frequencies and transponder codes between two pilots
 * Works in VR (free positioning in 3D space)
 * Integrates well with ATC networks (e.g. VATSIM)
 
@@ -26,16 +26,21 @@ To make it multicrew-ready (do that in **BOTH** pilot's airplanes):
 
 ## Usage
 * Go to `Plugins/FlyWithLua/FlyWithLua Macros/VR Radio Helper`.
-* Check if multicrew support is available (click the `>` button) if you wish to fly with a co-pilot.
-* Place and scale the window wherever you like (in 2D and VR).
-* Use the number buttons to enter the new VHF frequency. The last two digits are subject to auto completion.
+* Place and scale the panel wherever you like (in 2D and VR).
+* Use the number buttons to enter the new VHF frequency. The last two digits do not need to be entered manually.
 * Press `NAV` or `XPDR` to change to NAV and transponder panels.
 * Press the COM1/2, NAV1/2 or XPDR switch button to tune in new frequencies or transponder codes.
 * **Chat with ATC! :-)**
 * If you like, bind the toggle-panel command `FlyWithLua/VR Radio Helper/TogglePanel` to a key of your choice.
 
+For multicrew:
+
+  * Check if multicrew support is available (click the `>` button)
+  * Connect via SmartCopilot
+
 ## Plane Compatibility
-VR Radio Helper uses the default X-Plane way of setting COM/NAV frequencies and the transponder code. If you find that your airplane does not work out-of-the-box, please have a look at the existing [Github Issues](https://github.com/VerticalLongboard/xplane-vhf-helper/issues) and open a new one if you don't find a specific airplane.
+VR Radio Helper uses the default X-Plane way of setting COM/NAV frequencies and the transponder code. By default, all features are enabled. If you find that your  airplane does not work out-of-the-box, please use the integrated feedback collector (click the `>` button) to leave a description of the issues that you encountered. The plane compatibility reports automatically generate diagnostic information that is necessary to distinguish between different planes.
+Based on this informatrion, a growing number of planes are detected automatically and settings adjusted / features disabled accordingly.
 
 ## Dependencies
 Additional dependencies besides X-Plane 11, SmartCopilot and FlyWithLua:

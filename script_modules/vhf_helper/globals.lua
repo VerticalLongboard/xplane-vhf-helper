@@ -1,3 +1,5 @@
+local LuaPlatform = require("lua_platform")
+
 local Globals = {
     emptyString = "",
     decimalCharacter = ".",
@@ -11,6 +13,39 @@ TRACK_ISSUE = TRACK_ISSUE or function(component, description, workaround)
 
 MULTILINE_TEXT = MULTILINE_TEXT or function(...)
     end
+
+TRACK_ISSUE(
+    "FlyWithLua",
+    "The close function is called asynchronously (when clicking the red close button) so quickly closing and opening the panel will close it again quickly after.",
+    "Avoid windows being closed right after being opened."
+)
+
+local MininumWindowOpenCloseTimeSec = 1
+
+Globals.IssueWorkarounds = {
+    FlyWithLua = {
+        timeTagWindowCreatedNow = function(window)
+            logMsg("plat time=" .. tostring(LuaPlatform.Time.now()) .. " window=" .. tostring(window))
+            window.IssueWorkarounds = {FlyWithLua = {lastWindowCreationTime = LuaPlatform.Time.now()}}
+        end,
+        shouldCloseWindowNow = function(window)
+            if (window.IssueWorkarounds == nil) then
+                return true
+            end
+
+            if (window.IssueWorkarounds.FlyWithLua == nil) then
+                return true
+            end
+
+            if (window.IssueWorkarounds.FlyWithLua.lastWindowCreationTime == nil) then
+                return nil
+            end
+
+            return LuaPlatform.Time.now() - window.IssueWorkarounds.FlyWithLua.lastWindowCreationTime >
+                MininumWindowOpenCloseTimeSec
+        end
+    }
+}
 
 Globals.pushDefaultButtonColorsToImguiStack = function()
     local slightlyBrighterDefaultButtonColor = 0xFF7F5634

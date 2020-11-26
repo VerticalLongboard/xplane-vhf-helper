@@ -25,6 +25,7 @@ SOFTWARE.
 --]]
 local imguiStub = require("imgui_stub")
 local eventBusStub = require("eventbus")
+local LuaPlatform = require("lua_platform")
 
 TestPublicInterface = {}
 
@@ -76,6 +77,7 @@ end
 
 function TestPublicInterfaceAndEvents:testOpeningMainWindowActivatesPublicInterface()
 	luaUnit.assertNotNil(VHFHelperPublicInterface)
+	LuaPlatform.Time.advanceNow(2.0)
 	flyWithLuaStub:closeWindowByTitle(vhfHelperPackageExport.test.vhfHelperMainWindow.Constants.defaultWindowName)
 	luaUnit.assertNil(VHFHelperPublicInterface)
 end

@@ -26,6 +26,7 @@ SOFTWARE.
 local flyWithLuaStub = require("xplane_fly_with_lua_stub")
 local imguiStub = require("imgui_stub")
 local LuaIniParserStub = require("LIP")
+local LuaPlatform = require("lua_platform")
 
 TestHighLevelBehaviour = {
 	Constants = {
@@ -157,6 +158,7 @@ function TestHighLevelBehaviour:testClosingThePanelChangesPanelConfigurationAcco
 	)
 
 	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowInitiallyVisible, "yes")
+	LuaPlatform.Time.advanceNow(2.0)
 	flyWithLuaStub:closeWindowByTitle(vhfHelperPackageExport.test.vhfHelperMainWindow.Constants.defaultWindowName)
 	luaUnit.assertEquals(vhfHelperPackageExport.test.Config.Content.Windows.MainWindowInitiallyVisible, "no")
 end

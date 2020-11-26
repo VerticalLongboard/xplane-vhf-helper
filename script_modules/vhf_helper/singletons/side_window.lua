@@ -4,6 +4,7 @@ local Configuration = require("shared_components.configuration")
 local Utilities = require("shared_components.utilities")
 local InlineButtonBlob = require("shared_components.inline_button_blob")
 local Notifications = require("vhf_helper.state.notifications")
+local LuaPlatform = require("lua_platform")
 
 TRACK_ISSUE(
     "FlyWithLua",
@@ -14,12 +15,10 @@ function renderVhfHelperSideWindowToCanvas()
     vhfHelperSideWindow:renderToCanvas()
 end
 
-TRACK_ISSUE(
-    "FlyWithLua",
-    "The close function is called asynchronously so quickly closing and opening the panel will close it again quickly after.",
-    "Mention that this is a known issue"
-)
 function closeVhfHelperSideWindow()
+    if (not Globals.IssueWorkarounds.FlyWithLua.shouldCloseWindowNow(vhfHelperSideWindow)) then
+        return
+    end
     vhfHelperSideWindow:destroy()
 end
 
@@ -210,6 +209,8 @@ do
         float_wnd_set_title(self.window, vhfHelperSideWindow.Constants.defaultWindowName)
         float_wnd_set_imgui_builder(self.window, "renderVhfHelperSideWindowToCanvas")
         float_wnd_set_onclose(self.window, "closeVhfHelperSideWindow")
+
+        Globals.IssueWorkarounds.FlyWithLua.timeTagWindowCreatedNow(vhfHelperSideWindow)
     end
 
     function vhfHelperSideWindow:destroy()

@@ -3,6 +3,7 @@ local Config = require("vhf_helper.state.config")
 local Panels = require("vhf_helper.state.panels")
 local PublicInterface = require("vhf_helper.public_interface")
 local Utilities = require("shared_components.utilities")
+local LuaPlatform = require("lua_platform")
 
 TRACK_ISSUE(
     "FlyWithLua",
@@ -13,17 +14,10 @@ function renderVhfHelperMainWindowToCanvas()
     vhfHelperMainWindow:renderToCanvas()
 end
 
-TRACK_ISSUE(
-    "FlyWithLua",
-    "The close function is called asynchronously so quickly closing and opening the panel will close it again quickly after." ..
-        "\n" ..
-            "Since float_wnd_destroy does call the onClose function as well and windows cannot be made visible again," ..
-                "\n" ..
-                    "destroying again is the only viable way. Not having a separate visible-invisible creation-destroy cycle breaks public interface activation :-(",
-    "Destroy it anyway to keep at least public interface in line with panel visibility."
-)
-
 function closeVhfHelperMainWindow()
+    if (not Globals.IssueWorkarounds.FlyWithLua.shouldCloseWindowNow(vhfHelperMainWindow)) then
+        return
+    end
     vhfHelperMainWindow:destroy()
 end
 
@@ -76,6 +70,8 @@ do
         Config.Config:setInitialWindowVisibility(true)
 
         PublicInterface.activatePublicInterface()
+
+        Globals.IssueWorkarounds.FlyWithLua.timeTagWindowCreatedNow(vhfHelperMainWindow)
     end
 
     function vhfHelperMainWindow:destroy()
