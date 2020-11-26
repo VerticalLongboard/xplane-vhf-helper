@@ -30,8 +30,8 @@ do
             lastLinkedValue = nil,
             lastInterchangeValue = nil,
             linkedDatarefWriteHandle = nil,
-            getInterchangeValueFunction = loadstring("return " .. newInterchangeVariableName),
-            getLinkedValueFunction = loadstring("return " .. newLinkedReadVariableName)
+            getInterchangeValueFunction = LOAD_LUA_STRING("return " .. newInterchangeVariableName),
+            getLinkedValueFunction = LOAD_LUA_STRING("return " .. newLinkedReadVariableName)
         }
 
         setmetatable(newInstanceWithState, self)
@@ -103,7 +103,7 @@ do
 
     TRACK_ISSUE("Tech Debt", "Find out why this worked before without tostring(value)")
     function InterchangeLinkedDataref:_setInterchangeValue(value)
-        local setInterchangeValueFunction = loadstring(self.interchangeVariableName .. " = " .. tostring(value))
+        local setInterchangeValueFunction = LOAD_LUA_STRING(self.interchangeVariableName .. " = " .. tostring(value))
         setInterchangeValueFunction()
         self.lastInterchangeValue = value
     end

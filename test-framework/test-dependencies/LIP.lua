@@ -27,8 +27,10 @@ local LuaIniParserStub = {
 	fileContent = {}
 }
 
-function LuaIniParserStub:setFileContentBeforeLoad(value)
-	LuaIniParserStub.fileContent = value
+TRACK_ISSUE("Lua", "Passing a non-nil value to this function still reads nil and triggers the assert. I give up.")
+function LuaIniParserStub.setFileContentBeforeLoad(newFileContent)
+	luaUnit.assertNotNil(newFileContent)
+	LuaIniParserStub.fileContent = newFileContent
 end
 
 function LuaIniParserStub.load(fileName)
@@ -38,6 +40,10 @@ end
 
 function LuaIniParserStub.save(fileName, data)
 	LuaIniParserStub.fileContent = data
+end
+
+function LuaIniParserStub.reset()
+	LuaIniParserStub.fileContent = {}
 end
 
 LuaIniParserStub.isStub = true

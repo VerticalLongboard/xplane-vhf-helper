@@ -24,15 +24,21 @@ SOFTWARE.
 
 --]]
 local Globals = require("vhf_helper.globals")
+TRACK_ISSUE(
+    "Lua",
+    "Switching from Lua 5.1 to 5.4 broke compatibility with LuaUnit and almost any table.insert call. Also, loadstring does not longer exist.",
+    "Redefine basic language features according to current interpreter version."
+)
+require("shared_components.lua_compatibility_wrapper")
 
 Globals.requireAllAndBootstrap({"vhf_helper.public_interface"})
 Globals.requireAllAndBootstrap(
     {
-        "vhf_helper.state.config",
-        "vhf_helper.state.notifications",
+        -- "vhf_helper.state.notifications",
         "vhf_helper.state.validation",
         "vhf_helper.state.datarefs",
         "vhf_helper.state.panels",
+        "vhf_helper.state.config",
         "vhf_helper.singletons.compatibility_manager",
         "vhf_helper.singletons.multicrew_manager",
         "vhf_helper.singletons.main_window",

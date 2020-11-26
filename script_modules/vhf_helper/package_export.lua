@@ -18,6 +18,7 @@ M.bootstrap = function()
     vhfHelperPackageExport.test.vhfHelperMainWindow = vhfHelperMainWindow
     vhfHelperPackageExport.test.vhfHelperSideWindow = vhfHelperSideWindow
     vhfHelperPackageExport.test.vhfHelperMulticrewManager = vhfHelperMulticrewManager
+    vhfHelperPackageExport.test.vhfHelperCompatibilityManager = vhfHelperCompatibilityManager
     vhfHelperPackageExport.test.comLinkedDatarefs = Datarefs.comLinkedDatarefs
     vhfHelperPackageExport.test.navLinkedDatarefs = Datarefs.navLinkedDatarefs
     vhfHelperPackageExport.test.transponderModeToDescriptor = Datarefs.transponderModeToDescriptor

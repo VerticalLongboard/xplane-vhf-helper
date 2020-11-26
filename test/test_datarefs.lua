@@ -46,7 +46,7 @@ TestDatarefs = {
 }
 
 function TestDatarefs:setUp()
-	TestHighLevelBehaviour:bootstrapVhfHelperWithConfiguration()
+	TestHighLevelBehaviour:bootstrapVhfHelperWithConfiguration({})
 end
 
 function TestDatarefs:_assertDifferentLocalVariablesDeclaredForTwoDatarefs(d1, d2, expectedAccessType)

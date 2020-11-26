@@ -66,7 +66,7 @@ TestPublicInterfaceAndEvents = {}
 
 function TestPublicInterfaceAndEvents:setUp()
 	VHFHelperEventBus.eventsEmittedSoFar = {}
-	TestHighLevelBehaviour:bootstrapVhfHelperWithConfiguration()
+	TestHighLevelBehaviour:bootstrapVhfHelperWithConfiguration({})
 	flyWithLuaStub:activateMacro(vhfHelperPackageExport.test.vhfHelperLoop.Constants.defaultMacroName, true)
 end
 

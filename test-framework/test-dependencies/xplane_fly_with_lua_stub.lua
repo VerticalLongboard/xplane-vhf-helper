@@ -137,6 +137,12 @@ end
 function flyWithLuaStub:bootstrapAllMacros()
     for _, macro in pairs(self.macros) do
         luaUnit.assertIsFalse(macro.isActiveNow)
+        logMsg(
+            "activate macro=" ..
+                macro.name ..
+                    "? initially=" ..
+                        tostring(macro.activateInitially) .. " function=" .. tostring(macro.activateFunction)
+        )
         if (macro.activateInitially) then
             macro.activateFunction()
             macro.isActiveNow = true
@@ -321,7 +327,7 @@ function flyWithLuaStub:writeDatarefValueToLocalVariables(globalDatarefIdName)
             actualNewData = tostring(d.data)
         end
 
-        localVariable.writeFunction = loadstring(localVariableName .. " = " .. actualNewData)
+        localVariable.writeFunction = LOAD_LUA_STRING(localVariableName .. " = " .. actualNewData)
         luaUnit.assertNotNil(localVariable.writeFunction)
         localVariable.writeFunction()
     end
@@ -354,7 +360,7 @@ end
 function create_command(commandName, readableCommandName, commandExpressionString, something1, something2)
     flyWithLuaStub.commands[commandName] = {
         readableName = readableCommandName,
-        commandFunction = loadstring(commandExpressionString)
+        commandFunction = LOAD_LUA_STRING(commandExpressionString)
     }
 end
 
@@ -368,8 +374,8 @@ function add_macro(macroName, activateExpression, deactivateExpression, activate
         flyWithLuaStub.macros,
         {
             name = macroName,
-            activateFunction = loadstring(activateExpression),
-            deactivateFunction = loadstring(deactivateExpression),
+            activateFunction = LOAD_LUA_STRING(activateExpression),
+            deactivateFunction = LOAD_LUA_STRING(deactivateExpression),
             activateInitially = activateOrDeactivate == flyWithLuaStub.Constants.InitialStateActivate,
             isActiveNow = false
         }
@@ -403,7 +409,7 @@ function dataref(localDatarefVariable, globalDatarefIdName, accessType)
         d.localVariables[localDatarefVariable] = variable
     end
 
-    variable.readFunction = loadstring("return " .. localDatarefVariable)
+    variable.readFunction = LOAD_LUA_STRING("return " .. localDatarefVariable)
     luaUnit.assertNotNil(variable.readFunction)
     variable.accessType = accessType
 
@@ -413,15 +419,15 @@ function dataref(localDatarefVariable, globalDatarefIdName, accessType)
 end
 
 function do_sometimes(doSometimesExpression)
-    table.insert(flyWithLuaStub.doSometimesFunctions, loadstring(doSometimesExpression))
+    table.insert(flyWithLuaStub.doSometimesFunctions, LOAD_LUA_STRING(doSometimesExpression))
 end
 
 function do_often(doOftenExpression)
-    table.insert(flyWithLuaStub.doOftenFunctions, loadstring(doOftenExpression))
+    table.insert(flyWithLuaStub.doOftenFunctions, LOAD_LUA_STRING(doOftenExpression))
 end
 
 function do_every_frame(doEveryFrameExpression)
-    table.insert(flyWithLuaStub.doEveryFrameFunctions, loadstring(doEveryFrameExpression))
+    table.insert(flyWithLuaStub.doEveryFrameFunctions, LOAD_LUA_STRING(doEveryFrameExpression))
 end
 
 function XPLMFindDataRef(datarefName)
@@ -473,12 +479,12 @@ function float_wnd_set_title(window, newTitle)
 end
 
 function float_wnd_set_onclose(window, newCloseFunctionName)
-    window.closeFunction = loadstring(newCloseFunctionName .. "()")
+    window.closeFunction = LOAD_LUA_STRING(newCloseFunctionName .. "()")
     window.closeFunctionName = newCloseFunctionName
 end
 
 function float_wnd_set_imgui_builder(window, newImguiBuilderFunctionName)
-    window.imguiBuilderFunction = loadstring(newImguiBuilderFunctionName .. "()")
+    window.imguiBuilderFunction = LOAD_LUA_STRING(newImguiBuilderFunctionName .. "()")
     window.imguiBuilderFunctionName = newImguiBuilderFunctionName
 end
 

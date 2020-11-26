@@ -3,7 +3,7 @@ local Config = require("vhf_helper.state.config")
 local Configuration = require("shared_components.configuration")
 local Utilities = require("shared_components.utilities")
 local InlineButtonBlob = require("shared_components.inline_button_blob")
-local Notifications = require("vhf_helper.state.notifications")
+-- local Notifications = require("vhf_helper.state.notifications")
 
 TRACK_ISSUE(
     "FlyWithLua",
@@ -291,14 +291,16 @@ do
         self:_renderSectionHeader("Feedback :-)")
         self.FeedbackLinkBlob:renderToCanvas()
 
-        if (Notifications.notificationManager ~= nil) then
-            imgui.TextUnformatted("")
-            self:_renderSectionHeader("DEBUG: Notifications")
+        -- if (Notifications ~= nil) then
+        --     if (Notifications.notificationManager ~= nil) then
+        --         imgui.TextUnformatted("")
+        --         self:_renderSectionHeader("DEBUG: Notifications")
 
-            for nid, pending in pairs(Notifications.notificationManager.notifications) do
-                imgui.TextUnformatted(("nid=%s state=%s"):format(nid, tostring(pending)))
-            end
-        end
+        --         for nid, pending in pairs(Notifications.notificationManager.notifications) do
+        --             imgui.TextUnformatted(("nid=%s state=%s"):format(nid, tostring(pending)))
+        --         end
+        --     end
+        -- end
 
         Globals.popDefaultButtonColorsFromImguiStack()
     end
