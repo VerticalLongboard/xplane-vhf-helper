@@ -57,48 +57,6 @@ do
         end
     end
 
-    Globals._NEWFUNC(VhfFrequencySubPanel._buildCurrentVhfLine)
-    function VhfFrequencySubPanel:_buildCurrentVhfLine(vhfNumber, nextVhfFrequencyIsSettable)
-        imgui.PushStyleVar_2(imgui.constant.StyleVar.FramePadding, 0.0, 0.0)
-
-        imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.greyText)
-        imgui.TextUnformatted(self.descriptor .. tonumber(vhfNumber) .. "  ")
-        imgui.PopStyleColor()
-
-        imgui.SameLine()
-        imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
-
-        local currentVhfString = self:_getCurrentCleanLinkedValueString(vhfNumber)
-        imgui.TextUnformatted(currentVhfString:sub(1, 3) .. Globals.decimalCharacter .. currentVhfString:sub(4, 7))
-        imgui.PopStyleColor()
-
-        imgui.PushStyleColor(imgui.constant.Col.Button, Globals.Colors.a320Green)
-
-        if (nextVhfFrequencyIsSettable) then
-            imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.black)
-        else
-            imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.white)
-        end
-
-        imgui.SameLine()
-        imgui.TextUnformatted(" ")
-
-        local buttonText = "   "
-        if (nextVhfFrequencyIsSettable) then
-            buttonText = "<" .. tonumber(vhfNumber) .. ">"
-
-            imgui.SameLine()
-            if (imgui.Button(buttonText)) then
-                self:_validateAndSetNextVHFFrequency(vhfNumber)
-            end
-        end
-
-        imgui.PopStyleColor()
-        imgui.PopStyleColor()
-
-        imgui.PopStyleVar()
-    end
-
     Globals._NEWFUNC(VhfFrequencySubPanel._validateAndSetNextVHFFrequency)
     function VhfFrequencySubPanel:_validateAndSetNextVHFFrequency(vhfNumber)
         if (not self:numberCanBeSetNow()) then
@@ -115,20 +73,79 @@ do
         self.enteredValue = Globals.emptyString
     end
 
-    Globals.OVERRIDE(VhfFrequencySubPanel.renderToCanvas)
-    function VhfFrequencySubPanel:renderToCanvas()
-        imgui.SetWindowFontScale(1.0 * globalFontScale)
+    function VhfFrequencySubPanel:_renderTinyFontLine(leftText, rightText)
+        local tinyFontLinePadding = 34 - leftText:len() - rightText:len()
+        local padWhitespace = ""
+        for i = 1, tinyFontLinePadding do
+            padWhitespace = padWhitespace .. " "
+        end
+        imgui.SetWindowFontScale(0.5 * globalFontScale)
+        imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.greyText)
+        imgui.TextUnformatted(leftText .. padWhitespace .. rightText)
+        imgui.PopStyleColor()
+    end
 
+    function VhfFrequencySubPanel:_renderValueLine()
+        imgui.SetWindowFontScale(1.0 * globalFontScale)
+        imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
+
+        local vhf1String = self:_getCurrentCleanLinkedValueString(1)
+        vhf1String = vhf1String:sub(1, 3) .. Globals.decimalCharacter .. vhf1String:sub(4, 7)
+        local vhf2String = self:_getCurrentCleanLinkedValueString(2)
+        vhf2String = vhf2String:sub(1, 3) .. Globals.decimalCharacter .. vhf2String:sub(4, 7)
+
+        imgui.TextUnformatted(vhf1String)
+
+        local bigFontLinePadding = 17 - vhf1String:len() - vhf2String:len()
+        padWhitespace = ""
+        for i = 1, bigFontLinePadding do
+            padWhitespace = padWhitespace .. " "
+        end
+
+        imgui.SameLine()
+        imgui.TextUnformatted(padWhitespace)
+
+        imgui.SameLine()
+        imgui.TextUnformatted(vhf2String)
+        imgui.PopStyleColor()
+    end
+
+    function VhfFrequencySubPanel:_renderSwitchButton(nextVhfFrequencyIsSettable, vhfNumber)
+        if (nextVhfFrequencyIsSettable) then
+            imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.black)
+            imgui.PushStyleColor(imgui.constant.Col.Button, 0xFF008800)
+        else
+            imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.defaultImguiBackground)
+            imgui.PushStyleColor(imgui.constant.Col.Button, Globals.Colors.defaultImguiBackground)
+            imgui.PushStyleColor(imgui.constant.Col.ButtonActive, Globals.Colors.defaultImguiBackground)
+            imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, Globals.Colors.defaultImguiBackground)
+        end
+
+        if (imgui.Button("<" .. tonumber(vhfNumber) .. ">")) then
+            self:_validateAndSetNextVHFFrequency(vhfNumber)
+        end
+
+        if (not nextVhfFrequencyIsSettable) then
+            imgui.PopStyleColor()
+            imgui.PopStyleColor()
+        end
+
+        imgui.PopStyleColor()
+        imgui.PopStyleColor()
+    end
+
+    function VhfFrequencySubPanel:_renderNextValueLine()
         local nextVhfFrequencyIsSettable = self:numberCanBeSetNow()
 
-        imgui.PushStyleVar_2(imgui.constant.StyleVar.ItemSpacing, 0.0, 2.0)
-
-        self:_buildCurrentVhfLine(1, nextVhfFrequencyIsSettable)
-        self:_buildCurrentVhfLine(2, nextVhfFrequencyIsSettable)
-
         imgui.Separator()
+        imgui.Dummy(0.0, 1.0)
 
-        imgui.TextUnformatted("Next " .. self.descriptor .. "  ")
+        imgui.SetWindowFontScale(1.0 * globalFontScale)
+
+        self:_renderSwitchButton(nextVhfFrequencyIsSettable, 1)
+
+        imgui.SameLine()
+        imgui.TextUnformatted("  ")
 
         if (nextVhfFrequencyIsSettable) then
             imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
@@ -136,15 +153,34 @@ do
             imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Blue)
         end
 
-        imgui.SameLine()
-
         local paddedFreqString =
             self.enteredValue .. self.Constants.FullyPaddedFreqString:sub(string.len(self.enteredValue) + 1, 7)
+        imgui.SameLine()
         imgui.TextUnformatted(paddedFreqString)
 
-        imgui.PopStyleVar()
-
         imgui.PopStyleColor()
+
+        imgui.SameLine()
+        imgui.TextUnformatted("  ")
+
+        imgui.SameLine()
+        self:_renderSwitchButton(nextVhfFrequencyIsSettable, 2)
+    end
+
+    Globals.OVERRIDE(VhfFrequencySubPanel.renderToCanvas)
+    function VhfFrequencySubPanel:renderToCanvas()
+        imgui.SetWindowFontScale(1.0 * globalFontScale)
+
+        imgui.PushStyleVar_2(imgui.constant.StyleVar.ItemSpacing, 0.0, 2.0)
+        imgui.PushStyleVar_2(imgui.constant.StyleVar.FramePadding, 0.0, 0.0)
+
+        self:_renderTinyFontLine(self.descriptor .. "1", self.descriptor .. "2")
+        self:_renderValueLine()
+        self:_renderTinyFontLine("", "")
+        self:_renderNextValueLine()
+
+        imgui.PopStyleVar()
+        imgui.PopStyleVar()
 
         imgui.Separator()
         self:_renderNumberPanel()

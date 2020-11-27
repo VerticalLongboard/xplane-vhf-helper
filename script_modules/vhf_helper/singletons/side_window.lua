@@ -135,7 +135,7 @@ do
             )
         )
 
-        local manuallyUpdatedVersionNumberDontUseForTooLong = "v1.0.19"
+        local manuallyUpdatedVersionNumberDontUseForTooLong = "v1.0.20"
         TRACK_ISSUE(
             "Tech Debt",
             ("Add version number to build. Currently, manually set version=%s"):format(
@@ -239,7 +239,6 @@ do
     function vhfHelperSideWindow:toggle()
         self:show(self.window == nil)
     end
-
 
     function vhfHelperSideWindow:renderToCanvas()
         Globals.pushDefaultsToImguiStack()

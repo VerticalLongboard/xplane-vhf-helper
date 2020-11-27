@@ -109,8 +109,7 @@ do
 
 		if (nextTransponderCodeIsSettable) then
 			imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.black)
-		else
-			imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.white)
+			imgui.PushStyleColor(imgui.constant.Col.Button, 0xFF008800)
 		end
 
 		imgui.SameLine()
@@ -126,7 +125,10 @@ do
 			end
 		end
 
-		imgui.PopStyleColor()
+		if (nextTransponderCodeIsSettable) then
+			imgui.PopStyleColor()
+			imgui.PopStyleColor()
+		end
 		imgui.PopStyleColor()
 
 		imgui.PopStyleVar()
@@ -139,6 +141,7 @@ do
 		local nextTransponderCodeIsSettable = self:numberCanBeSetNow()
 
 		imgui.PushStyleVar_2(imgui.constant.StyleVar.ItemSpacing, 0.0, 2.0)
+		imgui.Dummy(0.0, 3.0)
 
 		self:_buildCurrentTransponderLine(nextTransponderCodeIsSettable)
 		self:_buildModeButtonLine()

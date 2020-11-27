@@ -53,8 +53,8 @@ do
             minHeightWithoutScrollbars = 460
         elseif (globalFontScaleDescriptor == "big") then
             globalFontScale = 2.0
-            minWidthWithoutScrollbars = 260
-            minHeightWithoutScrollbars = 320
+            minWidthWithoutScrollbars = 258
+            minHeightWithoutScrollbars = 325
         else
             globalFontScale = 1.0
             minWidthWithoutScrollbars = 150
@@ -141,13 +141,13 @@ do
 
     TRACK_ISSUE(
         "Lua",
-        "FlyWithLua is supposed to run Lua 5.1, which locally does not support bit operations via bit.* functions. Disable in tests for now."
+        "FlyWithLua is supposed to run Lua 5.1, which, in a clean development environment, does not support bit operations via bit.* functions. Disable in tests for now."
     )
     function vhfHelperMainWindow:_getBlinkingWhiteColor()
         if (IS_TEST ~= nil) then
             return 0xFF000000
         else
-            local brightness = (math.sin(LuaPlatform.Time.now() * 10.0) + 1.0) * 0.5
+            local brightness = (math.sin(LuaPlatform.Time.now() * 10.0) + 2.0) * 0.25
             brightness = brightness * 255
 
             local bitRed = bit.lshift(brightness, 0)
@@ -175,7 +175,7 @@ do
                 self.toggleSideWindowSoon = true
             end
         else
-            if (imgui.Button(">")) then
+            if (imgui.Button("?")) then
                 self.toggleSideWindowSoon = true
             end
         end
