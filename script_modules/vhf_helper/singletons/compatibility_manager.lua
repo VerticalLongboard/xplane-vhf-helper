@@ -7,7 +7,6 @@ local vhfHelperCompatibilityManagerSingleton
 do
     vhfHelperCompatibilityManager = {
         Constants = {
-            ConfigurationVersion = 1,
             CompatibilityUpdateNotificationPrefix = "CompatibilityManager_ReadCompatibilityInformation_"
         },
         Notifications = {
@@ -65,7 +64,7 @@ do
         if (vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate == nil) then
             vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate =
                 vhfHelperCompatibilityManager.Constants.CompatibilityUpdateNotificationPrefix ..
-                tostring(vhfHelperCompatibilityManager.Constants.ConfigurationVersion) ..
+                tostring(self.currentConfiguration.version) ..
                     "_" .. Utilities.encodeByteToHex(self:getPlaneCompatibilityIdString())
         end
 
@@ -85,6 +84,7 @@ do
 
     function vhfHelperCompatibilityManager:_getDefaultConfiguration()
         return {
+            version = 1,
             readableName = "Default Plane",
             hasKnownIssues = false,
             isNavFeatureEnabled = true,
@@ -95,6 +95,7 @@ do
     function vhfHelperCompatibilityManager:_addFlightFactorA320Ultimate()
         local newConfiguration = self:_getDefaultConfiguration()
         self:_addKnownIssuesToConfiguration(newConfiguration, "NAV and Transponder do not work and are disabled.")
+        newConfiguration.version = 1
         newConfiguration.isNavFeatureEnabled = false
         newConfiguration.isTransponderFeatureEnabled = false
         self:_addConfigurationForIdWithReadableName(

@@ -54,7 +54,7 @@ do
         elseif (globalFontScaleDescriptor == "big") then
             globalFontScale = 2.0
             minWidthWithoutScrollbars = 258
-            minHeightWithoutScrollbars = 325
+            minHeightWithoutScrollbars = 322
         else
             globalFontScale = 1.0
             minWidthWithoutScrollbars = 150
@@ -168,7 +168,7 @@ do
                     "?",
                     Globals.Colors.black,
                     self:_getBlinkingWhiteColor(),
-                    Globals.Colors.white,
+                    Globals.Colors.white, 
                     Globals.Colors.white
                 ))
              then

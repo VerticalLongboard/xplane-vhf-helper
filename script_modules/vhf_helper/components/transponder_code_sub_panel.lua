@@ -95,7 +95,7 @@ do
 		imgui.PushStyleVar_2(imgui.constant.StyleVar.FramePadding, 0.0, 0.0)
 
 		imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.greyText)
-		imgui.TextUnformatted(self.descriptor .. "     ")
+		imgui.TextUnformatted("  " .. self.descriptor .. "  ")
 		imgui.PopStyleColor()
 
 		imgui.SameLine()
@@ -155,7 +155,7 @@ do
 
 		imgui.SetWindowFontScale(1.0 * globalFontScale)
 
-		imgui.TextUnformatted("Next " .. self.descriptor .. "    ")
+		imgui.TextUnformatted("New " .. self.descriptor .. "     ")
 
 		if (nextTransponderCodeIsSettable) then
 			imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)

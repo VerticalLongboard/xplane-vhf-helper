@@ -92,8 +92,8 @@ local transponderModeToDescriptor = {}
 table.insert(transponderModeToDescriptor, "OFF")
 table.insert(transponderModeToDescriptor, "STBY")
 table.insert(transponderModeToDescriptor, "ON")
-table.insert(transponderModeToDescriptor, "ALT2")
-table.insert(transponderModeToDescriptor, "ALT3")
+table.insert(transponderModeToDescriptor, "ALT")
+table.insert(transponderModeToDescriptor, "TEST")
 
 TRACK_ISSUE(
     "Plane Compatibility",

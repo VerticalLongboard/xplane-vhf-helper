@@ -180,9 +180,9 @@ do
         imgui.PushStyleVar_2(imgui.constant.StyleVar.ItemSpacing, 0.0, 2.0)
         imgui.PushStyleVar_2(imgui.constant.StyleVar.FramePadding, 0.0, 0.0)
 
-        self:_renderTinyFontLine(self.descriptor .. "1", self.descriptor .. "2")
-        self:_renderValueLine()
         self:_renderTinyFontLine("", "")
+        self:_renderValueLine()
+        self:_renderTinyFontLine(self.descriptor .. "1", self.descriptor .. "2")
         self:_renderNextValueLine()
 
         imgui.PopStyleVar()
