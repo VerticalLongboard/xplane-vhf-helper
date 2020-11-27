@@ -165,7 +165,7 @@ do
         if (Notifications.notificationManager:areAnyNotificationsPending()) then
             if
                 (Globals.ImguiUtils:renderButtonWithColors(
-                    ">",
+                    "?",
                     Globals.Colors.black,
                     self:_getBlinkingWhiteColor(),
                     Globals.Colors.white,

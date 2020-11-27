@@ -12,15 +12,15 @@ do
             return nil
         end
 
-        minorOneDigit = cleanFrequencyString:sub(6, 6)
-        minorTenDigit = cleanFrequencyString:sub(5, 5)
+        local minorOneDigit = cleanFrequencyString:sub(6, 6)
+        local minorTenDigit = cleanFrequencyString:sub(5, 5)
         if (minorOneDigit ~= "0" and minorOneDigit ~= "5") then
             minorOneDigit = "0"
             cleanFrequencyString = replaceCharacter(cleanFrequencyString, 6, minorOneDigit)
         end
 
         if (minorTenDigit == "2" or minorTenDigit == "7") then
-            minorOneDigit = "5"
+            local minorOneDigit = "5"
             cleanFrequencyString = Globals.replaceCharacter(cleanFrequencyString, 6, minorOneDigit)
         end
 

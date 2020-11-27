@@ -33,7 +33,7 @@ TestHighLevelBehaviour = {
 		comPanelButtonTitle = "COM",
 		navPanelButtonTitle = "NAV",
 		transponderPanelButtonTitle = "XPDR",
-		SidePanelButtonTitle = ">"
+		SidePanelButtonTitle = "?"
 	}
 }
 

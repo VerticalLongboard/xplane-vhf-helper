@@ -91,7 +91,7 @@ do
         vhfHelperSideWindow.Constants.MulticrewStateToMessage[
                 vhfHelperMulticrewManager.Constants.State.SmartCopilotConfigurationMissing
             ] = {
-            "No SmartCopilot configuration found for your current aircraft.",
+            "No SmartCopilot installation found for your current aircraft.",
             Globals.Colors.a320Orange
         }
         vhfHelperSideWindow.Constants.MulticrewStateToMessage[
@@ -316,12 +316,12 @@ do
         self.PlaneCompatibilityBlob:renderToCanvas()
 
         imgui.TextUnformatted("")
-        self:_renderSectionHeader("Updates")
-        self.UpdatesBlob:renderToCanvas()
-
-        imgui.TextUnformatted("")
         self:_renderSectionHeader("Feedback :-)")
         self.FeedbackLinkBlob:renderToCanvas()
+
+        imgui.TextUnformatted("")
+        self:_renderSectionHeader("Updates")
+        self.UpdatesBlob:renderToCanvas()
 
         Globals.popDefaultsFromImguiStack()
     end

@@ -91,10 +91,15 @@ do
 
         local vhf1String = self:_getCurrentCleanLinkedValueString(1)
         vhf1String = vhf1String:sub(1, 3) .. Globals.decimalCharacter .. vhf1String:sub(4, 7)
+        if (self.inputPanelValidator:validate(vhf1String) == nil) then
+            vhf1String = self.Constants.FullyPaddedFreqString
+        end
+
         local vhf2String = self:_getCurrentCleanLinkedValueString(2)
         vhf2String = vhf2String:sub(1, 3) .. Globals.decimalCharacter .. vhf2String:sub(4, 7)
-
-        imgui.TextUnformatted(vhf1String)
+        if (self.inputPanelValidator:validate(vhf2String) == nil) then
+            vhf2String = self.Constants.FullyPaddedFreqString
+        end
 
         local bigFontLinePadding = 17 - vhf1String:len() - vhf2String:len()
         padWhitespace = ""
@@ -102,11 +107,12 @@ do
             padWhitespace = padWhitespace .. " "
         end
 
+        imgui.TextUnformatted(vhf1String)
         imgui.SameLine()
         imgui.TextUnformatted(padWhitespace)
-
         imgui.SameLine()
         imgui.TextUnformatted(vhf2String)
+
         imgui.PopStyleColor()
     end
 

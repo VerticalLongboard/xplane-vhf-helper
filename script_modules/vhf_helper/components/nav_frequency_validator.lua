@@ -12,13 +12,13 @@ do
             return nil
         end
 
-        minorTenDigit = cleanFrequencyString:sub(5, 5)
-        if (minorTenDigit ~= "0" and minorTenDigit ~= "5") then
+        local minorHundredDigit = cleanFrequencyString:sub(5, 5)
+        if (minorHundredDigit ~= "0" and minorHundredDigit ~= "5") then
             return nil
         end
 
-        minorOneDigit = cleanFrequencyString:sub(6, 6)
-        if (minorOneDigit ~= "0") then
+        local minorTenDigit = cleanFrequencyString:sub(6, 6)
+        if (minorTenDigit ~= "0") then
             return nil
         end
 

@@ -19,7 +19,7 @@ do
 
         local cleanFrequencyString = fullFrequencyString:sub(1, 3) .. fullFrequencyString:sub(5, 7)
 
-        frequencyNumber = tonumber(cleanFrequencyString)
+        local frequencyNumber = tonumber(cleanFrequencyString)
         if (frequencyNumber < minVhf or frequencyNumber > maxVhf) then
             return nil
         end

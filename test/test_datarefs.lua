@@ -38,8 +38,8 @@ TestDatarefs = {
 		transponderCodeInterchangeFreq = "VHFHelper/InterchangeTransponderCode",
 		initialCom1Frequency = 131200,
 		initialCom2Frequency = 119500,
-		initialNav1Frequency = 117000,
-		initialNav2Frequency = 116600,
+		initialNav1Frequency = 11700,
+		initialNav2Frequency = 11660,
 		initialTransponderCode = 1000,
 		initialTransponderMode = 1
 	}

@@ -102,6 +102,9 @@ do
 		imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
 
 		local currentTransponderString = self:_getCurrentLinkedValueString()
+		if (self.inputPanelValidator:validate(currentTransponderString) == nil) then
+			currentTransponderString = self.FullyPaddedString
+		end
 		imgui.TextUnformatted(currentTransponderString)
 		imgui.PopStyleColor()
 

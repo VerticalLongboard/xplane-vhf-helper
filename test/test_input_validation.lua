@@ -95,6 +95,11 @@ function TestNavFrequencyValidation:setUp()
 	self.validator = vhfHelperPackageExport.test.navFrequencyValidator
 end
 
+function TestNavFrequencyValidation:testValidFrequencyIsConsideredValid()
+	luaUnit.assertEquals(self.validator:validate("117.000"), "117.000")
+	luaUnit.assertEquals(self.validator:validate("108.550"), "108.550")
+end
+
 function TestNavFrequencyValidation:testSlightlyInvalidFrequencyIsNotConsideredValid()
 	luaUnit.assertEquals(self.validator:validate("113.455"), nil)
 end
