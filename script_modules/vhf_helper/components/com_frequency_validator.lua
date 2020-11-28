@@ -5,6 +5,7 @@ local ComFrequencyValidator
 do
     ComFrequencyValidator = FrequencyValidator:new()
 
+    TRACK_ISSUE("Feature", "Validate 123.4 as well, not only full frequency strings")
     Globals.OVERRIDE(ComFrequencyValidator.validate)
     function ComFrequencyValidator:validate(fullFrequencyString)
         local cleanFrequencyString = self:_checkBasicValidity(fullFrequencyString, 118000, 136975)
