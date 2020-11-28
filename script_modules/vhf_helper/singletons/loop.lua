@@ -1,6 +1,7 @@
 local Globals = require("vhf_helper.globals")
 local Config = require("vhf_helper.state.config")
 local Datarefs = require("vhf_helper.state.datarefs")
+local LuaPlatform = require("lua_platform")
 
 local vhfHelperLoopSingleton
 do
@@ -15,6 +16,8 @@ do
             defaultMacroName = Globals.readableScriptName
         }
         self.alreadyInitialized = false
+        self.lastFrameTime = LuaPlatform.Time.now()
+        self.dt = self.lastFrameTime + 1 / 60.0
     end
 
     TRACK_ISSUE(
@@ -67,6 +70,10 @@ do
     end
 
     function vhfHelperLoop:everyFrameLoop()
+        local now = LuaPlatform.Time.now()
+        self.dt = now - self.lastFrameTime
+        self.lastFrameTime = now
+
         if (not self.alreadyInitialized) then
             return
         end
@@ -76,6 +83,10 @@ do
         end
 
         Config.Config:save()
+    end
+
+    function vhfHelperLoop:getDt()
+        return self.dt
     end
 
     TRACK_ISSUE(

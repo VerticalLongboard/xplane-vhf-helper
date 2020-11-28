@@ -60,9 +60,8 @@ Globals.popDefaultsFromImguiStack = function()
 end
 
 Globals.pushDefaultButtonColorsToImguiStack = function()
-    local slightlyBrighterDefaultButtonColor = 0xFF7F5634
     imgui.PushStyleColor(imgui.constant.Col.ButtonActive, Globals.Colors.defaultImguiButtonBackground)
-    imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, slightlyBrighterDefaultButtonColor)
+    imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, Globals.Colors.slightlyBrighterDefaultButtonColor)
 end
 
 Globals.popDefaultButtonColorsFromImguiStack = function()
@@ -141,6 +140,7 @@ Globals.Colors = {
     greyText = 0xFFAAAAAA,
     defaultImguiBackground = 0xFF121110,
     defaultImguiButtonBackground = 0xFF6F4624,
+    slightlyBrighterDefaultButtonColor = 0xFF7F5634,
     SwitchPanel = {
         SwitchButtonColor = 0xFF00AA00,
         HoveredSwitchButtonColor = 0xFF00CC00
@@ -226,12 +226,7 @@ do
         imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, 0xFF222222)
     end
 
-    ImguiUtils.popDisabledButtonColors = function()
-        imgui.PopStyleColor()
-        imgui.PopStyleColor()
-        imgui.PopStyleColor()
-        imgui.PopStyleColor()
-    end
+  
 
     ImguiUtils.pushSwitchButtonColors = function(nextValueIsSettable)
         if (nextValueIsSettable) then
@@ -261,7 +256,7 @@ do
         if (nextValueIsSettable) then
             imgui.PushStyleColor(
                 imgui.constant.Col.Text,
-                Utilities.getBlinkingColorBetweenTwo(Globals.Colors.a320Orange, 0xFF33DDFF, 0.0, 5.0)
+                Utilities.getBlinkingColorBetweenTwo(Globals.Colors.a320Orange, 0xFF55DDFF, 0.0, 5.0)
             )
         else
             imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Blue)
