@@ -77,7 +77,7 @@ do
 
         imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.greyText)
         if (baroNumber < 3) then
-            imgui.TextUnformatted(self.descriptor .. tostring(baroNumber))
+            imgui.TextUnformatted("BAR" .. tostring(baroNumber))
         else
             imgui.TextUnformatted("STBY")
         end
