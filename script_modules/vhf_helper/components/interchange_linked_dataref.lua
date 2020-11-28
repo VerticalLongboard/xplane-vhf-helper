@@ -66,7 +66,14 @@ do
         )
         TRACK_ISSUE(
             "FlyWithLua",
-            "FlyWithLua does not support deleting a dataref. When running X-Plane while updating dataref types, creating them again will fail, fatally."
+            MULTILINE_TEXT(
+                "FlyWithLua does not support deleting a dataref.",
+                "When running X-Plane while updating dataref types, creating them again will fail, fatally.",
+                "Problem: We don't want datarefs to exist already, but bailing out because of it is not viable in production.",
+                "Also, there's no way to get the current type so we don't know if the define_shared_DataRef call will fail.",
+                "Leaving a log message is considered a good warning, but all FlyWithLua scripts",
+                "will fail anyway. Would't expect any user to read Log.txt. A restart fixes it. No real workaround at the moment :-("
+            )
         )
         if (XPLMFindDataRef(self.interchangeDatarefName) ~= nil) then
             logMsg(

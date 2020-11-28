@@ -436,7 +436,7 @@ function XPLMFindDataRef(datarefName)
     TRACK_ISSUE("FlyWithLua", "deleting a dataref")
     if (not d.isInternallyDefinedDataref) then
         logMsg(
-            ("FlyWithLua Stub: Looked for dataref name=%s that is NOT created via createSharedDatarefHandle. That means you're very likely working around and X-Plane issue."):format(
+            ("FlyWithLua Stub: Looked for dataref name=%s that is NOT created via createSharedDatarefHandle. That means you're very likely working around an X-Plane/FlyWithLua issue."):format(
                 datarefName
             )
         )

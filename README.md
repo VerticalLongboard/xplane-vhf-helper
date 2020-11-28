@@ -1,12 +1,14 @@
 # VR Radio Helper (aka VHF Helper)
 ## Overview
-VR Radio Helper is a FlyWithLua plugin for X-Plane 11. It allows to change the two main COM frequencies of any X-Plane airplane in **Virtual Reality** via convenient touch pad number buttons in a **multicrew** environment. For many default airplanes, NAV and transponder codes can be changed as well.
+VR Radio Helper is a FlyWithLua plugin for X-Plane 11. It allows to change the two main COM frequencies of any X-Plane airplane in **Virtual Reality** via convenient touch pad number buttons in a **multicrew** environment. For many default airplanes, NAV, Transponder and Barometer can be changed as well.
 
 Flying VR multicrew in X-Plane with ATC is a blast! Yet, the default X-Plane 11 VR knobs are horrible when trying to monitor/fly and dial in a new ATC frequency at the same time (takes up to 2 minutes for a 2-hour flight, just turning the knob and making sure that no turn got lost when using SmartCopilot).
 
 VR Radio Helper:
-* Makes tuning in a new ATC or NAV frequency a breeze!
+* Makes tuning in a new ATC frequency a breeze!
+  * It replaces most ATC/navigation-related knobs with a number panel, like COM, NAV, Transponder and Barometer settings.
 * Works with SmartCopilot (both pilots need to install it) and synchronizes COM/NAV frequencies and transponder codes between two pilots
+  * Required changes to an existing SmartCopilot installation are applied automatically.
 * Works in VR (free positioning in 3D space)
 * Integrates well with ATC networks (e.g. VATSIM)
 
@@ -21,25 +23,23 @@ VR Radio Helper:
   * Move `vhf_helper.lua` to `<X-Plane 11 Folder>/Resources/plugins/FlyWithLua/Scripts`
 
 To make it multicrew-ready (do that in **BOTH** pilot's airplanes):
-
 * Install SmartCopilot: https://sky4crew.com/smartcopilot/ and install aircraft-specific `smartcopilot.cfg`
 
 ## Usage
 * Go to `Plugins/FlyWithLua/FlyWithLua Macros/VR Radio Helper`.
 * Place and scale the panel wherever you like (in 2D and VR).
 * Use the number buttons to enter the new VHF frequency. The last two digits do not need to be entered manually.
-* Press `NAV` or `XPDR` to change to NAV and transponder panels.
-* Press the COM1/2, NAV1/2 or XPDR switch button to tune in new frequencies or transponder codes.
+* Press `NAV`, `XPDR` or `QNH` to change to NAV, Transponder and Barometer panels.
+* Press the corresponding switch button to tune in new frequencies, transponder codes or barometer pressures.
 * **Chat with ATC! :-)**
 * If you like, bind the toggle-panel command `FlyWithLua/VR Radio Helper/TogglePanel` to a key of your choice.
 
 For multicrew:
-
-  * Check if multicrew support is available (click the `>` button)
-  * Connect via SmartCopilot
+ * Check if multicrew support is available (click the `>` button)
+ * Connect via SmartCopilot
 
 ## Plane Compatibility
-VR Radio Helper uses the default X-Plane way of setting COM/NAV frequencies and the transponder code. By default, all features are enabled. If you find that your  airplane does not work out-of-the-box, please use the integrated feedback collector (click the `>` button) to leave a description of the issues that you encountered. The plane compatibility reports automatically generate diagnostic information that is necessary to distinguish between different planes.
+VR Radio Helper uses the default X-Plane way of setting COM/NAV frequencies, BARO pressures and transponder codes. By default, all features are enabled. If you find that this does not work out-of-the-box in your plane, please use the integrated feedback collector (click the `?` button) to leave a description of the issues that you encountered. The plane compatibility reports automatically generate diagnostic information that is necessary to distinguish between different planes.
 Based on this informatrion, a growing number of planes are detected automatically and settings adjusted / features disabled accordingly.
 
 ## Dependencies
