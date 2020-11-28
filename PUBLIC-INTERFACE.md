@@ -12,7 +12,7 @@ if (VHFHelperPublicInterface ~= nil) then
 end
 ```
 
-Programmatically set the `Next VHF` frequency in VHF Helper's panel (returns `nil` if invalid):
+Programmatically set the `Next COM` frequency in VR Radio Helper's panel (returns `nil` if invalid):
 ```text
 VHFHelperPublicInterface.enterFrequencyProgrammaticallyAsString("124.8")
 VHFHelperPublicInterface.enterFrequencyProgrammaticallyAsString("123.950")
@@ -38,7 +38,7 @@ VHFHelperPublicInterface.isValidFrequency("199x998")
 
 Only valid default VHF communication airband frequencies are accepted (`118.0` to `136.975`) and reported equal, with one **exception**: If the last digit doesn't match the default airband exactly, it is replaced by either a "0" or "5" based on whatever makes more sense. Any completely invalid, i.e. out-of-range, frequency is ignored and, in case of `enterFrequencyProgrammaticallyAsString`, the next COM frequency currently entered is cleared.
 
-VHF Helper uses an Event Bus to emit any changes (even when its panel is not visible) in:
+VR Radio Helper uses an Event Bus to emit any changes (even when its panel is not visible) in:
 * tuned-in frequencies (`COM1` or `COM2`)
 * currently entered frequencies (`Next COM`)
 
