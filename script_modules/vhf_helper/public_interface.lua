@@ -13,8 +13,11 @@ local function activatePublicInterface()
         getInterfaceVersion = function()
             return 2
         end,
-        enterFrequencyProgrammaticallyAsString = function(newFullString)
-            newFullString = Validation.comFrequencyValidator:validate(newFullString)
+        enterFrequencyProgrammaticallyAsString = function(atLeastThreeDigitsDecimalOneDigit)
+            local newFullString =
+                Validation.comFrequencyValidator:validate(
+                Validation.comFrequencyValidator:autocomplete(atLeastThreeDigitsDecimalOneDigit)
+            )
 
             local nextVhfFrequency = nil
             if (newFullString ~= nil) then
@@ -26,8 +29,12 @@ local function activatePublicInterface()
             Panels.comFrequencyPanel:overrideEnteredValue(nextVhfFrequency)
             return nextVhfFrequency
         end,
-        isCurrentlyTunedIn = function(fullFrequencyString)
-            newFullString = Validation.comFrequencyValidator:validate(fullFrequencyString)
+        isCurrentlyTunedIn = function(atLeastThreeDigitsDecimalOneDigit)
+            local newFullString =
+                Validation.comFrequencyValidator:validate(
+                Validation.comFrequencyValidator:autocomplete(atLeastThreeDigitsDecimalOneDigit)
+            )
+
             if (newFullString == nil) then
                 return false
             end
@@ -42,8 +49,12 @@ local function activatePublicInterface()
 
             return false
         end,
-        isCurrentlyEntered = function(fullFrequencyString)
-            newFullString = Validation.comFrequencyValidator:validate(fullFrequencyString)
+        isCurrentlyEntered = function(atLeastThreeDigitsDecimalOneDigit)
+            local newFullString =
+                Validation.comFrequencyValidator:validate(
+                Validation.comFrequencyValidator:autocomplete(atLeastThreeDigitsDecimalOneDigit)
+            )
+
             if (newFullString == nil) then
                 return false
             end
