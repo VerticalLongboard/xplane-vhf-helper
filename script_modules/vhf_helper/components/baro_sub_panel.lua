@@ -105,12 +105,12 @@ do
         imgui.TextUnformatted(" ")
 
         imgui.SetWindowFontScale(0.8 * globalFontScale)
-        Globals.ImguiUtils:pushSwitchButtonColors(nextValueIsSettable)
+        Globals.ImguiUtils.pushSwitchButtonColors(nextValueIsSettable)
         buttonText = imgui.SameLine()
         if (imgui.Button("<" .. tostring(baroNumber) .. ">")) then
             self:_validateAndSetNext(baroNumber)
         end
-        Globals.ImguiUtils:popSwitchButtonColors()
+        Globals.ImguiUtils.popSwitchButtonColors()
 
         imgui.PopStyleVar()
     end

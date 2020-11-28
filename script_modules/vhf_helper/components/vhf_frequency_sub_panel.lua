@@ -87,7 +87,6 @@ do
         imgui.PopStyleColor()
     end
 
-
     function VhfFrequencySubPanel:_renderValueLine()
         imgui.SetWindowFontScale(1.0 * globalFontScale)
 
@@ -122,13 +121,13 @@ do
 
     function VhfFrequencySubPanel:_renderSwitchButton(nextVhfFrequencyIsSettable, vhfNumber)
         imgui.SetWindowFontScale(1.0 * globalFontScale)
-        Globals.ImguiUtils:pushSwitchButtonColors(nextVhfFrequencyIsSettable)
+        Globals.ImguiUtils.pushSwitchButtonColors(nextVhfFrequencyIsSettable)
 
         if (imgui.Button("<" .. tonumber(vhfNumber) .. ">")) then
             self:_validateAndSetNextVHFFrequency(vhfNumber)
         end
 
-        Globals.ImguiUtils:popSwitchButtonColors()
+        Globals.ImguiUtils.popSwitchButtonColors()
     end
 
     function VhfFrequencySubPanel:_renderNextValueLine()

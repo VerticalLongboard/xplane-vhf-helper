@@ -34,6 +34,14 @@ do
         return newInstanceWithState
     end
 
+    function IniEditor:_reset()
+        self.filePath = nil
+        self.loadMode = nil
+        self.lastError = nil
+        self.unstructuredLines = {}
+        self.structuredContent = {}
+    end
+
     function IniEditor:loadFromFile(filePath, loadMode)
         if (loadMode == nil) then
             loadMode = self.LoadModes.Normal
@@ -43,21 +51,19 @@ do
             return false
         end
 
+        self:_reset()
+
         local content = Utilities.readAllContentFromFile(filePath)
         self.filePathBeforeLoadingIsComplete = filePath
         local result = self:loadFromString(content, loadMode)
         if (not result) then
+            self:_reset()
             return false
         end
 
         self.filePath = filePath
         return true
     end
-
-    TRACK_ISSUE(
-        "Tech Debt",
-        "Not being able to load the file leaves IniEditor in a bad state. Reset (or force people to new() it)"
-    )
 
     function IniEditor:getLastErrorOrNil()
         return self.lastError

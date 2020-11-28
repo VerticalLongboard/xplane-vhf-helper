@@ -124,6 +124,11 @@ Utilities.getBlinkingColor = function(color, baseBrightness, blinkRate)
     return Utilities.lerpColors(0xFF000000, color, brightness)
 end
 
+TRACK_ISSUE(
+    "Lua",
+    "FlyWithLua is supposed to run Lua 5.1, which, in a clean development environment, does not support bit operations via bit.* functions.",
+    "Disable in tests for now."
+)
 Utilities.lerpColors = function(color1, color2, t)
     if (IS_TEST ~= nil) then
         return 0xFF000000

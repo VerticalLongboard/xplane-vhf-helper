@@ -147,16 +147,10 @@ do
         Globals.popDefaultsFromImguiStack()
     end
 
-    TRACK_ISSUE(
-        "Lua",
-        "FlyWithLua is supposed to run Lua 5.1, which, in a clean development environment, does not support bit operations via bit.* functions.",
-        "Disable in tests for now."
-    )
-
     function vhfHelperMainWindow:_renderSidePanelButton()
         if (vhfHelperSideWindow:areAnyNotificationsPending()) then
             if
-                (Globals.ImguiUtils:renderButtonWithColors(
+                (Globals.ImguiUtils.renderButtonWithColors(
                     "?",
                     Globals.Colors.black,
                     Utilities.getBlinkingColor(0xFFFFFFFF, 0.4, 5.0),
@@ -181,7 +175,7 @@ do
     end
 
     function vhfHelperMainWindow:_renderPanelButton(panel, enabled)
-        Globals.ImguiUtils:renderActiveInactiveButton(
+        Globals.ImguiUtils.renderActiveInactiveButton(
             panel.descriptor,
             self.currentPanel == panel,
             enabled,

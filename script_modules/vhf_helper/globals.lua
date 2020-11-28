@@ -142,18 +142,17 @@ Globals.Colors = {
     defaultImguiBackground = 0xFF121110,
     defaultImguiButtonBackground = 0xFF6F4624,
     SwitchPanel = {
-        SwitchButtonColor = 0xFF008800,
+        SwitchButtonColor = 0xFF00AA00,
         HoveredSwitchButtonColor = 0xFF00CC00
     }
 }
 
-Globals.linkedValuesChangeBlinkTime = 3.0
+Globals.linkedValuesChangeBlinkTime = 2.0
 
-TRACK_ISSUE("Tech Debt", "All of ImguiUtils is static. Make it not self-related.")
 local ImguiUtils
 do
     ImguiUtils = {}
-    function ImguiUtils:renderActiveInactiveButton(buttonTitle, active, enabled, onPressFunction, colorOverride)
+    ImguiUtils.renderActiveInactiveButton = function(buttonTitle, active, enabled, onPressFunction, colorOverride)
         if (enabled) then
             if (active) then
                 if (colorOverride ~= nil) then
@@ -166,7 +165,7 @@ do
             end
         else
             imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF444444)
-            ImguiUtils:pushDisabledButtonColors()
+            ImguiUtils.pushDisabledButtonColors()
         end
 
         if (imgui.Button(buttonTitle) and enabled) then
@@ -174,12 +173,12 @@ do
         end
 
         if (not enabled) then
-            ImguiUtils:popDisabledButtonColors()
+            ImguiUtils.popDisabledButtonColors()
         end
         imgui.PopStyleColor()
     end
 
-    function ImguiUtils:renderButtonWithColors(
+    ImguiUtils.renderButtonWithColors = function(
         buttonTitle,
         textColor,
         buttonColor,
@@ -212,29 +211,29 @@ do
         return result
     end
 
-    function ImguiUtils:renderEnabledButton(buttonTitle, enabled)
+    ImguiUtils.renderEnabledButton = function(buttonTitle, enabled)
         if (enabled == false) then
-            return ImguiUtils:renderButtonWithColors(buttonTitle, 0xFF444444, 0xFF222222, 0xFF222222, 0xFF222222)
+            return ImguiUtils.renderButtonWithColors(buttonTitle, 0xFF444444, 0xFF222222, 0xFF222222, 0xFF222222)
         else
             return imgui.Button(buttonTitle)
         end
     end
 
-    function ImguiUtils:pushDisabledButtonColors()
+    ImguiUtils.pushDisabledButtonColors = function()
         imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF444444)
         imgui.PushStyleColor(imgui.constant.Col.Button, 0xFF222222)
         imgui.PushStyleColor(imgui.constant.Col.ButtonActive, 0xFF222222)
         imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, 0xFF222222)
     end
 
-    function ImguiUtils:popDisabledButtonColors()
+    ImguiUtils.popDisabledButtonColors = function()
         imgui.PopStyleColor()
         imgui.PopStyleColor()
         imgui.PopStyleColor()
         imgui.PopStyleColor()
     end
 
-    function ImguiUtils:pushSwitchButtonColors(nextValueIsSettable)
+    ImguiUtils.pushSwitchButtonColors = function(nextValueIsSettable)
         if (nextValueIsSettable) then
             imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.black)
             imgui.PushStyleColor(
@@ -251,7 +250,7 @@ do
         end
     end
 
-    function ImguiUtils:popSwitchButtonColors()
+    ImguiUtils.popSwitchButtonColors = function()
         imgui.PopStyleColor()
         imgui.PopStyleColor()
         imgui.PopStyleColor()

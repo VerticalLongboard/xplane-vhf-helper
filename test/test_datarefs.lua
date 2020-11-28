@@ -54,7 +54,6 @@ TestDatarefs = {
 }
 
 function TestDatarefs:setUp()
-	TRACK_ISSUE("Tech Debt", "No need to bootstrap everything here.")
 	TestHighLevelBehaviour:bootstrapVhfHelperWithConfiguration({})
 end
 

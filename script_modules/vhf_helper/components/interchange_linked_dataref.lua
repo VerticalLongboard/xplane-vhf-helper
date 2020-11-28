@@ -66,7 +66,8 @@ do
     function InterchangeLinkedDataref:initialize()
         TRACK_ISSUE(
             "Tech Debt",
-            "Make that a notification and show an internal error. Multicrew will not work like that."
+            "Make that a notification and show an internal error. Multicrew will not work like that.",
+            "A notification would't help anyway. Leave it in logs for now."
         )
         TRACK_ISSUE(
             "FlyWithLua",
@@ -76,8 +77,9 @@ do
                 "Problem: We don't want datarefs to exist already, but bailing out because of it is not viable in production.",
                 "Also, there's no way to get the current type so we don't know if the define_shared_DataRef call will fail.",
                 "Leaving a log message is considered a good warning, but all FlyWithLua scripts",
-                "will fail anyway. Would't expect any user to read Log.txt. A restart fixes it. No real workaround at the moment :-("
-            )
+                "will fail anyway. Would't expect any user to read Log.txt."
+            ),
+            "A restart fixes it. No real workaround at the moment :-("
         )
         if (XPLMFindDataRef(self.interchangeDatarefName) ~= nil) then
             logMsg(

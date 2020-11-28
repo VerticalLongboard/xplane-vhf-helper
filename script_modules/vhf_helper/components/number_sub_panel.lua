@@ -84,7 +84,7 @@ do
         imgui.Dummy(Globals.defaultDummySize * rightSideDummyScale, Globals.defaultDummySize)
         imgui.SameLine()
         imgui.SetWindowFontScale(1.0 * globalFontScale)
-        if (Globals.ImguiUtils:renderEnabledButton(NumberSubPanel.Constants.BackspaceButtonTitle, clearingEnabled)) then
+        if (Globals.ImguiUtils.renderEnabledButton(NumberSubPanel.Constants.BackspaceButtonTitle, clearingEnabled)) then
             self:backspace()
         end
         imgui.SetWindowFontScale(numberFontScale)
@@ -97,7 +97,7 @@ do
         imgui.Dummy(Globals.defaultDummySize * rightSideDummyScale, Globals.defaultDummySize)
         imgui.SameLine()
         imgui.SetWindowFontScale(1.0 * globalFontScale)
-        if (Globals.ImguiUtils:renderEnabledButton(NumberSubPanel.Constants.ClearButtonTitle, clearingEnabled)) then
+        if (Globals.ImguiUtils.renderEnabledButton(NumberSubPanel.Constants.ClearButtonTitle, clearingEnabled)) then
             self:clear()
         end
         imgui.SetWindowFontScale(numberFontScale)

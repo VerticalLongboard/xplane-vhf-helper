@@ -80,7 +80,7 @@ do
 
 	Globals._NEWFUNC(TransponderCodeSubPanel._renderOneModeButton)
 	function TransponderCodeSubPanel:_renderOneModeButton(mode)
-		Globals.ImguiUtils:renderActiveInactiveButton(
+		Globals.ImguiUtils.renderActiveInactiveButton(
 			Datarefs.transponderModeToDescriptor[mode + 1],
 			self.modeDataref:getLinkedValue() == mode,
 			true,
@@ -110,14 +110,14 @@ do
 		imgui.SameLine()
 		imgui.TextUnformatted(" ")
 
-		Globals.ImguiUtils:pushSwitchButtonColors(nextValueIsSettable)
+		Globals.ImguiUtils.pushSwitchButtonColors(nextValueIsSettable)
 		if (nextValueIsSettable) then
 			imgui.SameLine()
 			if (imgui.Button("<X>")) then
 				self:_setLinkedValue()
 			end
 		end
-		Globals.ImguiUtils:popSwitchButtonColors()
+		Globals.ImguiUtils.popSwitchButtonColors()
 
 		imgui.PopStyleVar()
 	end
