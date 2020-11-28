@@ -142,11 +142,7 @@ do
 
 		imgui.TextUnformatted("New " .. self.descriptor .. "     ")
 
-		if (nextValueIsSettable) then
-			imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
-		else
-			imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Blue)
-		end
+		Globals.ImguiUtils.pushNextValueColor(nextValueIsSettable)
 
 		imgui.SameLine()
 

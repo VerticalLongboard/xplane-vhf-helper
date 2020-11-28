@@ -144,12 +144,8 @@ do
 
         imgui.TextUnformatted("New " .. self.descriptor .. "     ")
 
-        if (nextValueIsSettable) then
-            imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
-        else
-            imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Blue)
-        end
-
+        Globals.ImguiUtils.pushNextValueColor(nextValueIsSettable)
+        
         imgui.SameLine()
         local paddedString = nil
         local firstDigit = self.enteredValue:sub(1, 1)

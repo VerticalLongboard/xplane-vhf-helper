@@ -238,7 +238,7 @@ do
             imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.black)
             imgui.PushStyleColor(
                 imgui.constant.Col.Button,
-                Utilities.getBlinkingColor(Globals.Colors.SwitchPanel.SwitchButtonColor, 0.8, 10.0)
+                Utilities.getBlinkingColor(Globals.Colors.SwitchPanel.SwitchButtonColor, 0.8, 5.0)
             )
             imgui.PushStyleColor(imgui.constant.Col.ButtonActive, Globals.Colors.SwitchPanel.HoveredSwitchButtonColor)
             imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, Globals.Colors.SwitchPanel.HoveredSwitchButtonColor)
@@ -255,6 +255,17 @@ do
         imgui.PopStyleColor()
         imgui.PopStyleColor()
         imgui.PopStyleColor()
+    end
+
+    ImguiUtils.pushNextValueColor = function(nextValueIsSettable)
+        if (nextValueIsSettable) then
+            imgui.PushStyleColor(
+                imgui.constant.Col.Text,
+                Utilities.getBlinkingColorBetweenTwo(Globals.Colors.a320Orange, 0xFF33DDFF, 0.0, 5.0)
+            )
+        else
+            imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Blue)
+        end
     end
 end
 

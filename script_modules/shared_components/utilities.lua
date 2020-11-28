@@ -119,9 +119,13 @@ Utilities.Math.lerp = function(v1, v2, t)
 end
 
 Utilities.getBlinkingColor = function(color, baseBrightness, blinkRate)
+    return Utilities.getBlinkingColorBetweenTwo(0xFF000000, color, baseBrightness, blinkRate)
+end
+
+Utilities.getBlinkingColorBetweenTwo = function(color1, color2, baseBrightness, blinkRate)
     local brightness = (math.sin(LuaPlatform.Time.now() * blinkRate) + 1.0) * 0.5
     brightness = Utilities.Math.lerp(baseBrightness, 1.0, brightness)
-    return Utilities.lerpColors(0xFF000000, color, brightness)
+    return Utilities.lerpColors(color1, color2, brightness)
 end
 
 TRACK_ISSUE(
@@ -168,13 +172,15 @@ Utilities.lerpColors = function(color1, color2, t)
     local setBlue = function(color, newBlue)
         return setByte(color, newBlue, 16)
     end
+    local getColorFromComponents = function(baseColor, r, g, b)
+        local color = baseColor
+        color = setRed(color, r)
+        color = setGreen(color, g)
+        color = setBlue(color, b)
+        return color
+    end
 
-    local color = 0xFF000000
-    color = setRed(color, red)
-    color = setGreen(color, green)
-    color = setBlue(color, blue)
-
-    return color
+    return getColorFromComponents(0xFF000000, red, green, blue)
 end
 
 return Utilities

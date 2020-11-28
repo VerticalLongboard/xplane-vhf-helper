@@ -143,11 +143,7 @@ do
         imgui.SameLine()
         imgui.TextUnformatted("  ")
 
-        if (nextVhfFrequencyIsSettable) then
-            imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
-        else
-            imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Blue)
-        end
+        Globals.ImguiUtils.pushNextValueColor(nextVhfFrequencyIsSettable)
 
         imgui.SetWindowFontScale(1.0 * globalFontScale)
         local paddedFreqString =
