@@ -102,7 +102,6 @@ do
         imgui.PopStyleColor()
     end
 
-    TRACK_ISSUE("Tech Debt", "Remove underscoreCharacter from all validator functions since it's no longer needed.")
     function NumberSubPanel:_createNumberButtonAndReactToClicks(number)
         local numberCharacter = self.inputPanelValidator:getValidNumberCharacterOrNil(self.enteredValue, number)
         local enabled = true

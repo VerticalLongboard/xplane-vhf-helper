@@ -118,7 +118,9 @@ do
         imgui.Separator()
         imgui.Separator()
         imgui.SetWindowFontScale(0.8 * globalFontScale)
+
         self:_renderPanelButton(Panels.comFrequencyPanel, true)
+
         imgui.SameLine()
         self:_renderPanelButton(
             Panels.navFrequencyPanel,
@@ -130,10 +132,14 @@ do
             vhfHelperCompatibilityManager:getCurrentConfiguration().isTransponderFeatureEnabled
         )
         imgui.SameLine()
+        self:_renderPanelButton(
+            Panels.baroPanel,
+            vhfHelperCompatibilityManager:getCurrentConfiguration().isBarometerFeatureEnabled
+        )
 
-        imgui.Dummy(Globals.defaultDummySize * 1.3, 0.0)
         imgui.SameLine()
-
+        imgui.Dummy(1.0, 0.0)
+        imgui.SameLine()
         self:_renderSidePanelButton()
 
         Globals.popDefaultsFromImguiStack()
@@ -141,7 +147,8 @@ do
 
     TRACK_ISSUE(
         "Lua",
-        "FlyWithLua is supposed to run Lua 5.1, which, in a clean development environment, does not support bit operations via bit.* functions. Disable in tests for now."
+        "FlyWithLua is supposed to run Lua 5.1, which, in a clean development environment, does not support bit operations via bit.* functions.",
+        "Disable in tests for now."
     )
     function vhfHelperMainWindow:_getBlinkingWhiteColor()
         if (IS_TEST ~= nil) then
@@ -162,13 +169,13 @@ do
     end
 
     function vhfHelperMainWindow:_renderSidePanelButton()
-        if (Notifications.notificationManager:areAnyNotificationsPending()) then
+        if (vhfHelperSideWindow:areAnyNotificationsPending()) then
             if
                 (Globals.ImguiUtils:renderButtonWithColors(
                     "?",
                     Globals.Colors.black,
                     self:_getBlinkingWhiteColor(),
-                    Globals.Colors.white, 
+                    Globals.Colors.white,
                     Globals.Colors.white
                 ))
              then

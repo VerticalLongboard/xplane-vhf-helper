@@ -82,22 +82,30 @@ do
         configuration.knownIssuesText = knownIssuesText
     end
 
+    function vhfHelperCompatibilityManager:_addPlaneSpecificVersionNumberToConfiguration(
+        configuration,
+        planeSpecificVersionNumber)
+        configuration.version = configuration.version + planeSpecificVersionNumber
+    end
+
     function vhfHelperCompatibilityManager:_getDefaultConfiguration()
         return {
-            version = 1,
+            version = 2,
             readableName = "Default Plane",
             hasKnownIssues = false,
             isNavFeatureEnabled = true,
-            isTransponderFeatureEnabled = true
+            isTransponderFeatureEnabled = true,
+            isBarometerFeatureEnabled = true
         }
     end
 
     function vhfHelperCompatibilityManager:_addFlightFactorA320Ultimate()
         local newConfiguration = self:_getDefaultConfiguration()
-        self:_addKnownIssuesToConfiguration(newConfiguration, "NAV and Transponder do not work and are disabled.")
-        newConfiguration.version = 1
+        self:_addKnownIssuesToConfiguration(newConfiguration, "NAV, Transponder and BARO do not work and are disabled.")
+        self:_addPlaneSpecificVersionNumberToConfiguration(newConfiguration, 2)
         newConfiguration.isNavFeatureEnabled = false
         newConfiguration.isTransponderFeatureEnabled = false
+        newConfiguration.isBarometerFeatureEnabled = false
         self:_addConfigurationForIdWithReadableName(
             newConfiguration,
             "ICAO:A320:TAILNUMBER:D-AXLA:ACF_FILE_NAME:A320.acf:ACF_DESC:FlightFactor Airbus A320-214 CFM56-5B4 ultimate:ACF_MANUFACTURER:Airbus:ACF_STUDIO:FlightFactor:ACF_AUTHOR:FlightFactor:ACF_NAME::",

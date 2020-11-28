@@ -15,8 +15,8 @@ function TestSpeakNato:testFrequencyStringConversionWorks()
 end
 
 function TestSpeakNato:testTransponderCodeStringConversionWorks()
-    luaUnit.assertEquals(SpeakNato._getNatoStringForTransponderCode("1000"), "won towsent ")
-    luaUnit.assertEquals(SpeakNato._getNatoStringForTransponderCode("3506"), "tree five zeero siccs ")
+    luaUnit.assertEquals(SpeakNato._getNatoStringForFourDigitNumber("1000"), "won towsent ")
+    luaUnit.assertEquals(SpeakNato._getNatoStringForFourDigitNumber("3506"), "tree five zeero siccs ")
 end
 
 function TestSpeakNato:testSpeakingSpeaks()

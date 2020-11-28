@@ -11,15 +11,19 @@ do
     end
 end
 
-SpeakNato.speakFrequency = function(string)
-    SpeakNato._speak(SpeakNato._getNatoStringForFrequency(string))
+SpeakNato.speakQnh = function(fourDigits)
+    SpeakNato._speak(SpeakNato._getNatoStringForFourDigitNumber(fourDigits))
 end
 
-SpeakNato.speakTransponderCode = function(string)
-    SpeakNato._speak(SpeakNato._getNatoStringForTransponderCode(string))
+SpeakNato.speakFrequency = function(threeDigitsDecimalThreeDigits)
+    SpeakNato._speak(SpeakNato._getNatoStringForFrequency(threeDigitsDecimalThreeDigits))
 end
 
-SpeakNato._getNatoStringForTransponderCode = function(string)
+SpeakNato.speakTransponderCode = function(fourDigits)
+    SpeakNato._speak(SpeakNato._getNatoStringForFourDigitNumber(fourDigits))
+end
+
+SpeakNato._getNatoStringForFourDigitNumber = function(string)
     string = string:gsub("000$", "towsent ")
     return SpeakNato._getNatoStringForNumbers(string)
 end

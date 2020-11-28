@@ -51,6 +51,7 @@ flyWithLuaStub = {
         AccessTypeReadable = "readable",
         AccessTypeWritable = "writable",
         DatarefTypeInteger = "Int",
+        DatarefTypeFloat = "Float",
         InitialStateActivate = "activate",
         InitialStateDeactivate = "deactivate"
     },
@@ -227,7 +228,7 @@ function flyWithLuaStub:debugPrintAllDatarefs()
     logMsg("All datarefs:")
     local numDatarefs = 0
     for datarefId, d in pairs(self.datarefs) do
-        logMsg(("Dataref id=%s value=%s"):format(datarefId, tostring(d)))
+        logMsg(("Dataref id=%s type=%s value=%s"):format(datarefId, d.type, tostring(d)))
         numDatarefs = numDatarefs + 1
     end
 
@@ -432,7 +433,14 @@ function XPLMFindDataRef(datarefName)
         return nil
     end
 
-    luaUnit.assertTrue(d.isInternallyDefinedDataref)
+    TRACK_ISSUE("FlyWithLua", "deleting a dataref")
+    if (not d.isInternallyDefinedDataref) then
+        logMsg(
+            ("FlyWithLua Stub: Looked for dataref name=%s that is NOT created via createSharedDatarefHandle. That means you're very likely working around and X-Plane issue."):format(
+                datarefName
+            )
+        )
+    end
 
     return datarefName
 end
@@ -444,6 +452,18 @@ function float_wnd_create(width, height, something, whatever)
     }
     table.insert(flyWithLuaStub.windows, newWindow)
     return newWindow
+end
+
+function XPLMSetDataf(datarefName, newDataAsFloat)
+    luaUnit.assertNotNil(datarefName)
+    luaUnit.assertNotNil(newDataAsFloat)
+
+    local d = flyWithLuaStub.datarefs[datarefName]
+    luaUnit.assertNotNil(d)
+    luaUnit.assertEquals(d.type, flyWithLuaStub.Constants.DatarefTypeFloat)
+    d.data = newDataAsFloat
+
+    luaUnit.assertTrue(d.isInternallyDefinedDataref)
 end
 
 function XPLMSetDatai(datarefName, newDataAsInteger)
@@ -506,7 +526,7 @@ TRACK_ISSUE(
     "float_wnd_get_visible is not available in FlyWithLua.",
     "Do not offer it, but leave a comment at least."
 )
--- This function is not available in FlyWithLua, but it should.
+-- This function is not available in FlyWithLua, but it should be.
 -- function float_wnd_get_visible(window)
 --     luaUnit.assertNotNil(window)
 

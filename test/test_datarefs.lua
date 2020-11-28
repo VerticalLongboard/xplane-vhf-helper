@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 --]]
+Globals = require("vhf_helper.globals")
+
 TestDatarefs = {
 	Constants = {
 		firstComFreq = "sim/cockpit2/radios/actuators/com1_frequency_hz_833",
@@ -36,16 +38,23 @@ TestDatarefs = {
 		firstNavInterchangeFreq = "VHFHelper/InterchangeNAV1Frequency",
 		secondNavInterchangeFreq = "VHFHelper/InterchangeNAV2Frequency",
 		transponderCodeInterchangeFreq = "VHFHelper/InterchangeTransponderCode",
+		firstBaro = "sim/cockpit2/gauges/actuators/barometer_setting_in_hg_pilot",
+		secondBaro = "sim/cockpit2/gauges/actuators/barometer_setting_in_hg_copilot",
+		thirdBaro = "sim/cockpit2/gauges/actuators/barometer_setting_in_hg_stby",
 		initialCom1Frequency = 131200,
 		initialCom2Frequency = 119500,
 		initialNav1Frequency = 11700,
 		initialNav2Frequency = 11660,
 		initialTransponderCode = 1000,
-		initialTransponderMode = 1
+		initialTransponderMode = 1,
+		initialBaro1 = Globals.convertHpaToHg(1032),
+		initialBaro2 = Globals.convertHpaToHg(910),
+		initialBaro3 = 29.92
 	}
 }
 
 function TestDatarefs:setUp()
+	TRACK_ISSUE("Tech Debt", "No need to bootstrap everything here.")
 	TestHighLevelBehaviour:bootstrapVhfHelperWithConfiguration({})
 end
 

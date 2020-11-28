@@ -192,3 +192,33 @@ function TestTransponderCodeValidation:testAutocompletionWorks()
 	luaUnit.assertEquals(self.validator:autocomplete("327"), "3270")
 	luaUnit.assertEquals(self.validator:autocomplete("5612"), "5612")
 end
+
+TestBaroValidation = {}
+
+function TestBaroValidation:setUp()
+	self.validator = vhfHelperPackageExport.test.baroValidator
+end
+
+function TestBaroValidation:testValidBaroPressureIsConsideredValid()
+	luaUnit.assertEquals(self.validator:validate("1013"), "1013")
+	luaUnit.assertEquals(self.validator:validate("0920"), "0920")
+	luaUnit.assertEquals(self.validator:validate("0921"), "0921")
+end
+
+function TestBaroValidation:testInvalidBaroPressureIsConsideredInvalid()
+	luaUnit.assertEquals(self.validator:validate("1099"), nil)
+	luaUnit.assertEquals(self.validator:validate("0810"), nil)
+end
+
+function TestBaroValidation:testAutocompletionWorks()
+	luaUnit.assertEquals(self.validator:autocomplete("1"), "1000")
+	luaUnit.assertEquals(self.validator:autocomplete("10"), "1000")
+	luaUnit.assertEquals(self.validator:autocomplete("102"), "1020")
+	luaUnit.assertEquals(self.validator:autocomplete("920"), "0920")
+end
+
+function TestBaroValidation:testShortValidPressureCanBeEntered()
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("", 9), "9")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("9", 3), "3")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("93", 0), "0")
+end

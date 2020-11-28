@@ -136,9 +136,14 @@ Globals.Colors = {
     black = 0xFF000000,
     greyText = 0xFFAAAAAA,
     defaultImguiBackground = 0xFF121110,
-    defaultImguiButtonBackground = 0xFF6F4624
+    defaultImguiButtonBackground = 0xFF6F4624,
+    SwitchPanel = {
+        SwitchButtonColor = 0xFF008800,
+        HoveredSwitchButtonColor = 0xFF00CC00
+    }
 }
 
+TRACK_ISSUE("Tech Debt", "All of ImguiUtils is static. Make it not self-related.")
 local ImguiUtils
 do
     ImguiUtils = {}
@@ -218,6 +223,39 @@ do
         imgui.PopStyleColor()
         imgui.PopStyleColor()
     end
+
+    function ImguiUtils:pushSwitchButtonColors(nextValueIsSettable)
+        if (nextValueIsSettable) then
+            imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.black)
+            imgui.PushStyleColor(imgui.constant.Col.Button, Globals.Colors.SwitchPanel.SwitchButtonColor)
+            imgui.PushStyleColor(imgui.constant.Col.ButtonActive, Globals.Colors.SwitchPanel.HoveredSwitchButtonColor)
+            imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, Globals.Colors.SwitchPanel.HoveredSwitchButtonColor)
+        else
+            imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.defaultImguiBackground)
+            imgui.PushStyleColor(imgui.constant.Col.Button, Globals.Colors.defaultImguiBackground)
+            imgui.PushStyleColor(imgui.constant.Col.ButtonActive, Globals.Colors.defaultImguiBackground)
+            imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, Globals.Colors.defaultImguiBackground)
+        end
+    end
+
+    function ImguiUtils:popSwitchButtonColors()
+        imgui.PopStyleColor()
+        imgui.PopStyleColor()
+        imgui.PopStyleColor()
+        imgui.PopStyleColor()
+    end
+end
+
+Globals.convertHgToHpa = function(hg)
+    local hgToHPa = 1013.2 / 29.92
+    local hPa = hg * hgToHPa
+    return hPa
+end
+
+Globals.convertHpaToHg = function(hPa)
+    local hPaToHg = 29.92 / 1013.2
+    local hg = hPa * hPaToHg
+    return hg
 end
 
 Globals.ImguiUtils = ImguiUtils

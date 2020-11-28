@@ -3,6 +3,7 @@ do
     InterchangeLinkedDataref = {
         Constants = {
             DatarefTypeInteger = "Int",
+            DatarefTypeFloat = "Float",
             DatarefAccessTypeWritable = "writable",
             DatarefAccessTypeReadable = "readable"
         }
@@ -16,6 +17,21 @@ do
         newOnInterchangeChangeFunction,
         newOnLinkedChangeFunction,
         newIsNewValueValidFunction)
+        assert(newDataType)
+        assert(newInterchangeDatarefName)
+        assert(newInterchangeVariableName)
+        assert(newLinkedDatarefName)
+        assert(newLinkedReadVariableName)
+        assert(newOnInterchangeChangeFunction)
+        assert(newOnLinkedChangeFunction)
+        assert(newIsNewValueValidFunction)
+        if
+            (newDataType ~= InterchangeLinkedDataref.Constants.DatarefTypeInteger and
+                newDataType ~= InterchangeLinkedDataref.Constants.DatarefTypeFloat)
+         then
+            assert(nil)
+        end
+
         local newValue = nil
 
         local newInstanceWithState = {
@@ -44,6 +60,22 @@ do
     end
 
     function InterchangeLinkedDataref:initialize()
+        TRACK_ISSUE(
+            "Tech Debt",
+            "Make that a notification and show an internal error. Multicrew will not work like that."
+        )
+        TRACK_ISSUE(
+            "FlyWithLua",
+            "FlyWithLua does not support deleting a dataref. When running X-Plane while updating dataref types, creating them again will fail, fatally."
+        )
+        if (XPLMFindDataRef(self.interchangeDatarefName) ~= nil) then
+            logMsg(
+                ("Dataref Initialization: Dataref name=%s already exists (maybe with a different type). If you see a FlyWithLua Error shortly after this, you need to restart X-Plane."):format(
+                    self.interchangeDatarefName
+                )
+            )
+        end
+
         define_shared_DataRef(self.interchangeDatarefName, self.dataType)
         dataref(self.interchangeVariableName, self.interchangeDatarefName, self.Constants.DatarefAccessTypeWritable)
 
@@ -101,7 +133,6 @@ do
         return XPLMFindDataRef(self.linkedDatarefName)
     end
 
-    TRACK_ISSUE("Tech Debt", "Find out why this worked before without tostring(value)")
     function InterchangeLinkedDataref:_setInterchangeValue(value)
         local setInterchangeValueFunction = LOAD_LUA_STRING(self.interchangeVariableName .. " = " .. tostring(value))
         setInterchangeValueFunction()
@@ -109,7 +140,13 @@ do
     end
 
     function InterchangeLinkedDataref:_setLinkedValue(value)
-        XPLMSetDatai(self.linkedDatarefWriteHandle, value)
+        if (self.dataType == InterchangeLinkedDataref.Constants.DatarefTypeInteger) then
+            XPLMSetDatai(self.linkedDatarefWriteHandle, value)
+        elseif (self.dataType == InterchangeLinkedDataref.Constants.DatarefTypeFloat) then
+            XPLMSetDataf(self.linkedDatarefWriteHandle, value)
+        else
+            assert(nil)
+        end
     end
 end
 

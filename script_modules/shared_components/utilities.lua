@@ -104,4 +104,9 @@ Utilities.encodeByteToHex = function(str)
     ))
 end
 
+TRACK_ISSUE("Lua", "Lua does not offer a round function.", "Waste a minute and implement one.")
+Utilities.roundFloatingPointToNearestInteger = function(v)
+    return v + 0.5 - (v + 0.5) % 1
+end
+
 return Utilities

@@ -1,12 +1,12 @@
 local NumberValidator = require("vhf_helper.components.number_validator")
 local Globals = require("vhf_helper.globals")
 
-local TransponderValidator
+local TransponderCodeValidator
 do
-    TransponderValidator = NumberValidator:new()
+    TransponderCodeValidator = NumberValidator:new()
 
-    Globals.OVERRIDE(TransponderValidator.new)
-    function TransponderValidator:new()
+    Globals.OVERRIDE(TransponderCodeValidator.new)
+    function TransponderCodeValidator:new()
         local newInstanceWithState = NumberValidator:new()
         newInstanceWithState.Constants = {
             MaxTransponderCode = 7777
@@ -16,8 +16,8 @@ do
         return newInstanceWithState
     end
 
-    Globals.OVERRIDE(TransponderValidator.validate)
-    function TransponderValidator:validate(fullString)
+    Globals.OVERRIDE(TransponderCodeValidator.validate)
+    function TransponderCodeValidator:validate(fullString)
         if (fullString == nil) then
             return nil
         end
@@ -40,26 +40,14 @@ do
         return fullString
     end
 
-    Globals.OVERRIDE(TransponderValidator.autocomplete)
-    function TransponderValidator:autocomplete(partialString)
+    Globals.OVERRIDE(TransponderCodeValidator.autocomplete)
+    function TransponderCodeValidator:autocomplete(partialString)
         for i = partialString:len(), 3 do
             partialString = partialString .. "0"
         end
 
         return partialString
     end
-
-    Globals.OVERRIDE(TransponderValidator.getValidNumberCharacterOrNil)
-    function TransponderValidator:getValidNumberCharacterOrNil(stringEnteredSoFar, number)
-        local numberAsString = tostring(number)
-        local afterEnteringNumber = stringEnteredSoFar .. numberAsString
-        local autocompleted = self:autocomplete(afterEnteringNumber)
-        if (self:validate(autocompleted) == nil) then
-            return nil
-        end
-
-        return numberAsString
-    end
 end
 
-return TransponderValidator
+return TransponderCodeValidator

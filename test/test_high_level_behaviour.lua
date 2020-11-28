@@ -27,12 +27,15 @@ local flyWithLuaStub = require("xplane_fly_with_lua_stub")
 local imguiStub = require("imgui_stub")
 local LuaIniParserStub = require("LIP")
 local LuaPlatform = require("lua_platform")
+local Globals = require("vhf_helper.globals")
+local Utilities = require("shared_components.utilities")
 
 TestHighLevelBehaviour = {
 	Constants = {
 		comPanelButtonTitle = "COM",
 		navPanelButtonTitle = "NAV",
 		transponderPanelButtonTitle = "XPDR",
+		baroPanelButtonTitle = "QNH",
 		SidePanelButtonTitle = "?"
 	}
 }
@@ -75,6 +78,17 @@ function TestHighLevelBehaviour:_switchToOtherTransponder(linkedDatarefId, newTr
 	luaUnit.assertEquals(d.data, tonumber(newTransponderString))
 end
 
+function TestHighLevelBehaviour:_switchToOtherBaro(baroNumber, linkedDatarefId, newString)
+	self:_enterNumberViaUserInterface(newString)
+
+	local hg = Globals.convertHpaToHg(tonumber(newString))
+	local d = flyWithLuaStub.datarefs[linkedDatarefId]
+
+	luaUnit.assertNotEquals(d.data, hg)
+	self:_pressButton("<" .. tostring(baroNumber) .. ">")
+	luaUnit.assertEquals(d.data, hg)
+end
+
 function TestHighLevelBehaviour:_createInternalDatarefs()
 	flyWithLuaStub:createSharedDatarefHandle(
 		TestDatarefs.Constants.firstComFreq,
@@ -106,6 +120,21 @@ function TestHighLevelBehaviour:_createInternalDatarefs()
 		TestDatarefs.Constants.transponderMode,
 		flyWithLuaStub.Constants.DatarefTypeInteger,
 		TestDatarefs.Constants.initialTransponderMode
+	)
+	flyWithLuaStub:createSharedDatarefHandle(
+		TestDatarefs.Constants.firstBaro,
+		flyWithLuaStub.Constants.DatarefTypeFloat,
+		TestDatarefs.Constants.initialBaro1
+	)
+	flyWithLuaStub:createSharedDatarefHandle(
+		TestDatarefs.Constants.secondBaro,
+		flyWithLuaStub.Constants.DatarefTypeFloat,
+		TestDatarefs.Constants.initialBaro2
+	)
+	flyWithLuaStub:createSharedDatarefHandle(
+		TestDatarefs.Constants.thirdBaro,
+		flyWithLuaStub.Constants.DatarefTypeFloat,
+		TestDatarefs.Constants.initialBaro3
 	)
 end
 
@@ -145,12 +174,12 @@ function TestHighLevelBehaviour:testWindowShowsUpWhenConfigurationSaysSo()
 	)
 end
 
-function TestHighLevelBehaviour:testPressingADisabledComNumberPanelButtonDoesNotWork()
+function TestHighLevelBehaviour:testPressingADisabledComNumberPanelButtonDoesNotDoAnything()
 	self:_pressButton("2")
 	self:_assertStringShowsUp("---.---")
 end
 
-function TestHighLevelBehaviour:testPlaneCompatibilityIdMakesSense()
+function TestHighLevelBehaviour:testFixDefaultPlaneCompatibilityId()
 	luaUnit.assertEquals(
 		vhfHelperPackageExport.test.vhfHelperCompatibilityManager:getPlaneCompatibilityIdString(),
 		"ICAO:....:TAILNUMBER:???:ACF_FILE_NAME:does_not_exist.acf:ACF_DESC:::ACF_MANUFACTURER:::ACF_STUDIO:::ACF_AUTHOR:::ACF_NAME::"
@@ -244,6 +273,30 @@ function TestHighLevelBehaviour:testCurrentTransponderCodeIsShownSomewhere()
 	self:_assertStringShowsUp(codeString)
 end
 
+function TestHighLevelBehaviour:testSwitchingBaroDoesSwitch()
+	self:_pressButton(self.Constants.baroPanelButtonTitle)
+	local newString = "920"
+	self:_switchToOtherBaro(2, TestDatarefs.Constants.secondBaro, newString)
+
+	local newString2 = "1023"
+	self:_switchToOtherBaro(2, TestDatarefs.Constants.secondBaro, newString)
+end
+
+function TestHighLevelBehaviour:testCurrentBarosAreShownSomewhere()
+	self:_pressButton(self.Constants.baroPanelButtonTitle)
+
+	self:_assertStringShowsUp(
+		tostring(Utilities.roundFloatingPointToNearestInteger(Globals.convertHgToHpa(TestDatarefs.Constants.initialBaro1)))
+	)
+	self:_assertStringShowsUp(
+		"0" ..
+			tostring(Utilities.roundFloatingPointToNearestInteger(Globals.convertHgToHpa(TestDatarefs.Constants.initialBaro2)))
+	)
+	self:_assertStringShowsUp(
+		tostring(Utilities.roundFloatingPointToNearestInteger(Globals.convertHgToHpa(TestDatarefs.Constants.initialBaro3)))
+	)
+end
+
 function TestHighLevelBehaviour:testTogglePanelCommandTogglesPanel()
 	local toggleWindowCommandName = "FlyWithLua/VR Radio Helper/TogglePanel"
 	local windowTitle = vhfHelperPackageExport.test.vhfHelperMainWindow.Constants.defaultWindowName
@@ -271,9 +324,12 @@ function TestHighLevelBehaviour:testTransmoderModeIsSwitched()
 	luaUnit.assertEquals(tm.data, newMode2)
 end
 
-function TestHighLevelBehaviour:testSideWindowOpensAndRendersAfterOneFrame()
+function TestHighLevelBehaviour:testSideWindowOpensAndRendersCorrectly()
 	self:_pressButton(self.Constants.SidePanelButtonTitle)
+
+	TRACK_ISSUE("Imgui", "creating a window while rendering", "Wait one frame")
 	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
+
 	luaUnit.assertIsTrue(
 		flyWithLuaStub:isWindowOpen(
 			flyWithLuaStub:getWindowByTitle(vhfHelperPackageExport.test.vhfHelperSideWindow.Constants.defaultWindowName)

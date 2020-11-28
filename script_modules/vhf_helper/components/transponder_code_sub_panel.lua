@@ -91,7 +91,7 @@ do
 	end
 
 	Globals._NEWFUNC(TransponderCodeSubPanel._buildCurrentTransponderLine)
-	function TransponderCodeSubPanel:_buildCurrentTransponderLine(nextTransponderCodeIsSettable)
+	function TransponderCodeSubPanel:_buildCurrentTransponderLine(nextValueIsSettable)
 		imgui.PushStyleVar_2(imgui.constant.StyleVar.FramePadding, 0.0, 0.0)
 
 		imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.greyText)
@@ -101,38 +101,22 @@ do
 		imgui.SameLine()
 		imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
 
-		local currentTransponderString = self:_getCurrentLinkedValueString()
-		if (self.inputPanelValidator:validate(currentTransponderString) == nil) then
-			currentTransponderString = self.FullyPaddedString
-		end
-		imgui.TextUnformatted(currentTransponderString)
+		imgui.TextUnformatted(
+			self.inputPanelValidator:validate(self:_getCurrentLinkedValueString()) or self.FullyPaddedString
+		)
 		imgui.PopStyleColor()
-
-		imgui.PushStyleColor(imgui.constant.Col.Button, Globals.Colors.a320Green)
-
-		if (nextTransponderCodeIsSettable) then
-			imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.black)
-			imgui.PushStyleColor(imgui.constant.Col.Button, 0xFF008800)
-		end
 
 		imgui.SameLine()
 		imgui.TextUnformatted(" ")
 
-		local buttonText = "   "
-		if (nextTransponderCodeIsSettable) then
-			buttonText = "<X>"
-
+		Globals.ImguiUtils:pushSwitchButtonColors(nextValueIsSettable)
+		if (nextValueIsSettable) then
 			imgui.SameLine()
-			if (imgui.Button(buttonText)) then
+			if (imgui.Button("<X>")) then
 				self:_setLinkedValue()
 			end
 		end
-
-		if (nextTransponderCodeIsSettable) then
-			imgui.PopStyleColor()
-			imgui.PopStyleColor()
-		end
-		imgui.PopStyleColor()
+		Globals.ImguiUtils:popSwitchButtonColors()
 
 		imgui.PopStyleVar()
 	end
@@ -141,12 +125,12 @@ do
 	function TransponderCodeSubPanel:renderToCanvas()
 		imgui.SetWindowFontScale(1.0 * globalFontScale)
 
-		local nextTransponderCodeIsSettable = self:numberCanBeSetNow()
+		local nextValueIsSettable = self:numberCanBeSetNow()
 
 		imgui.PushStyleVar_2(imgui.constant.StyleVar.ItemSpacing, 0.0, 2.0)
 		imgui.Dummy(0.0, 3.0)
 
-		self:_buildCurrentTransponderLine(nextTransponderCodeIsSettable)
+		self:_buildCurrentTransponderLine(nextValueIsSettable)
 		self:_buildModeButtonLine()
 
 		imgui.SetWindowFontScale(1.0 * globalFontScale)
@@ -157,7 +141,7 @@ do
 
 		imgui.TextUnformatted("New " .. self.descriptor .. "     ")
 
-		if (nextTransponderCodeIsSettable) then
+		if (nextValueIsSettable) then
 			imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
 		else
 			imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Blue)

@@ -44,6 +44,7 @@ do
         return partialFrequencyString
     end
 
+    TRACK_ISSUE("Tech Debt", "Is this override necessary? Seems it breaks without, but it probably should't")
     Globals.OVERRIDE(ComFrequencyValidator.getValidNumberCharacterOrNil)
     function ComFrequencyValidator:getValidNumberCharacterOrNil(frequencyEnteredSoFar, number)
         if (string.len(frequencyEnteredSoFar) == 7) then

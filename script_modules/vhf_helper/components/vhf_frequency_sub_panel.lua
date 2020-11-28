@@ -117,34 +117,21 @@ do
     end
 
     function VhfFrequencySubPanel:_renderSwitchButton(nextVhfFrequencyIsSettable, vhfNumber)
-        if (nextVhfFrequencyIsSettable) then
-            imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.black)
-            imgui.PushStyleColor(imgui.constant.Col.Button, 0xFF008800)
-        else
-            imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.defaultImguiBackground)
-            imgui.PushStyleColor(imgui.constant.Col.Button, Globals.Colors.defaultImguiBackground)
-            imgui.PushStyleColor(imgui.constant.Col.ButtonActive, Globals.Colors.defaultImguiBackground)
-            imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, Globals.Colors.defaultImguiBackground)
-        end
+        imgui.SetWindowFontScale(1.0 * globalFontScale)
+        Globals.ImguiUtils:pushSwitchButtonColors(nextVhfFrequencyIsSettable)
 
         if (imgui.Button("<" .. tonumber(vhfNumber) .. ">")) then
             self:_validateAndSetNextVHFFrequency(vhfNumber)
         end
 
-        if (not nextVhfFrequencyIsSettable) then
-            imgui.PopStyleColor()
-            imgui.PopStyleColor()
-        end
-
-        imgui.PopStyleColor()
-        imgui.PopStyleColor()
+        Globals.ImguiUtils:popSwitchButtonColors()
     end
 
     function VhfFrequencySubPanel:_renderNextValueLine()
         local nextVhfFrequencyIsSettable = self:numberCanBeSetNow()
 
-        imgui.Separator()
         imgui.Dummy(0.0, 1.0)
+        imgui.Separator()
 
         imgui.SetWindowFontScale(1.0 * globalFontScale)
 
@@ -159,6 +146,7 @@ do
             imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Blue)
         end
 
+        imgui.SetWindowFontScale(1.0 * globalFontScale)
         local paddedFreqString =
             self.enteredValue .. self.Constants.FullyPaddedFreqString:sub(string.len(self.enteredValue) + 1, 7)
         imgui.SameLine()

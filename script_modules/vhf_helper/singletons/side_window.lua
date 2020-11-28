@@ -187,6 +187,19 @@ do
         Notifications.notificationManager:postOnce(vhfHelperSideWindow.Notifications.HaveALookAtMe)
     end
 
+    function vhfHelperSideWindow:areAnyNotificationsPending()
+        if
+            (Notifications.notificationManager:isPending(vhfHelperSideWindow.Notifications.HaveALookAtMe) or
+                Notifications.notificationManager:isPending(
+                    vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate
+                ) or
+                Notifications.notificationManager:isPending(vhfHelperMulticrewManager.Notifications.StateChange))
+         then
+            return true
+        end
+        return false
+    end
+
     function vhfHelperSideWindow:create()
         if (self.window ~= nil) then
             return

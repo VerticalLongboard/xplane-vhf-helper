@@ -19,3 +19,10 @@ function TestUtilities:testOsExecuteEncodeWorks()
         "https://www.bla.com/test?queryParam=With%20Whitespace^&anotherParam=Here%20are%20whitespaces%20too!!!"
     )
 end
+
+function TestUtilities:testRoundWorks()
+    luaUnit.assertEquals(Utilities.roundFloatingPointToNearestInteger(0.999), 1)
+    luaUnit.assertEquals(Utilities.roundFloatingPointToNearestInteger(1.001), 1)
+    luaUnit.assertEquals(Utilities.roundFloatingPointToNearestInteger(0.500), 1)
+    luaUnit.assertEquals(Utilities.roundFloatingPointToNearestInteger(0.499), 0)
+end

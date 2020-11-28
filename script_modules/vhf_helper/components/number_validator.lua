@@ -19,7 +19,14 @@ do
     end
 
     function NumberValidator:getValidNumberCharacterOrNil(stringEnteredSoFar, number)
-        assert(nil)
+        local numberAsString = tostring(number)
+        local afterEnteringNumber = stringEnteredSoFar .. numberAsString
+        local autocompleted = self:autocomplete(afterEnteringNumber)
+        if (self:validate(autocompleted) == nil) then
+            return nil
+        end
+
+        return numberAsString
     end
 end
 
