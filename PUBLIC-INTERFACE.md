@@ -14,17 +14,21 @@ end
 
 Programmatically set the `Next VHF` frequency in VHF Helper's panel (returns `nil` if invalid):
 ```text
-VHFHel1erPublicInterface.enterFrequencyProgrammaticallyAsString("124.800")
+VHFHelperPublicInterface.enterFrequencyProgrammaticallyAsString("124.8")
+VHFHelperPublicInterface.enterFrequencyProgrammaticallyAsString("123.950")
+VHFHelperPublicInterface.enterFrequencyProgrammaticallyAsString("119.70")
 ```
 
 Find out if a frequency is currently tuned in, in either `COM1` or `COM2` (returns `true/false`):
 ```text
-VHFHelperPublicInterface.isCurrentlyTunedIn("120.500")
+VHFHelperPublicInterface.isCurrentlyTunedIn("120.5")
+VHFHelperPublicInterface.isCurrentlyTunedIn("132.45")
+VHFHelperPublicInterface.isCurrentlyTunedIn("131.200")
 ```
 
 Find out if a frequency is the same as the currently entered `Next COM` (returns `true/false`):
 ```text
-VHFHelperPublicInterface.isCurrentlyEntered("119.250")
+VHFHelperPublicInterface.isCurrentlyEntered("119.25")
 ```
 
 Find out if a frequency is valid (returns `true/false`):
@@ -32,7 +36,7 @@ Find out if a frequency is valid (returns `true/false`):
 VHFHelperPublicInterface.isValidFrequency("199x998")
 ```
 
-Only valid default VHF communication airband frequencies are accepted (118.000 to 136.975) and reported equal, with one **exception**: If the last digit doesn't match the default airband exactly, it is replaced by either a "0" or "5" based on whatever makes more sense. Any completely invalid, i.e. out-of-range, frequency is ignored and, in case of `enterFrequencyProgrammaticallyAsString`, the next VHF frequency currently entered is cleared.
+Only valid default VHF communication airband frequencies are accepted (`118.0` to `136.975`) and reported equal, with one **exception**: If the last digit doesn't match the default airband exactly, it is replaced by either a "0" or "5" based on whatever makes more sense. Any completely invalid, i.e. out-of-range, frequency is ignored and, in case of `enterFrequencyProgrammaticallyAsString`, the next COM frequency currently entered is cleared.
 
 VHF Helper uses an Event Bus to emit any changes (even when its panel is not visible) in:
 * tuned-in frequencies (`COM1` or `COM2`)
