@@ -35,7 +35,7 @@ To make it multicrew-ready (do that in **BOTH** pilot's airplanes):
 * If you like, bind the toggle-panel command `FlyWithLua/VR Radio Helper/TogglePanel` to a key of your choice.
 
 For multicrew:
- * Check if multicrew support is available (click the `>` button)
+ * Check if multicrew support is available (click the `?` button)
  * Connect via SmartCopilot
 
 ## Plane Compatibility
