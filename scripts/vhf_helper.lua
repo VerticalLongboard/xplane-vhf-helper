@@ -24,13 +24,12 @@ SOFTWARE.
 
 --]]
 local LuaPlatform = require("lua_platform")
+local Globals = require("vhf_helper.globals")
 TRACK_ISSUE(
     "Lua",
     "Switching from Lua 5.1 to 5.4 broke compatibility with almost any table.insert call. Also, loadstring got renamed.",
     "Redefine basic language features according to current interpreter version."
 )
-
-local Globals = require("vhf_helper.globals")
 Globals.requireAllAndBootstrapInOrder(
     {
         "vhf_helper.public_interface",
