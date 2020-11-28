@@ -215,10 +215,49 @@ function TestBaroValidation:testAutocompletionWorks()
 	luaUnit.assertEquals(self.validator:autocomplete("10"), "1000")
 	luaUnit.assertEquals(self.validator:autocomplete("102"), "1020")
 	luaUnit.assertEquals(self.validator:autocomplete("920"), "0920")
+
+	luaUnit.assertEquals(self.validator:autocomplete("870"), "0870")
 end
 
 function TestBaroValidation:testShortValidPressureCanBeEntered()
 	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("", 9), "9")
 	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("9", 3), "3")
 	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("93", 0), "0")
+end
+
+function TestBaroValidation:testLowShortValidPressureCanBeEntered()
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("", 8), "8")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("8", 9), "9")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("89", 0), "0")
+end
+
+function TestBaroValidation:testLowFullValidPressureCanBeEntered()
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("", 0), "0")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("0", 8), "8")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("08", 9), "9")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("089", 0), "0")
+end
+
+function TestBaroValidation:testTooLowFullValidPressureCannotBeEntered()
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("", 0), "0")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("0", 8), "8")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("08", 3), nil)
+end
+
+function TestBaroValidation:testObviouslyTooHighPressureCannotBeEntered()
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("", 1), "1")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("1", 1), nil)
+end
+
+function TestBaroValidation:testTooHighPressureCannotBeEntered()
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("", 1), "1")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("1", 0), "0")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("10", 9), nil)
+end
+
+function TestBaroValidation:testSlightlyTooHighPressureCannotBeEntered()
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("", 1), "1")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("1", 0), "0")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("10", 8), "8")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("108", 5), nil)
 end

@@ -37,7 +37,6 @@ do
         return partialFrequencyString
     end
 
-    TRACK_ISSUE("Tech Debt", "Is this override necessary?")
     Globals.OVERRIDE(NavFrequencyValidator.getValidNumberCharacterOrNil)
     function NavFrequencyValidator:getValidNumberCharacterOrNil(frequencyEnteredSoFar, number)
         if (string.len(frequencyEnteredSoFar) == 7) then

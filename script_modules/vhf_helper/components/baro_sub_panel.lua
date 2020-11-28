@@ -25,7 +25,7 @@ do
 
     Globals.OVERRIDE(BaroSubPanel.addCharacter)
     function BaroSubPanel:addCharacter(character)
-        if (self.enteredValue:len() == 5) then
+        if (self.enteredValue:len() == 4) then
             return
         end
 
@@ -79,7 +79,7 @@ do
         if (baroNumber < 3) then
             imgui.TextUnformatted("BAR" .. tostring(baroNumber))
         else
-            imgui.TextUnformatted("STBY")
+            imgui.TextUnformatted("\nSTBY")
         end
         imgui.PopStyleColor()
 
@@ -139,8 +139,14 @@ do
         end
 
         imgui.SameLine()
-        local paddedString =
-            self.enteredValue .. self.Constants.FullyPaddedString:sub(string.len(self.enteredValue) + 1, 4)
+        local paddedString = nil
+        local firstDigit = self.enteredValue:sub(1, 1)
+        if (firstDigit == "8" or firstDigit == "9") then
+            paddedString =
+                " " .. self.enteredValue .. self.Constants.FullyPaddedString:sub(self.enteredValue:len() + 1, 3)
+        else
+            paddedString = self.enteredValue .. self.Constants.FullyPaddedString:sub(self.enteredValue:len() + 1, 4)
+        end
         imgui.TextUnformatted(paddedString)
 
         imgui.PopStyleColor()

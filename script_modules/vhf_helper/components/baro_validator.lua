@@ -39,8 +39,8 @@ do
     Globals.OVERRIDE(BaroValidator.autocomplete)
     function BaroValidator:autocomplete(partialString)
         if (partialString:len() < 4) then
-            local firstDigit = partialString:sub(1, 1)
-            if (firstDigit == "9") then
+            local globalFirstDigit = partialString:sub(1, 1)
+            if (globalFirstDigit == "8" or globalFirstDigit == "9") then
                 partialString = "0" .. partialString
             end
         end
@@ -50,6 +50,66 @@ do
         end
 
         return partialString
+    end
+
+    Globals.OVERRIDE(BaroValidator.getValidNumberCharacterOrNil)
+    function BaroValidator:getValidNumberCharacterOrNil(stringEnteredSoFar, number)
+        local character = tostring(number)
+        if (stringEnteredSoFar:len() == 0) then
+            if (number > 1 and number < 8) then
+                character = nil
+            end
+        elseif (stringEnteredSoFar:len() > 0) then
+            local globalFirstDigit = stringEnteredSoFar:sub(1, 1)
+            local isBelowOneThousand = false
+            local belowOneThousandBaseOffset = 0
+            if (globalFirstDigit == "0") then
+                isBelowOneThousand = true
+                belowOneThousandBaseOffset = 1
+            elseif (globalFirstDigit == "8" or globalFirstDigit == "9") then
+                isBelowOneThousand = true
+            end
+
+            if (isBelowOneThousand) then
+                --  |
+                -- 0870
+                -- 0980
+                if (stringEnteredSoFar:len() - belowOneThousandBaseOffset == 1) then
+                    local firstDigit =
+                        stringEnteredSoFar:sub(1 + belowOneThousandBaseOffset, 1 + belowOneThousandBaseOffset)
+                    if (firstDigit == "8") then
+                        if (number < 7) then
+                            character = nil
+                        end
+                    end
+                elseif (stringEnteredSoFar:len() - belowOneThousandBaseOffset == 3) then
+                    character = nil
+                end
+            else
+                -- |
+                -- 1084
+                -- 1000
+                if (stringEnteredSoFar:len() - belowOneThousandBaseOffset == 1) then
+                    if (number > 0) then
+                        character = nil
+                    end
+                elseif (stringEnteredSoFar:len() - belowOneThousandBaseOffset == 2) then
+                    if (number > 8) then
+                        character = nil
+                    end
+                elseif (stringEnteredSoFar:len() - belowOneThousandBaseOffset == 3) then
+                    local thirdDigit =
+                        stringEnteredSoFar:sub(3 + belowOneThousandBaseOffset, 3 + belowOneThousandBaseOffset)
+                    if (thirdDigit == "8") then
+                        if (number > 4) then
+                            character = nil
+                        end
+                    end
+                end
+            end
+        end
+
+        return character
     end
 end
 
