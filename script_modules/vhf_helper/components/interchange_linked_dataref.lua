@@ -1,3 +1,5 @@
+local LuaPlatform = require("lua_platform")
+
 local InterchangeLinkedDataref
 do
     InterchangeLinkedDataref = {
@@ -49,6 +51,8 @@ do
             getInterchangeValueFunction = LOAD_LUA_STRING("return " .. newInterchangeVariableName),
             getLinkedValueFunction = LOAD_LUA_STRING("return " .. newLinkedReadVariableName)
         }
+
+        newInstanceWithState.lastLinkedChangeTimestamp = 0
 
         setmetatable(newInstanceWithState, self)
         self.__index = self
@@ -118,6 +122,7 @@ do
 
         local currentLinkedValue = self:getLinkedValue()
         if (currentLinkedValue ~= self.lastLinkedValue) then
+            self.lastLinkedChangeTimestamp = LuaPlatform.Time.now()
             self.onLinkedChangeFunction(self, currentLinkedValue)
             self.lastLinkedValue = currentLinkedValue
         end
@@ -126,6 +131,10 @@ do
     function InterchangeLinkedDataref:emitNewValue(value)
         self:_setInterchangeValue(value)
         self:_setLinkedValue(value)
+    end
+
+    function InterchangeLinkedDataref:getLastLinkedChangeTimestamp()
+        return self.lastLinkedChangeTimestamp
     end
 
     function InterchangeLinkedDataref:getLinkedValue()

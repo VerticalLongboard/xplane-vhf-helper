@@ -1,5 +1,7 @@
 local Globals = require("vhf_helper.globals")
 local Validation = require("vhf_helper.state.validation")
+local LuaPlatform = require("lua_platform")
+local Utilities = require("shared_components.utilities")
 
 local NumberSubPanel
 do
@@ -49,6 +51,18 @@ do
             imgui.SameLine()
             self:_createNumberButtonAndReactToClicks(i)
         end
+    end
+
+    function NumberSubPanel:_getBlinkingCurrentValueColor(linkedDataref)
+        if (LuaPlatform.Time.now() - linkedDataref:getLastLinkedChangeTimestamp() < Globals.linkedValuesChangeBlinkTime) then
+            return Utilities.getBlinkingColor(Globals.Colors.a320Orange, 0.5, 15.0)
+        else
+            return Globals.Colors.a320Orange
+        end
+    end
+
+    function NumberSubPanel:_pushBlinkingCurrentValueColor(linkedDataref)
+        imgui.PushStyleColor(imgui.constant.Col.Text, self:_getBlinkingCurrentValueColor(linkedDataref))
     end
 
     function NumberSubPanel:_renderNumberPanel()

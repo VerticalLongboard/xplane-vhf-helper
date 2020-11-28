@@ -86,7 +86,8 @@ do
 			true,
 			function()
 				self.modeDataref:emitNewValue(mode)
-			end
+			end,
+			self:_getBlinkingCurrentValueColor(self.modeDataref)
 		)
 	end
 
@@ -99,7 +100,7 @@ do
 		imgui.PopStyleColor()
 
 		imgui.SameLine()
-		imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
+		self:_pushBlinkingCurrentValueColor(self.codeDataref)
 
 		imgui.TextUnformatted(
 			self.inputPanelValidator:validate(self:_getCurrentLinkedValueString()) or self.FullyPaddedString

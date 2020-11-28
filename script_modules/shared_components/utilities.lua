@@ -1,4 +1,4 @@
-LuaPlatform = require("lua_platform")
+local LuaPlatform = require("lua_platform")
 
 local Utilities = {}
 

@@ -88,7 +88,7 @@ do
         end
         imgui.PopStyleColor()
 
-        imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
+        self:_pushBlinkingCurrentValueColor(self.linkedDatarefs[baroNumber])
 
         local currentString = self:_getCurrentLinkedValueString(baroNumber)
         if (self.inputPanelValidator:validate(currentString) == nil) then

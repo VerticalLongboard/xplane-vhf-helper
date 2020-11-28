@@ -147,14 +147,20 @@ Globals.Colors = {
     }
 }
 
+Globals.linkedValuesChangeBlinkTime = 3.0
+
 TRACK_ISSUE("Tech Debt", "All of ImguiUtils is static. Make it not self-related.")
 local ImguiUtils
 do
     ImguiUtils = {}
-    function ImguiUtils:renderActiveInactiveButton(buttonTitle, active, enabled, onPressFunction)
+    function ImguiUtils:renderActiveInactiveButton(buttonTitle, active, enabled, onPressFunction, colorOverride)
         if (enabled) then
             if (active) then
-                imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
+                if (colorOverride ~= nil) then
+                    imgui.PushStyleColor(imgui.constant.Col.Text, colorOverride)
+                else
+                    imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
+                end
             else
                 imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Blue)
             end

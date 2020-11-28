@@ -3,6 +3,7 @@ local NumberSubPanel = require("vhf_helper.components.number_sub_panel")
 local SpeakNato = require("vhf_helper.components.speak_nato")
 local Config = require("vhf_helper.state.config")
 local Utilities = require("shared_components.utilities")
+local LuaPlatform = require("lua_platform")
 
 local VhfFrequencySubPanel
 do
@@ -86,9 +87,9 @@ do
         imgui.PopStyleColor()
     end
 
+
     function VhfFrequencySubPanel:_renderValueLine()
         imgui.SetWindowFontScale(1.0 * globalFontScale)
-        imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
 
         local vhf1String = self:_getCurrentCleanLinkedValueString(1)
         vhf1String = vhf1String:sub(1, 3) .. Globals.decimalCharacter .. vhf1String:sub(4, 7)
@@ -108,12 +109,14 @@ do
             padWhitespace = padWhitespace .. " "
         end
 
+        self:_pushBlinkingCurrentValueColor(self.linkedDatarefs[1])
         imgui.TextUnformatted(vhf1String)
+        imgui.PopStyleColor()
         imgui.SameLine()
         imgui.TextUnformatted(padWhitespace)
         imgui.SameLine()
+        self:_pushBlinkingCurrentValueColor(self.linkedDatarefs[2])
         imgui.TextUnformatted(vhf2String)
-
         imgui.PopStyleColor()
     end
 
