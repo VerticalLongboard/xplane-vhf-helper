@@ -1,4 +1,4 @@
-## VHF Helper Public Interface
+## VR Radio Helper Interface
 VHF Helper offers a public API via a global `VHFHelperPublicInterface` while its panel is visible:
 ```text
 if (VHFHelperPublicInterface ~= nil) then
