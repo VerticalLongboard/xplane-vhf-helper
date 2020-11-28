@@ -14,6 +14,9 @@ TRACK_ISSUE = TRACK_ISSUE or function(component, description, workaround)
 MULTILINE_TEXT = MULTILINE_TEXT or function(...)
     end
 
+TRIGGER_ISSUE_AFTER_TIME = TRIGGER_ISSUE_AFTER_TIME or function(...)
+    end
+
 TRACK_ISSUE(
     "FlyWithLua",
     "The close function is called asynchronously (when clicking the red close button) so quickly closing and opening the panel will close it again quickly after.",

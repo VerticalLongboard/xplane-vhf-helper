@@ -109,7 +109,7 @@ do
 
         local knownIssueString = nil
         if (num == 0 and atLeastOneWorkaround == nil) then
-            local newOccurrenceLocation = self:_getOccurrenceLocation(2)
+            local newOccurrenceLocation = self:_getOccurrenceLocation(4)
             knownIssueString =
                 ("[91mCannot blame anything in %s. Also, no workaround available.[0m A new or non-issue?"):format(
                 newOccurrenceLocation
@@ -331,6 +331,29 @@ end
 KNOWN_ISSUE = function(newComponent, newDescription, newWorkaround, blameStringList)
     issueTracker:declareLinkedKnownIssue(newComponent, newDescription, newWorkaround, blameStringList)
 end
+
+TRIGGER_ISSUE_AFTER_TIME =
+    TRIGGER_ISSUE_AFTER_TIME or
+    function(trackingSince, triggerAfterHowLong)
+        if (trackingSince == nil) then
+            print(
+                ("[93mNow is: %d (copy this number into your TRACK_ISSUE/TRIGGER_ISSUE_AFTER_TIME(now, triggerAfterSecondsFromNow) call)[0m"):format(
+                    os.time()
+                )
+            )
+            assert(nil)
+        end
+
+        assert(triggerAfterHowLong)
+        if (os.time() - trackingSince > triggerAfterHowLong) then
+            return nil
+        end
+
+        return ("This is not yet an issue. It is tracked since %s and will trigger on %s. Take your time!"):format(
+            os.date("%x %X", trackingSince),
+            os.date("%x %X", trackingSince + triggerAfterHowLong)
+        )
+    end
 
 MULTILINE_TEXT = function(...)
     local completeString = ""
