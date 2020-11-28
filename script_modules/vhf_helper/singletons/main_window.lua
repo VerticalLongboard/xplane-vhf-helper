@@ -152,23 +152,6 @@ do
         "FlyWithLua is supposed to run Lua 5.1, which, in a clean development environment, does not support bit operations via bit.* functions.",
         "Disable in tests for now."
     )
-    function vhfHelperMainWindow:_getBlinkingWhiteColor()
-        if (IS_TEST ~= nil) then
-            return 0xFF000000
-        else
-            local brightness = (math.sin(LuaPlatform.Time.now() * 10.0) + 2.0) * 0.25
-            brightness = brightness * 255
-
-            local bitRed = bit.lshift(brightness, 0)
-            local bitGreen = bit.lshift(brightness, 8)
-            local bitBlue = bit.lshift(brightness, 16)
-            local color = 0xFF000000
-            local color = bit.bor(color, bitRed)
-            local color = bit.bor(color, bitGreen)
-            local color = bit.bor(color, bitBlue)
-            return color
-        end
-    end
 
     function vhfHelperMainWindow:_renderSidePanelButton()
         if (vhfHelperSideWindow:areAnyNotificationsPending()) then
@@ -176,7 +159,7 @@ do
                 (Globals.ImguiUtils:renderButtonWithColors(
                     "?",
                     Globals.Colors.black,
-                    self:_getBlinkingWhiteColor(),
+                    Utilities.getBlinkingColor(0xFFFFFFFF, 0.4, 5.0),
                     Globals.Colors.white,
                     Globals.Colors.white
                 ))

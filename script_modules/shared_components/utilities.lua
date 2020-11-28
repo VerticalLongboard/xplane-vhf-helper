@@ -77,7 +77,11 @@ Utilities.trim = function(str)
 end
 
 Utilities.openUrlInLocalDefaultBrowser = function(url)
-    local call = 'start "" ' .. Utilities.osExecuteEncode(Utilities.urlEncode(url))
+    return Utilities.runLocally(Utilities.urlEncode(url))
+end
+
+Utilities.runLocally = function(callString)
+    local call = 'start "" ' .. Utilities.osExecuteEncode(callString)
     local successErrorlevel = 0
     if (os.execute(call) ~= successErrorlevel) then
         return false
@@ -107,6 +111,65 @@ end
 TRACK_ISSUE("Lua", "Lua does not offer a round function.", "Waste a minute and implement one.")
 Utilities.roundFloatingPointToNearestInteger = function(v)
     return v + 0.5 - (v + 0.5) % 1
+end
+
+Utilities.Math = {}
+Utilities.Math.lerp = function(v1, v2, t)
+    return v1 + (v2 - v1) * t
+end
+
+Utilities.getBlinkingColor = function(color, baseBrightness, blinkRate)
+    local brightness = (math.sin(LuaPlatform.Time.now() * blinkRate) + 1.0) * 0.5
+    brightness = Utilities.Math.lerp(baseBrightness, 1.0, brightness)
+    return Utilities.lerpColors(0xFF000000, color, brightness)
+end
+
+Utilities.lerpColors = function(color1, color2, t)
+    if (IS_TEST ~= nil) then
+        return 0xFF000000
+    end
+
+    local shiftByte = function(fourBytes, mask, shift)
+        local byteOnly = bit.band(fourBytes, mask)
+        byteOnly = bit.rshift(byteOnly, shift)
+        return byteOnly
+    end
+    local getRed = function(color)
+        return shiftByte(color, 0x000000FF, 0)
+    end
+    local getGreen = function(color)
+        return shiftByte(color, 0x0000FF00, 8)
+    end
+    local getBlue = function(color)
+        return shiftByte(color, 0x00FF0000, 16)
+    end
+
+    local red = Utilities.Math.lerp(getRed(color1), getRed(color2), t)
+    local green = Utilities.Math.lerp(getGreen(color1), getGreen(color2), t)
+    local blue = Utilities.Math.lerp(getBlue(color1), getBlue(color2), t)
+
+    local setByte = function(fourBytes, newByte, shift)
+        local shifted = bit.lshift(newByte, shift)
+        shifted = bit.bor(fourBytes, shifted)
+        return shifted
+    end
+
+    local setRed = function(color, newRed)
+        return setByte(color, newRed, 0)
+    end
+    local setGreen = function(color, newGreen)
+        return setByte(color, newGreen, 8)
+    end
+    local setBlue = function(color, newBlue)
+        return setByte(color, newBlue, 16)
+    end
+
+    local color = 0xFF000000
+    color = setRed(color, red)
+    color = setGreen(color, green)
+    color = setBlue(color, blue)
+
+    return color
 end
 
 return Utilities

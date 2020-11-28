@@ -1,4 +1,5 @@
 local LuaPlatform = require("lua_platform")
+local Utilities = require("shared_components.utilities")
 
 local Globals = {
     emptyString = "",
@@ -230,7 +231,10 @@ do
     function ImguiUtils:pushSwitchButtonColors(nextValueIsSettable)
         if (nextValueIsSettable) then
             imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.black)
-            imgui.PushStyleColor(imgui.constant.Col.Button, Globals.Colors.SwitchPanel.SwitchButtonColor)
+            imgui.PushStyleColor(
+                imgui.constant.Col.Button,
+                Utilities.getBlinkingColor(Globals.Colors.SwitchPanel.SwitchButtonColor, 0.8, 10.0)
+            )
             imgui.PushStyleColor(imgui.constant.Col.ButtonActive, Globals.Colors.SwitchPanel.HoveredSwitchButtonColor)
             imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, Globals.Colors.SwitchPanel.HoveredSwitchButtonColor)
         else
