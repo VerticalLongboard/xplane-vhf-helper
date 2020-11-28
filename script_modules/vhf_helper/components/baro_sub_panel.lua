@@ -50,7 +50,12 @@ do
 
     Globals.OVERRIDE(BaroSubPanel.numberCanBeSetNow)
     function BaroSubPanel:numberCanBeSetNow()
-        return (self.enteredValue:len() > 0)
+        local firstDigit = self.enteredValue:sub(1, 1)
+        if (firstDigit == "0" or firstDigit == "1") then
+            return (self.enteredValue:len() == 4)
+        else
+            return (self.enteredValue:len() == 3)
+        end
     end
 
     Globals._NEWFUNC(BaroSubPanel._validateAndSetNext)
@@ -77,7 +82,7 @@ do
 
         imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.greyText)
         if (baroNumber < 3) then
-            imgui.TextUnformatted("BAR" .. tostring(baroNumber))
+            imgui.TextUnformatted("BA" .. tostring(baroNumber))
         else
             imgui.TextUnformatted("\nSTBY")
         end
@@ -94,6 +99,10 @@ do
         imgui.SameLine()
         imgui.TextUnformatted(currentString)
         imgui.PopStyleColor()
+
+        imgui.SetWindowFontScale(0.5 * globalFontScale)
+        imgui.SameLine()
+        imgui.TextUnformatted(" ")
 
         imgui.SetWindowFontScale(0.8 * globalFontScale)
         Globals.ImguiUtils:pushSwitchButtonColors(nextValueIsSettable)

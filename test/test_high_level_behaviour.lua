@@ -251,20 +251,14 @@ end
 
 function TestHighLevelBehaviour:testSwitchingNavDoesSwitch()
 	self:_pressButton(self.Constants.navPanelButtonTitle)
-	local freqString = "10965"
-	self:_switchToOtherFrequency(2, TestDatarefs.Constants.secondNavFreq, freqString)
-
-	local freqString2 = "11535"
-	self:_switchToOtherFrequency(2, TestDatarefs.Constants.secondNavFreq, freqString2)
+	self:_switchToOtherFrequency(2, TestDatarefs.Constants.secondNavFreq, "10965")
+	self:_switchToOtherFrequency(2, TestDatarefs.Constants.secondNavFreq, "11535")
 end
 
 function TestHighLevelBehaviour:testSwitchingTransponderDoesSwitch()
 	self:_pressButton(self.Constants.transponderPanelButtonTitle)
-	local transponderString = "4066"
-	self:_switchToOtherTransponder(TestDatarefs.Constants.transponderCode, transponderString)
-
-	local transponderString2 = "1000"
-	self:_switchToOtherTransponder(TestDatarefs.Constants.transponderCode, transponderString2)
+	self:_switchToOtherTransponder(TestDatarefs.Constants.transponderCode, "4066")
+	self:_switchToOtherTransponder(TestDatarefs.Constants.transponderCode, "1000")
 end
 
 function TestHighLevelBehaviour:testCurrentTransponderCodeIsShownSomewhere()
@@ -275,11 +269,10 @@ end
 
 function TestHighLevelBehaviour:testSwitchingBaroDoesSwitch()
 	self:_pressButton(self.Constants.baroPanelButtonTitle)
-	local newString = "920"
-	self:_switchToOtherBaro(2, TestDatarefs.Constants.secondBaro, newString)
-
-	local newString2 = "1023"
-	self:_switchToOtherBaro(2, TestDatarefs.Constants.secondBaro, newString)
+	self:_switchToOtherBaro(2, TestDatarefs.Constants.secondBaro, "920")
+	self:_switchToOtherBaro(2, TestDatarefs.Constants.secondBaro, "1023")
+	self:_switchToOtherBaro(2, TestDatarefs.Constants.secondBaro, "1082")
+	self:_switchToOtherBaro(3, TestDatarefs.Constants.thirdBaro, "1082")
 end
 
 function TestHighLevelBehaviour:testCurrentBarosAreShownSomewhere()

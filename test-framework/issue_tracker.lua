@@ -109,7 +109,7 @@ do
 
         local knownIssueString = nil
         if (num == 0 and atLeastOneWorkaround == nil) then
-            local newOccurrenceLocation = self:_getOccurrenceLocation(4)
+            local newOccurrenceLocation = self:_getOccurrenceLocation(2)
             knownIssueString =
                 ("[91mCannot blame anything in %s. Also, no workaround available.[0m A new or non-issue?"):format(
                 newOccurrenceLocation

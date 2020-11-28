@@ -10,7 +10,7 @@ flyWithLuaStub:suppressLogMessagesContaining(
         "VR Radio Helper: Using '",
         "Plane Compatibility: ",
         "Speaking string=",
-        "VHF Helper: Saving configuration"
+        "VR Radio Helper: Saving configuration"
     }
 )
 
@@ -30,3 +30,6 @@ KNOWN_ISSUE(
     "Use the TogglePanel command (and map it to a key) instead of the macro.",
     {"FlyWithLua macro"}
 )
+
+KNOWN_ISSUE("Changelog", "Barometer pressure validation according to global standards", nil, {"bla"})
+KNOWN_ISSUE("Changelog", "Maintenance: Public interface frequency validation improved", nil, {"bla"})

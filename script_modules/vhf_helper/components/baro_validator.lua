@@ -38,15 +38,13 @@ do
 
     Globals.OVERRIDE(BaroValidator.autocomplete)
     function BaroValidator:autocomplete(partialString)
-        if (partialString:len() < 4) then
-            local globalFirstDigit = partialString:sub(1, 1)
-            if (globalFirstDigit == "8" or globalFirstDigit == "9") then
-                partialString = "0" .. partialString
+        if (partialString:len() == 3) then
+            local firstDigit = partialString:sub(1, 1)
+            if (firstDigit == "0") then
+                return partialString
+            elseif (firstDigit == "8" or firstDigit == "9") then
+                return "0" .. partialString
             end
-        end
-
-        for i = partialString:len(), 3 do
-            partialString = partialString .. "0"
         end
 
         return partialString
@@ -74,7 +72,11 @@ do
                 --  |
                 -- 0870
                 -- 0980
-                if (stringEnteredSoFar:len() - belowOneThousandBaseOffset == 1) then
+                if (stringEnteredSoFar:len() - belowOneThousandBaseOffset == 0) then
+                    if (number < 8) then
+                        character = nil
+                    end
+                elseif (stringEnteredSoFar:len() - belowOneThousandBaseOffset == 1) then
                     local firstDigit =
                         stringEnteredSoFar:sub(1 + belowOneThousandBaseOffset, 1 + belowOneThousandBaseOffset)
                     if (firstDigit == "8") then

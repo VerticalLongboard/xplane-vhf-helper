@@ -52,7 +52,7 @@ do
     Globals.OVERRIDE(VhfHelperConfiguration.save)
     function VhfHelperConfiguration:save()
         if (self.isDirty) then
-            logMsg("VHF Helper: Saving configuration due to recent change.")
+            Globals.printLogMessage("Saving configuration due to recent change.")
         end
         Configuration.save(self)
     end

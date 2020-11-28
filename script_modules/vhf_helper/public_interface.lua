@@ -11,7 +11,7 @@ VHFHelperEventOnFrequencyChanged = "EventBus_EventName_VHFHelperEventOnFrequency
 local function activatePublicInterface()
     VHFHelperPublicInterface = {
         getInterfaceVersion = function()
-            return 1
+            return 2
         end,
         enterFrequencyProgrammaticallyAsString = function(newFullString)
             newFullString = Validation.comFrequencyValidator:validate(newFullString)
@@ -57,8 +57,12 @@ local function activatePublicInterface()
 
             return false
         end,
-        isValidFrequency = function(fullFrequencyString)
-            if (Validation.comFrequencyValidator:validate(fullFrequencyString) == nil) then
+        isValidFrequency = function(atLeastThreeDigitsDecimalOneDigit)
+            if
+                (Validation.comFrequencyValidator:validate(
+                    Validation.comFrequencyValidator:autocomplete(atLeastThreeDigitsDecimalOneDigit)
+                ) == nil)
+             then
                 return false
             else
                 return true

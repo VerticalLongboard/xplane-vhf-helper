@@ -210,13 +210,20 @@ function TestBaroValidation:testInvalidBaroPressureIsConsideredInvalid()
 	luaUnit.assertEquals(self.validator:validate("0810"), nil)
 end
 
-function TestBaroValidation:testAutocompletionWorks()
-	luaUnit.assertEquals(self.validator:autocomplete("1"), "1000")
-	luaUnit.assertEquals(self.validator:autocomplete("10"), "1000")
-	luaUnit.assertEquals(self.validator:autocomplete("102"), "1020")
-	luaUnit.assertEquals(self.validator:autocomplete("920"), "0920")
+function TestBaroValidation:testPressureAutocompletionIsVeryStrictAndDoesNotAutocompleteMuch()
+	luaUnit.assertEquals(self.validator:autocomplete("1"), "1")
+	luaUnit.assertEquals(self.validator:autocomplete("10"), "10")
+	luaUnit.assertEquals(self.validator:autocomplete("100"), "100")
+	luaUnit.assertEquals(self.validator:autocomplete("102"), "102")
+	luaUnit.assertEquals(self.validator:autocomplete("089"), "089")
 
+	luaUnit.assertEquals(self.validator:autocomplete("920"), "0920")
 	luaUnit.assertEquals(self.validator:autocomplete("870"), "0870")
+
+	luaUnit.assertEquals(self.validator:autocomplete("1052"), "1052")
+
+	luaUnit.assertEquals(self.validator:autocomplete("0890"), "0890")
+	luaUnit.assertEquals(self.validator:autocomplete("0923"), "0923")
 end
 
 function TestBaroValidation:testShortValidPressureCanBeEntered()
@@ -260,4 +267,9 @@ function TestBaroValidation:testSlightlyTooHighPressureCannotBeEntered()
 	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("1", 0), "0")
 	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("10", 8), "8")
 	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("108", 5), nil)
+end
+
+function TestBaroValidation:testObviouslyTooLowPressureCannotBeEntered()
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("", 0), "0")
+	luaUnit.assertEquals(self.validator:getValidNumberCharacterOrNil("0", 7), nil)
 end

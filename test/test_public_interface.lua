@@ -42,7 +42,7 @@ function TestPublicInterface:tearDown()
 end
 
 function TestPublicInterface:testFixInterface()
-	luaUnit.assertEquals(self.activeInterface.getInterfaceVersion(), 1)
+	luaUnit.assertEquals(self.activeInterface.getInterfaceVersion(), 2)
 	luaUnit.assertNotNil(self.activeInterface.enterFrequencyProgrammaticallyAsString)
 	luaUnit.assertNotNil(self.activeInterface.isCurrentlyTunedIn)
 	luaUnit.assertNotNil(self.activeInterface.isCurrentlyEntered)
