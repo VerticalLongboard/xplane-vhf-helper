@@ -43,6 +43,8 @@ do
             return
         end
 
+        self:_reset()
+
         local minWidthWithoutScrollbars = nil
         local minHeightWithoutScrollbars = nil
 

@@ -123,7 +123,10 @@ do
             compatColor
         )
         self.PlaneCompatibilityBlob:addNewline()
-        self.PlaneCompatibilityBlob:addColorTextWithoutNewline("describe your findings at Github:", compatColor)
+        self.PlaneCompatibilityBlob:addColorTextWithoutNewline(
+            "describe your findings at Github (click link):",
+            compatColor
+        )
         self.PlaneCompatibilityBlob:addNewline()
         ClickableFeedbackBrowserLink:new():addLinkToBlob(
             self.PlaneCompatibilityBlob,
@@ -147,7 +150,7 @@ do
             ("You are using VR Radio Helper %s"):format(manuallyUpdatedVersionNumberDontUseForTooLong)
         )
         self.UpdatesBlob:addNewline()
-        self.UpdatesBlob:addTextWithoutNewline("For news and updates, see the official Github page:")
+        self.UpdatesBlob:addTextWithoutNewline("For news and updates, see the official Github page (click link):")
         self.UpdatesBlob:addNewline()
         ClickableFeedbackBrowserLink:new():addLinkToBlob(
             self.UpdatesBlob,
@@ -158,7 +161,7 @@ do
         self.FeedbackLinkBlob = InlineButtonBlob:new()
         self.FeedbackLinkBlob:addTextWithoutNewline("How does VR Radio Helper work for you?")
         self.FeedbackLinkBlob:addNewline()
-        self.FeedbackLinkBlob:addTextWithoutNewline("Please leave your feedback at Github:")
+        self.FeedbackLinkBlob:addTextWithoutNewline("Please leave your feedback at Github (click link):")
         self.FeedbackLinkBlob:addNewline()
         ClickableFeedbackBrowserLink:new():addLinkToBlob(
             self.FeedbackLinkBlob,

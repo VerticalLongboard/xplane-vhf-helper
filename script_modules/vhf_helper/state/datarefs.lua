@@ -112,10 +112,6 @@ table.insert(transponderModeToDescriptor, "ON")
 table.insert(transponderModeToDescriptor, "ALT")
 table.insert(transponderModeToDescriptor, "TEST")
 
-TRACK_ISSUE(
-    "Plane Compatibility",
-    "Default planes work well usually, but non-default planes have vastly different meanings for transponder modes."
-)
 local isNewTransponderModeValid = function(ild, newValue)
     -- This is based on personal observation in different airplanes:
     -- 0: OFF

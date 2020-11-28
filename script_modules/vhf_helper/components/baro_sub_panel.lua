@@ -82,9 +82,9 @@ do
 
         imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.greyText)
         if (baroNumber < 3) then
-            imgui.TextUnformatted("BA" .. tostring(baroNumber))
+            imgui.TextUnformatted("B" .. tostring(baroNumber) .. " ")
         else
-            imgui.TextUnformatted("\nSTBY")
+            imgui.TextUnformatted("\nSTBY ")
         end
         imgui.PopStyleColor()
 
@@ -131,6 +131,9 @@ do
         imgui.TextUnformatted(" ")
         imgui.SameLine()
         self:_renderOneBarometerBlock(nextValueIsSettable, 2)
+
+        imgui.TextUnformatted("          ")
+        imgui.SameLine()
         self:_renderOneBarometerBlock(nextValueIsSettable, 3)
 
         imgui.SetWindowFontScale(1.0 * globalFontScale)
