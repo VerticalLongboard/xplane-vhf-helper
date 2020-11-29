@@ -138,7 +138,7 @@ do
             )
         )
 
-        local manuallyUpdatedVersionNumberDontUseForTooLong = "v1.0.23"
+        local manuallyUpdatedVersionNumberDontUseForTooLong = "v1.0.24"
         TRACK_ISSUE(
             "Tech Debt",
             ("Add version number to build. Currently, manually set version=%s"):format(

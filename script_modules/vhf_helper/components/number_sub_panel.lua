@@ -131,7 +131,7 @@ do
     end
 
     function NumberSubPanel:_pushColorsForButton(id, enabled)
-        local spring = self:_getButtonStyleSpring(id)
+        local spring = self:_getButtonStyleSpring(id + 1)
         if (enabled) then
             spring:setTarget(1.0)
         else
