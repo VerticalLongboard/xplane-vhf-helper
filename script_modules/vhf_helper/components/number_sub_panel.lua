@@ -48,6 +48,13 @@ do
         assert(nil)
     end
 
+    function NumberSubPanel:show()
+        for _, spring in ipairs(self.buttonStyleSprings) do
+            spring:overrideCurrentPosition(0.0)
+            spring:setTarget(0.0)
+        end
+    end
+
     function NumberSubPanel:_renderNumberButtonsInSameLine(fromIndex, toIndex)
         for i = fromIndex, toIndex do
             imgui.SameLine()
@@ -57,7 +64,7 @@ do
 
     function NumberSubPanel:_getBlinkingCurrentValueColor(linkedDataref)
         if (LuaPlatform.Time.now() - linkedDataref:getLastLinkedChangeTimestamp() < Globals.linkedValuesChangeBlinkTime) then
-            return Utilities.getBlinkingColor(Globals.Colors.a320Orange, 0.5, 15.0)
+            return Utilities.getBlinkingColor(Globals.Colors.a320Orange, 0.5, 20.0)
         else
             return Globals.Colors.a320Orange
         end
@@ -84,11 +91,11 @@ do
         imgui.SameLine()
         imgui.Dummy(Globals.defaultDummySize * rightSideDummyScale, Globals.defaultDummySize)
         imgui.SameLine()
-        self:_pushColorsForButton(10, clearingEnabled)
+        self:_pushButtonSettings(10, clearingEnabled)
         if (imgui.Button(NumberSubPanel.Constants.BackspaceButtonTitle)) then
             self:backspace()
         end
-        self:_popButtonColors()
+        self:_popButtonSettings()
 
         imgui.Dummy(Globals.defaultDummySize * leftSideDummyScale, Globals.defaultDummySize)
 
@@ -97,11 +104,11 @@ do
         imgui.SameLine()
         imgui.Dummy(Globals.defaultDummySize * rightSideDummyScale, Globals.defaultDummySize)
         imgui.SameLine()
-        self:_pushColorsForButton(11, clearingEnabled)
+        self:_pushButtonSettings(11, clearingEnabled)
         if (imgui.Button(NumberSubPanel.Constants.ClearButtonTitle)) then
             self:clear()
         end
-        self:_popButtonColors()
+        self:_popButtonSettings()
 
         imgui.Dummy(Globals.defaultDummySize * leftSideDummyScale, Globals.defaultDummySize)
 
@@ -130,7 +137,7 @@ do
         end
     end
 
-    function NumberSubPanel:_pushColorsForButton(id, enabled)
+    function NumberSubPanel:_pushButtonSettings(id, enabled)
         local spring = self:_getButtonStyleSpring(id + 1)
         if (enabled) then
             spring:setTarget(1.0)
@@ -148,24 +155,27 @@ do
         local buttonHoveredColor =
             Utilities.lerpColors(0xFF222222, Globals.Colors.slightlyBrighterDefaultButtonColor, springPos)
 
+        local frameRounding = Utilities.Math.lerp(5.0, 2.0, springPos)
+        imgui.PushStyleVar(imgui.constant.StyleVar.FrameRounding, frameRounding)
         imgui.PushStyleColor(imgui.constant.Col.Text, textColor)
         imgui.PushStyleColor(imgui.constant.Col.Button, buttonColor)
         imgui.PushStyleColor(imgui.constant.Col.ButtonActive, buttonActiveColor)
         imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, buttonHoveredColor)
     end
 
-    function NumberSubPanel:_popButtonColors()
+    function NumberSubPanel:_popButtonSettings()
         imgui.PopStyleColor()
         imgui.PopStyleColor()
         imgui.PopStyleColor()
         imgui.PopStyleColor()
+        imgui.PopStyleVar()
     end
 
     function NumberSubPanel:_createNumberButtonAndReactToClicks(number)
         local numberCharacter = self.inputPanelValidator:getValidNumberCharacterOrNil(self.enteredValue, number)
         local enabled = true
 
-        self:_pushColorsForButton(number, numberCharacter ~= nil)
+        self:_pushButtonSettings(number, numberCharacter ~= nil)
 
         if
             (imgui.Button(tostring(number), Globals.defaultDummySize, Globals.defaultDummySize) and
@@ -174,10 +184,7 @@ do
             self:addCharacter(numberCharacter)
         end
 
-        imgui.PopStyleColor()
-        imgui.PopStyleColor()
-        imgui.PopStyleColor()
-        imgui.PopStyleColor()
+        self:_popButtonSettings()
     end
 end
 

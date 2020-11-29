@@ -10,12 +10,13 @@ do
     BaroSubPanel = NumberSubPanel:new()
 
     Globals.OVERRIDE(BaroSubPanel.new)
-    function BaroSubPanel:new(newValidator, baroLinkedDatarefs, newDescriptor)
+    function BaroSubPanel:new(newValidator, baroLinkedDatarefs, newPanelTitle, newDescriptor)
         local newInstanceWithState = NumberSubPanel:new(newValidator)
 
         newInstanceWithState.Constants.FullyPaddedString = "----"
 
         newInstanceWithState.linkedDatarefs = baroLinkedDatarefs
+        newInstanceWithState.panelTitle = newPanelTitle
         newInstanceWithState.descriptor = newDescriptor
 
         setmetatable(newInstanceWithState, self)

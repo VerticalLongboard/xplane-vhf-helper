@@ -20,12 +20,18 @@ do
     end
 
     Globals.OVERRIDE(VhfFrequencySubPanel.new)
-    function VhfFrequencySubPanel:new(newValidator, newFirstVhfLinkedDataref, newSecondVhfLinkedDataref, newDescriptor)
+    function VhfFrequencySubPanel:new(
+        newValidator,
+        newFirstVhfLinkedDataref,
+        newSecondVhfLinkedDataref,
+        newPanelTitle,
+        newDescriptor)
         local newInstanceWithState = NumberSubPanel:new(newValidator)
 
         newInstanceWithState.Constants.FullyPaddedFreqString = "---.---"
 
         newInstanceWithState.linkedDatarefs = {newFirstVhfLinkedDataref, newSecondVhfLinkedDataref}
+        newInstanceWithState.panelTitle = newPanelTitle
         newInstanceWithState.descriptor = newDescriptor
 
         setmetatable(newInstanceWithState, self)

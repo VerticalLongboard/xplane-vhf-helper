@@ -3,7 +3,7 @@ do
     FlexibleLength1DSpring = {
         Constants = {
             Epsilon = 0.0001,
-            MaxDt = 0.0167
+            MaxDt = 1 / 30.0
         }
     }
 
@@ -25,6 +25,10 @@ do
 
     function FlexibleLength1DSpring:getCurrentPosition()
         return self.currentPosition
+    end
+
+    function FlexibleLength1DSpring:overrideCurrentPosition(newPosition)
+        self.currentPosition = newPosition
     end
 
     function FlexibleLength1DSpring:moveSpring(dt)

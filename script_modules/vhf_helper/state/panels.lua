@@ -13,6 +13,7 @@ M.bootstrap = function()
         Validation.comFrequencyValidator,
         Datarefs.comLinkedDatarefs[1],
         Datarefs.comLinkedDatarefs[2],
+        "COM",
         "COM"
     )
     M.navFrequencyPanel =
@@ -20,6 +21,7 @@ M.bootstrap = function()
         Validation.navFrequencyValidator,
         Datarefs.navLinkedDatarefs[1],
         Datarefs.navLinkedDatarefs[2],
+        "NAV",
         "NAV"
     )
     M.transponderCodePanel =
@@ -27,8 +29,9 @@ M.bootstrap = function()
         Validation.transponderCodeValidator,
         Datarefs.TransponderCodeLinkedDataref,
         Datarefs.TransponderModeLinkedDataref,
-        "XPDR"
+        "XPDR",
+        "TRANSPONDER"
     )
-    M.baroPanel = BaroSubPanel:new(Validation.baroValidator, Datarefs.baroLinkedDatarefs, "QNH")
+    M.baroPanel = BaroSubPanel:new(Validation.baroValidator, Datarefs.baroLinkedDatarefs, "QNH", "BARO")
 end
 return M

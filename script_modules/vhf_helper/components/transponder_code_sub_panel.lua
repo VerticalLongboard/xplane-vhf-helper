@@ -13,6 +13,7 @@ do
 		newValidator,
 		transponderCodeLinkedDataref,
 		transponderModeLinkedDataref,
+		newPanelTitle,
 		newDescriptor)
 		local newInstanceWithState = NumberSubPanel:new(newValidator)
 
@@ -21,6 +22,7 @@ do
 		newInstanceWithState.codeDataref = transponderCodeLinkedDataref
 		newInstanceWithState.modeDataref = transponderModeLinkedDataref
 		newInstanceWithState.descriptor = newDescriptor
+		newInstanceWithState.panelTitle = newPanelTitle
 
 		setmetatable(newInstanceWithState, self)
 		self.__index = self

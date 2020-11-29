@@ -35,8 +35,7 @@ TestHighLevelBehaviour = {
 		comPanelButtonTitle = "COM",
 		navPanelButtonTitle = "NAV",
 		transponderPanelButtonTitle = "XPDR",
-		baroPanelButtonTitle = "QNH",
-		SidePanelButtonTitle = "?"
+		baroPanelButtonTitle = "QNH"
 	}
 }
 
@@ -318,7 +317,7 @@ function TestHighLevelBehaviour:testTransmoderModeIsSwitched()
 end
 
 function TestHighLevelBehaviour:testSideWindowOpensAndRendersCorrectly()
-	self:_pressButton(self.Constants.SidePanelButtonTitle)
+	self:_openSidePanel()
 
 	TRACK_ISSUE("Imgui", "creating a window while rendering", "Wait one frame")
 	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
@@ -330,8 +329,16 @@ function TestHighLevelBehaviour:testSideWindowOpensAndRendersCorrectly()
 	)
 end
 
+function TestHighLevelBehaviour:_openSidePanel()
+	if (vhfHelperPackageExport.test.vhfHelperSideWindow:isVisible()) then
+		self:_pressButton(vhfHelperPackageExport.test.vhfHelperMainWindow.Constants.SidePanelVisibleButtonTitle)
+	else
+		self:_pressButton(vhfHelperPackageExport.test.vhfHelperMainWindow.Constants.SidePanelHiddenButtonTitle)
+	end
+end
+
 function TestHighLevelBehaviour:testSideWindowMulticrewSupportShowsUpInDefaultState()
-	self:_pressButton(self.Constants.SidePanelButtonTitle)
+	self:_openSidePanel()
 	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
 	self:_assertStringShowsUp(
 		vhfHelperPackageExport.test.vhfHelperSideWindow.Constants.MulticrewStateToMessage[

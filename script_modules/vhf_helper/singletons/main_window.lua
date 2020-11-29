@@ -24,7 +24,13 @@ end
 
 local vhfHelperMainWindowSingleton
 do
-    vhfHelperMainWindow = {Constants = {defaultWindowName = Globals.readableScriptName}}
+    vhfHelperMainWindow = {
+        Constants = {
+            defaultWindowName = Globals.readableScriptName,
+            SidePanelVisibleButtonTitle = "<",
+            SidePanelHiddenButtonTitle = ">"
+        }
+    }
 
     function vhfHelperMainWindow:_reset()
         self.window = nil
@@ -140,7 +146,7 @@ do
         )
 
         imgui.SameLine()
-        imgui.Dummy(1.0, 0.0)
+        imgui.Dummy(5.0, 0.0)
         imgui.SameLine()
         self:_renderSidePanelButton()
 
@@ -148,10 +154,17 @@ do
     end
 
     function vhfHelperMainWindow:_renderSidePanelButton()
+        local sidePanelButtonTitle = nil
+        if (vhfHelperSideWindow:isVisible()) then
+            sidePanelButtonTitle = vhfHelperMainWindow.Constants.SidePanelVisibleButtonTitle
+        else
+            sidePanelButtonTitle = vhfHelperMainWindow.Constants.SidePanelHiddenButtonTitle
+        end
+
         if (vhfHelperSideWindow:areAnyNotificationsPending()) then
             if
                 (Globals.ImguiUtils.renderButtonWithColors(
-                    "?",
+                    sidePanelButtonTitle,
                     Globals.Colors.black,
                     Utilities.getBlinkingColor(0xFFFFFFFF, 0.4, 5.0),
                     Globals.Colors.white,
@@ -161,7 +174,7 @@ do
                 self.toggleSideWindowSoon = true
             end
         else
-            if (imgui.Button("?")) then
+            if (imgui.Button(sidePanelButtonTitle)) then
                 self.toggleSideWindowSoon = true
             end
         end
@@ -176,11 +189,12 @@ do
 
     function vhfHelperMainWindow:_renderPanelButton(panel, enabled)
         Globals.ImguiUtils.renderActiveInactiveButton(
-            panel.descriptor,
+            panel.panelTitle,
             self.currentPanel == panel,
             enabled,
             function()
                 self.currentPanel = panel
+                self.currentPanel:show()
             end
         )
     end

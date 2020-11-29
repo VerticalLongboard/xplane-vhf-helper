@@ -138,7 +138,7 @@ do
             )
         )
 
-        local manuallyUpdatedVersionNumberDontUseForTooLong = "v1.0.24"
+        local manuallyUpdatedVersionNumberDontUseForTooLong = "v1.0.25"
         TRACK_ISSUE(
             "Tech Debt",
             ("Add version number to build. Currently, manually set version=%s"):format(
@@ -183,6 +183,10 @@ do
             vhfHelperCompatibilityManager:getPlaneCompatibilityIdString()
         )
         return urlFirstPart .. diagnosticInfo
+    end
+
+    function vhfHelperSideWindow:isVisible()
+        return self.window ~= nil
     end
 
     function vhfHelperSideWindow:bootstrap()
