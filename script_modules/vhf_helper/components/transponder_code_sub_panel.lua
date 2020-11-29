@@ -96,10 +96,12 @@ do
 		imgui.PushStyleVar_2(imgui.constant.StyleVar.FramePadding, 0.0, 0.0)
 
 		imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.greyText)
-		imgui.TextUnformatted("  " .. self.descriptor .. "  ")
+		imgui.SetWindowFontScale(0.5 * globalFontScale)
+		imgui.TextUnformatted("\n   TRANSPONDER ")
 		imgui.PopStyleColor()
 
 		imgui.SameLine()
+		imgui.SetWindowFontScale(1.0 * globalFontScale)
 		self:_pushBlinkingCurrentValueColor(self.codeDataref)
 
 		imgui.TextUnformatted(
@@ -138,14 +140,11 @@ do
 		imgui.TextUnformatted(" ")
 		imgui.Separator()
 
+		imgui.TextUnformatted("        ")
+
 		imgui.SetWindowFontScale(1.0 * globalFontScale)
-
-		imgui.TextUnformatted("New " .. self.descriptor .. "     ")
-
 		Globals.ImguiUtils.pushNextValueColor(nextValueIsSettable)
-
 		imgui.SameLine()
-
 		local paddedString = self.enteredValue .. self.Constants.FullyPaddedString:sub(string.len(self.enteredValue) + 1, 4)
 		imgui.TextUnformatted(paddedString)
 

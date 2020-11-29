@@ -140,12 +140,9 @@ do
         imgui.Dummy(0.0, 3.0)
         imgui.Separator()
 
-        imgui.SetWindowFontScale(1.0 * globalFontScale)
-
-        imgui.TextUnformatted("New " .. self.descriptor .. "     ")
+        imgui.TextUnformatted("        ")
 
         Globals.ImguiUtils.pushNextValueColor(nextValueIsSettable)
-        
         imgui.SameLine()
         local paddedString = nil
         local firstDigit = self.enteredValue:sub(1, 1)

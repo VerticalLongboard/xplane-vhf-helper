@@ -66,4 +66,13 @@ M.IO.open = function(ioPath, mode)
     return io.open(ioPath, mode)
 end
 
+TRACK_ISSUE = TRACK_ISSUE or function(component, description, workaround)
+    end
+
+MULTILINE_TEXT = MULTILINE_TEXT or function(...)
+    end
+
+TRIGGER_ISSUE_AFTER_TIME = TRIGGER_ISSUE_AFTER_TIME or function(...)
+    end
+
 return M

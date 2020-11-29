@@ -9,15 +9,6 @@ local Globals = {
     sidePanelName = "VR Radio Helper Feedback and Settings"
 }
 
-TRACK_ISSUE = TRACK_ISSUE or function(component, description, workaround)
-    end
-
-MULTILINE_TEXT = MULTILINE_TEXT or function(...)
-    end
-
-TRIGGER_ISSUE_AFTER_TIME = TRIGGER_ISSUE_AFTER_TIME or function(...)
-    end
-
 TRACK_ISSUE(
     "FlyWithLua",
     "The close function is called asynchronously (when clicking the red close button) so quickly closing and opening the panel will close it again quickly after.",
@@ -225,8 +216,6 @@ do
         imgui.PushStyleColor(imgui.constant.Col.ButtonActive, 0xFF222222)
         imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, 0xFF222222)
     end
-
-  
 
     ImguiUtils.pushSwitchButtonColors = function(nextValueIsSettable)
         if (nextValueIsSettable) then
