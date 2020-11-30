@@ -75,4 +75,7 @@ MULTILINE_TEXT = MULTILINE_TEXT or function(...)
 TRIGGER_ISSUE_AFTER_TIME = TRIGGER_ISSUE_AFTER_TIME or function(...)
     end
 
+TRIGGER_ISSUE_IF = TRIGGER_ISSUE_IF or function(conditition)
+    end
+
 return M

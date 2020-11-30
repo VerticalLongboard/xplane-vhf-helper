@@ -138,16 +138,22 @@ do
             )
         )
 
-        local manuallyUpdatedVersionNumberDontUseForTooLong = "v1.0.25"
-        TRACK_ISSUE(
-            "Tech Debt",
-            ("Add version number to build. Currently, manually set version=%s"):format(
-                manuallyUpdatedVersionNumberDontUseForTooLong
-            )
-        )
+        local buildTag = "UNKNOWN"
+        local buildCommitHash = "UNKNOWN"
+        local buildInfoPath = SCRIPT_DIRECTORY .. "..\\modules\\xplane-vr-radio-helper\\"
+        local buildTagPath = buildInfoPath .. "release_tag.txt"
+        if (Utilities.fileExists(buildTagPath)) then
+            buildTag = Utilities.readAllContentFromFile(buildTagPath):gsub("\n", "")
+        end
+
+        local buildCommitHashPath = buildInfoPath .. "release_commit_hash.txt"
+        if (Utilities.fileExists(buildCommitHashPath)) then
+            buildCommitHash = Utilities.readAllContentFromFile(buildCommitHashPath):gsub("\n", "")
+        end
+
         self.UpdatesBlob = InlineButtonBlob:new()
         self.UpdatesBlob:addTextWithoutNewline(
-            ("You are using VR Radio Helper %s"):format(manuallyUpdatedVersionNumberDontUseForTooLong)
+            ("You are using VR Radio Helper %s-%s"):format(buildTag, buildCommitHash)
         )
         self.UpdatesBlob:addNewline()
         self.UpdatesBlob:addTextWithoutNewline("For news and updates, see the official Github page (click link):")
