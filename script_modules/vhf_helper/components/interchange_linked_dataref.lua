@@ -69,6 +69,7 @@ do
             "Make that a notification and show an internal error. Multicrew will not work like that.",
             "A notification would't help anyway. Leave it in logs for now."
         )
+        TRACK_ISSUE("Tech Debt", "Use this function: get_DataRef_binding")
         TRACK_ISSUE(
             "FlyWithLua",
             MULTILINE_TEXT(

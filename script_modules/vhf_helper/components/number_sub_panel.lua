@@ -50,6 +50,7 @@ do
 
     function NumberSubPanel:show()
         for _, spring in ipairs(self.buttonStyleSprings) do
+            logMsg(spring)
             spring:overrideCurrentPosition(0.0)
             spring:setTarget(0.0)
         end

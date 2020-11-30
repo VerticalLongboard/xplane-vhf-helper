@@ -217,6 +217,13 @@ do
         imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, 0xFF222222)
     end
 
+    ImguiUtils.popDisabledButtonColors = function()
+        imgui.PopStyleColor()
+        imgui.PopStyleColor()
+        imgui.PopStyleColor()
+        imgui.PopStyleColor()
+    end
+
     ImguiUtils.pushSwitchButtonColors = function(nextValueIsSettable)
         if (nextValueIsSettable) then
             imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.black)
