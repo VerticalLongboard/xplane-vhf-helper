@@ -80,30 +80,42 @@ do
 
         self.enteredValue = Globals.emptyString
     end
-
+    Globals._NEWFUNC(VhfFrequencySubPanel._renderTinyFontLine)
     function VhfFrequencySubPanel:_renderTinyFontLine(leftText, rightText)
+        local text = nil
         local tinyFontLinePadding = 34 - leftText:len() - rightText:len()
-        local padWhitespace = ""
-        for i = 1, tinyFontLinePadding do
-            padWhitespace = padWhitespace .. " "
+        if (tinyFontLinePadding >= 0) then
+            local padWhitespace = ""
+            for i = 1, tinyFontLinePadding do
+                padWhitespace = padWhitespace .. " "
+                text = ("%s%s%s"):format(leftText, padWhitespace, rightText)
+            end
+        else
+            text = "<<<LINE TOO LONG>>>"
         end
+
         imgui.SetWindowFontScale(0.5 * globalFontScale)
         imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.greyText)
-        imgui.TextUnformatted(leftText .. padWhitespace .. rightText)
+        imgui.TextUnformatted(text)
         imgui.PopStyleColor()
     end
 
+    Globals._NEWFUNC(VhfFrequencySubPanel._getFullLinkedValueString)
+    function VhfFrequencySubPanel:_getFullLinkedValueString(vhfNumber)
+        local cleanValueString = self:_getCurrentCleanLinkedValueString(vhfNumber)
+        return cleanValueString:sub(1, 3) .. Globals.decimalCharacter .. cleanValueString:sub(4, 7)
+    end
+
+    Globals._NEWFUNC(VhfFrequencySubPanel._renderValueLine)
     function VhfFrequencySubPanel:_renderValueLine()
         imgui.SetWindowFontScale(1.0 * globalFontScale)
 
-        local vhf1String = self:_getCurrentCleanLinkedValueString(1)
-        vhf1String = vhf1String:sub(1, 3) .. Globals.decimalCharacter .. vhf1String:sub(4, 7)
+        local vhf1String = self:_getFullLinkedValueString(1)
         if (self.inputPanelValidator:validate(vhf1String) == nil) then
             vhf1String = self.Constants.FullyPaddedFreqString
         end
 
-        local vhf2String = self:_getCurrentCleanLinkedValueString(2)
-        vhf2String = vhf2String:sub(1, 3) .. Globals.decimalCharacter .. vhf2String:sub(4, 7)
+        local vhf2String = self:_getFullLinkedValueString(2)
         if (self.inputPanelValidator:validate(vhf2String) == nil) then
             vhf2String = self.Constants.FullyPaddedFreqString
         end

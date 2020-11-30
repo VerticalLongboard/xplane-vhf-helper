@@ -5,6 +5,11 @@ local ComFrequencySubPanel
 do
     ComFrequencySubPanel = VhfFrequencySubPanel:new()
 
+    Globals.OVERRIDE(ComFrequencySubPanel.show)
+    function ComFrequencySubPanel:show()
+        VhfFrequencySubPanel.show(self)
+    end
+
     Globals._NEWFUNC(ComFrequencySubPanel.overrideEnteredValue)
     function ComFrequencySubPanel:overrideEnteredValue(newValue)
         self.enteredValue = newValue
@@ -50,6 +55,91 @@ do
         if (self.linkedDatarefs[vhfNumber]:getLinkedValue() == nextFrequencyAsNumber) then
             VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
         end
+    end
+
+    function ComFrequencySubPanel:_getInfoForFrequency(fullFrequencyString)
+        if (VatsimbriefHelperPublicInterface ~= nil and VatsimbriefHelperPublicInterface.getInterfaceVersion() == 1) then
+            local atcInfos =
+                VatsimbriefHelperPublicInterface.getAtcStationsForFrequencyClosestFirst(fullFrequencyString)
+            if (atcInfos == nil or #atcInfos == 0) then
+                local lastDigit = fullFrequencyString:sub(7, 7)
+                if (lastDigit == "5") then
+                    fullFrequencyString = Globals.replaceCharacter(fullFrequencyString, 7, "0")
+                elseif (lastDigit == "0") then
+                    fullFrequencyString = Globals.replaceCharacter(fullFrequencyString, 7, "5")
+                end
+                atcInfos = VatsimbriefHelperPublicInterface.getAtcStationsForFrequencyClosestFirst(fullFrequencyString)
+                if (atcInfos == nil or #atcInfos == 0) then
+                    return nil
+                end
+            end
+            return atcInfos[1]
+        else
+            return nil
+        end
+    end
+
+    function ComFrequencySubPanel:_getShortReadableStationName(longReadableName)
+        local firstW = longReadableName:find("%w")
+        if (firstW == nil) then
+            return ""
+        end
+
+        local i = firstW
+        local lastNameCharacter = i
+        while i <= #longReadableName do
+            local char = longReadableName:sub(i, i)
+            local matchesW = char:match("%w")
+            local matchesWhitespace = char:match("%s")
+            if (matchesW) then
+                lastNameCharacter = i
+            end
+            if (matchesW or matchesWhitespace) then
+                i = i + 1
+            else
+                break
+            end
+        end
+
+        return longReadableName:sub(firstW, lastNameCharacter)
+    end
+
+    Globals.OVERRIDE(ComFrequencySubPanel.renderToCanvas)
+    function ComFrequencySubPanel:renderToCanvas()
+        TRACK_ISSUE("Tech Debt", "Get info only if local linked variable changed.")
+        imgui.SetWindowFontScale(1.0 * globalFontScale)
+
+        imgui.PushStyleVar_2(imgui.constant.StyleVar.ItemSpacing, 0.0, 2.0)
+        imgui.PushStyleVar_2(imgui.constant.StyleVar.FramePadding, 0.0, 0.0)
+
+        local atcStationId1 = self.descriptor .. "1"
+        local atcStationName1 = ""
+        local atcStationId2 = self.descriptor .. "2"
+        local atcStationName2 = ""
+
+        local atcInfo1 = self:_getInfoForFrequency(self:_getFullLinkedValueString(1))
+        local atcInfo2 = self:_getInfoForFrequency(self:_getFullLinkedValueString(2))
+
+        if (atcInfo1 ~= nil) then
+            atcStationId1 = atcInfo1.id
+            atcStationName1 = self:_getShortReadableStationName(atcInfo1.readableName)
+        end
+
+        if (atcInfo2 ~= nil) then
+            atcStationId2 = atcInfo2.id
+            atcStationName2 = self:_getShortReadableStationName(atcInfo2.readableName)
+        end
+
+        self:_renderTinyFontLine(atcStationName1, atcStationName2)
+        self:_renderValueLine()
+        self:_renderTinyFontLine(atcStationId1, atcStationId2)
+        self:_renderNextValueLine()
+
+        imgui.PopStyleVar()
+        imgui.PopStyleVar()
+
+        imgui.Separator()
+        self:_renderNumberPanel()
     end
 end
 

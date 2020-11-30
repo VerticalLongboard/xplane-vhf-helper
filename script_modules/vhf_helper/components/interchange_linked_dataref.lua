@@ -59,6 +59,10 @@ do
         return newInstanceWithState
     end
 
+    function InterchangeLinkedDataref:setOnLinkedChangedFunction(newOnLinkedChangeFunction)
+        self.onLinkedChangeFunction = newOnLinkedChangeFunction
+    end
+
     function InterchangeLinkedDataref:getInterchangeDatarefName()
         return self.interchangeDatarefName
     end
@@ -126,7 +130,9 @@ do
         local currentLinkedValue = self:getLinkedValue()
         if (currentLinkedValue ~= self.lastLinkedValue) then
             self.lastLinkedChangeTimestamp = LuaPlatform.Time.now()
-            self.onLinkedChangeFunction(self, currentLinkedValue)
+            if (self.onLinkedChangeFunction) then
+                self.onLinkedChangeFunction(self, currentLinkedValue)
+            end
             self.lastLinkedValue = currentLinkedValue
         end
     end

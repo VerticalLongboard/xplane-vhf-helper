@@ -16,6 +16,7 @@ flyWithLuaStub:suppressLogMessagesContaining(
 
 require("shared_components.test_suite")
 
+require("test_com_frequency_panel")
 require("multicrew.test_multicrew")
 require("test_speak_nato")
 require("test_public_interface")

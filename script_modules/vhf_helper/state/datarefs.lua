@@ -56,6 +56,10 @@ local function isFrequencyValueValid(ild, validator, newValue)
     return true
 end
 
+local onComLinkedChanged = function(ild, newValue)
+    VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
+end
+
 local onNotRequiredCallbackFunction = function(ild, newValue)
 end
 
@@ -83,10 +87,6 @@ local onInterchangeTransponderCodeChanged = function(ild, newValue)
         end
         SpeakNato.speakTransponderCode(codeString)
     end
-end
-
-local onComLinkedChanged = function(ild, newValue)
-    VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
 end
 
 local isNewBarometerValid = function(ild, newValue)
