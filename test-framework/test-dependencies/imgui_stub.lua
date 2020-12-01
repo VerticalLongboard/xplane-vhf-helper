@@ -45,9 +45,13 @@ imgui = {
         Separator = "Separator",
         InputText = "InputText",
         SliderFloat = "SliderFloat",
-        Checkbox = "Checkbox"
+        Checkbox = "Checkbox",
+        SetCursorPos = "SetCursorPos"
     },
     LastFrameCommandList = {},
+    SetCursorPos = function(x, y)
+        table.insert(imgui.LastFrameCommandList, {type = imgui.Constants.SetCursorPos})
+    end,
     Checkbox = function(title, initialValue)
         imgui:checkStringForWatchStrings(title)
         table.insert(imgui.LastFrameCommandList, {type = imgui.Constants.Checkbox, description = title})

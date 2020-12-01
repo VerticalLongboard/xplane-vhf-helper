@@ -1,5 +1,5 @@
 local Globals = require("vhf_helper.globals")
-local NumberValidator = require("vhf_helper.components.number_validator")
+local NumberValidator = require("vhf_helper.components.validators.number_validator")
 
 local FrequencyValidator
 do

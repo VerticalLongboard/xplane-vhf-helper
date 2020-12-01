@@ -1,4 +1,4 @@
-local FrequencyValidator = require("vhf_helper.components.frequency_validator")
+local FrequencyValidator = require("vhf_helper.components.validators.frequency_validator")
 local Globals = require("vhf_helper.globals")
 
 local NavFrequencyValidator

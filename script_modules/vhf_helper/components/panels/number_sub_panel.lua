@@ -1,4 +1,5 @@
 local Globals = require("vhf_helper.globals")
+local SubPanel = require("vhf_helper.components.panels.sub_panel")
 local Validation = require("vhf_helper.state.validation")
 local LuaPlatform = require("lua_platform")
 local Utilities = require("shared_components.utilities")
@@ -6,11 +7,11 @@ local FlexibleLength1DSpring = require("shared_components.flexible_length_1d_spr
 
 local NumberSubPanel
 do
-    NumberSubPanel = {
-        Constants = {
-            ClearButtonTitle = "Clr",
-            BackspaceButtonTitle = "Del"
-        }
+    NumberSubPanel = SubPanel:new()
+
+    NumberSubPanel.Constants = {
+        ClearButtonTitle = "Clr",
+        BackspaceButtonTitle = "Del"
     }
 
     function NumberSubPanel:new(newValidator)
@@ -44,10 +45,7 @@ do
         self.enteredValue = Globals.emptyString
     end
 
-    function NumberSubPanel:renderToCanvas()
-        assert(nil)
-    end
-
+    Globals.OVERRIDE(NumberSubPanel.show)
     function NumberSubPanel:show()
         for _, spring in ipairs(self.buttonStyleSprings) do
             logMsg(spring)

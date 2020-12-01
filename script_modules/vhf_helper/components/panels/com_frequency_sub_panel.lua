@@ -1,5 +1,5 @@
 local Globals = require("vhf_helper.globals")
-local VhfFrequencySubPanel = require("vhf_helper.components.vhf_frequency_sub_panel")
+local VhfFrequencySubPanel = require("vhf_helper.components.panels.vhf_frequency_sub_panel")
 local StationInfo = require("vhf_helper.state.station_info")
 
 local ComFrequencySubPanel

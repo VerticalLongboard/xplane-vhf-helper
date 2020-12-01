@@ -10,7 +10,8 @@ flyWithLuaStub:suppressLogMessagesContaining(
         "VR Radio Helper: Using '",
         "Plane Compatibility: ",
         "Speaking string=",
-        "VR Radio Helper: Saving configuration"
+        "VR Radio Helper: Saving configuration",
+        "InitializationItem name="
     }
 )
 

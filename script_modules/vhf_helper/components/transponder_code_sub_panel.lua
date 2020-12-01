@@ -1,6 +1,6 @@
 local Globals = require("vhf_helper.globals")
 local Datarefs = require("vhf_helper.state.datarefs")
-local NumberSubPanel = require("vhf_helper.components.number_sub_panel")
+local NumberSubPanel = require("vhf_helper.components.panels.number_sub_panel")
 local SpeakNato = require("vhf_helper.components.speak_nato")
 local Config = require("vhf_helper.state.config")
 
