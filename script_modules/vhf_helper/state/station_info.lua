@@ -7,7 +7,7 @@ TRACK_ISSUE(
         "not match any ATC info because there's nothing downloaded yet. That only happens when reloading",
         "the scripts though and when changing the frequency the next time, it will just work again."
     ),
-    "Accept that developer inconvenience for now."
+    "Accept that developer inconvenience for now. Added a Refresh button to side panel."
 )
 
 local function retrieveInfoForAlternateFrequency(fullFrequencyString)
@@ -84,6 +84,5 @@ M.bootstrap = function()
     end
     M.getShortReadableStationName = getShortReadableStationName
     M.isVatsimbriefHelperAvailable = isVatsimbriefHelperAvailable
-    
 end
 return M

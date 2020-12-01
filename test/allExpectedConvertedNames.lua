@@ -96,6 +96,7 @@ local allConvertedNames = {
     "ARTURO MERINO BENITE AIRPORT ATIS INFORMATION QUEBEC",
     "Aeroparque Tower",
     "Perfect Tower",
-    "Torre"
+    "Torre",
+    "TOWERz"
 }
 return allConvertedNames

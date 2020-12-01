@@ -31,3 +31,10 @@ KNOWN_ISSUE(
     "Use the TogglePanel command (and map it to a key) instead of the macro.",
     {"FlyWithLua macro"}
 )
+
+KNOWN_ISSUE(
+    "VR Radio Helper",
+    "When restarting FlyWithLua, ATC information is not immediately shown because the download in Vatsimbrief Helper has not yet finished.",
+    "Use the Refresh button in the side panel to refresh ATC data manually once.",
+    {"Vatsimbrief Helper", "ATC"}
+)

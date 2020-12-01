@@ -129,8 +129,12 @@ do
                 stationInfoColor = Globals.Colors.a320Blue
             end
 
-            self.VatsimDataBlob:addColorTextWithoutNewline("Vatsimbrief Helper is available. ", stationInfoColor)
+            self.VatsimDataBlob:addColorTextWithoutNewline(
+                "Vatsimbrief Helper is installed and available. ",
+                stationInfoColor
+            )
 
+            TRACK_ISSUE("Interface", "Vatsimbrief Helper does not yet have an event to advertise new ATC data having arrived. When restarting both scripts in FlyWithLua, no ATC info is available until switching to another frequency", "Mention that this is a known issue.")
             self.VatsimDataBlob:addCustomCallbackButton(
                 "Refresh Information Now",
                 function(buttonTitle)
@@ -142,8 +146,19 @@ do
                 stationInfoColor = Globals.Colors.a320Orange
             end
             self.VatsimDataBlob:addColorTextWithoutNewline(
-                "Vatsimbrief Helper is not installed or outdated.",
+                "Vatsimbrief Helper is not installed or incompatible.",
                 stationInfoColor
+            )
+            self.VatsimDataBlob:addNewline()
+            self.VatsimDataBlob:addColorTextWithoutNewline(
+                "Install the newest version if you'd like to see ATC station info.",
+                stationInfoColor
+            )
+            self.VatsimDataBlob:addNewline()
+            ClickableFeedbackBrowserLink:new():addLinkToBlob(
+                self.VatsimDataBlob,
+                "Vatsimbrief Helper: https://github.com/RedXi/vatsimbrief-helper/",
+                "https://github.com/RedXi/vatsimbrief-helper"
             )
         end
 
@@ -166,9 +181,10 @@ do
             self.PlaneCompatibilityBlob,
             "Compatibility: https://github.com/VerticalLongboard/xplane-vhf-helper/...",
             self:_getUrlWithDiagnosticParams(
-                ("https://github.com/VerticalLongboard/xplane-vhf-helper/issues/new?labels=PlaneCompatibility&title=New Plane Compatibility Report for ICAO %s&body=Your current plane is treated as a default plane. Since all features are enabled, you may have experienced issues. Please describe the behaviour you observed (Transponder modes don't match, Frequencies don't show up, COM can't be set etc.).\nThanks a lot for taking your time!\n\n**---YOUR REPORT HERE---**"):format(
-                    PLANE_ICAO
-                )
+                ("https://github.com/VerticalLongboard/xplane-vhf-helper/issues/new?labels=PlaneCompatibility&title=New Plane Compatibility Report for ICAO %s" ..
+                    "&body=Your current plane is treated as a default plane. Since all features are enabled, you may have experienced issues." ..
+                        " Please describe the behaviour you observed (Transponder modes don't match, Frequencies don't show up, COM can't be set etc.).\n" ..
+                            "Thanks a lot for taking your time!\n\n**---YOUR REPORT HERE---**"):format(PLANE_ICAO)
             )
         )
 
@@ -190,7 +206,7 @@ do
             ("You are using VR Radio Helper %s-%s"):format(buildTag, buildCommitHash)
         )
         self.UpdatesBlob:addNewline()
-        self.UpdatesBlob:addTextWithoutNewline("For news and updates, see the official Github page (click link):")
+        self.UpdatesBlob:addTextWithoutNewline("For news and updates see the official Github page (click link):")
         self.UpdatesBlob:addNewline()
         ClickableFeedbackBrowserLink:new():addLinkToBlob(
             self.UpdatesBlob,
@@ -302,6 +318,7 @@ do
         self:show(self.window == nil)
     end
 
+    TRACK_ISSUE("Tech Debt", "Move static panel text to blobs.")
     function vhfHelperSideWindow:renderToCanvas()
         Globals.pushDefaultsToImguiStack()
 
@@ -345,8 +362,11 @@ do
 
         imgui.TextUnformatted("")
         self:_renderSectionHeader("ATC Station Information")
-
         self.VatsimDataBlob:renderToCanvas()
+
+        imgui.TextUnformatted("")
+        self:_renderSectionHeader("Updates")
+        self.UpdatesBlob:renderToCanvas()
 
         imgui.TextUnformatted("")
         self:_renderSectionHeader("Plane Compatibility")
@@ -385,10 +405,6 @@ do
         imgui.TextUnformatted("")
         self:_renderSectionHeader("Feedback :-)")
         self.FeedbackLinkBlob:renderToCanvas()
-
-        imgui.TextUnformatted("")
-        self:_renderSectionHeader("Updates")
-        self.UpdatesBlob:renderToCanvas()
 
         Globals.popDefaultsFromImguiStack()
     end
