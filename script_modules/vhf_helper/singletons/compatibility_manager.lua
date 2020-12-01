@@ -57,7 +57,7 @@ do
             logMsg(("Plane Compatibility: Using default plane=%s"):format(self.currentConfiguration.readableName))
         end
 
-        Notifications.notificationManager:postOnce(self:_getCompatibilityUpdateNotificationId())
+        Notifications.manager:postOnce(self:_getCompatibilityUpdateNotificationId())
     end
 
     function vhfHelperCompatibilityManager:_getCompatibilityUpdateNotificationId()

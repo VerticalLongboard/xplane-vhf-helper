@@ -5,6 +5,8 @@ local Utilities = require("shared_components.utilities")
 local InlineButtonBlob = require("shared_components.inline_button_blob")
 local Notifications = require("vhf_helper.state.notifications")
 local LuaPlatform = require("lua_platform")
+local StationInfo = require("vhf_helper.state.station_info")
+local Panels = require("vhf_helper.state.panels")
 
 TRACK_ISSUE(
     "FlyWithLua",
@@ -63,7 +65,8 @@ do
             defaultWindowName = Globals.sidePanelName
         },
         Notifications = {
-            HaveALookAtMe = "SideWindow_HaveALookAtMe"
+            HaveALookAtMe = "SideWindow_HaveALookAtMe",
+            StationInfoAvailable = "SideWindow_StationInfoAvailable"
         }
     }
 
@@ -73,13 +76,16 @@ do
 
     function vhfHelperSideWindow:_createUiItems()
         self.pendingMulticrewNotification =
-            Notifications.notificationManager:isPending(vhfHelperMulticrewManager.Notifications.StateChange)
+            Notifications.manager:isPending(vhfHelperMulticrewManager.Notifications.StateChange)
         self.pendingCompatibilityNotification =
-            Notifications.notificationManager:isPending(vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate)
+            Notifications.manager:isPending(vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate)
+        self.pendingStationInfoNotification =
+            Notifications.manager:isPending(vhfHelperSideWindow.Notifications.StationInfoAvailable)
 
-        Notifications.notificationManager:acknowledge(vhfHelperSideWindow.Notifications.HaveALookAtMe)
-        Notifications.notificationManager:acknowledge(vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate)
-        Notifications.notificationManager:acknowledge(vhfHelperMulticrewManager.Notifications.StateChange)
+        Notifications.manager:acknowledge(vhfHelperSideWindow.Notifications.HaveALookAtMe)
+        Notifications.manager:acknowledge(vhfHelperSideWindow.Notifications.StationInfoAvailable)
+        Notifications.manager:acknowledge(vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate)
+        Notifications.manager:acknowledge(vhfHelperMulticrewManager.Notifications.StateChange)
 
         vhfHelperSideWindow.Constants.MulticrewStateToMessage = {}
         vhfHelperSideWindow.Constants.MulticrewStateToMessage[
@@ -112,6 +118,34 @@ do
             "You're almost ready, smartcopilot.cfg got patched a moment ago.\nRestart SmartCopilot and/or X-Plane!",
             Globals.Colors.a320Orange
         }
+
+        self.VatsimDataBlob = InlineButtonBlob:new()
+        local stationInfoColor = Globals.Colors.white
+
+        if (StationInfo.isVatsimbriefHelperAvailable()) then
+            if (self.pendingStationInfoNotification) then
+                stationInfoColor = Globals.Colors.a320Green
+            else
+                stationInfoColor = Globals.Colors.a320Blue
+            end
+
+            self.VatsimDataBlob:addColorTextWithoutNewline("Vatsimbrief Helper is available. ", stationInfoColor)
+
+            self.VatsimDataBlob:addCustomCallbackButton(
+                "Refresh Information Now",
+                function(buttonTitle)
+                    Panels.comFrequencyPanel:triggerStationInfoUpdate()
+                end
+            )
+        else
+            if (self.pendingStationInfoNotification) then
+                stationInfoColor = Globals.Colors.a320Orange
+            end
+            self.VatsimDataBlob:addColorTextWithoutNewline(
+                "Vatsimbrief Helper is not installed or outdated.",
+                stationInfoColor
+            )
+        end
 
         self.PlaneCompatibilityBlob = InlineButtonBlob:new()
         local compatColor = Globals.Colors.white
@@ -197,16 +231,18 @@ do
 
     function vhfHelperSideWindow:bootstrap()
         self:_reset()
-        Notifications.notificationManager:postOnce(vhfHelperSideWindow.Notifications.HaveALookAtMe)
+        Notifications.manager:postOnce(vhfHelperSideWindow.Notifications.HaveALookAtMe)
+        if (StationInfo.isVatsimbriefHelperAvailable()) then
+            Notifications.manager:postOnce(vhfHelperSideWindow.Notifications.StationInfoAvailable)
+        end
     end
 
     function vhfHelperSideWindow:areAnyNotificationsPending()
         if
-            (Notifications.notificationManager:isPending(vhfHelperSideWindow.Notifications.HaveALookAtMe) or
-                Notifications.notificationManager:isPending(
-                    vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate
-                ) or
-                Notifications.notificationManager:isPending(vhfHelperMulticrewManager.Notifications.StateChange))
+            (Notifications.manager:isPending(vhfHelperSideWindow.Notifications.HaveALookAtMe) or
+                Notifications.manager:isPending(vhfHelperSideWindow.Notifications.StationInfoAvailable) or
+                Notifications.manager:isPending(vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate) or
+                Notifications.manager:isPending(vhfHelperMulticrewManager.Notifications.StateChange))
          then
             return true
         end
@@ -230,7 +266,7 @@ do
             minHeightWithoutScrollbars = 300
         elseif (globalFontScaleDescriptor == "big") then
             minWidthWithoutScrollbars = 550
-            minHeightWithoutScrollbars = 500
+            minHeightWithoutScrollbars = 550
         else
             minWidthWithoutScrollbars = 100
             minHeightWithoutScrollbars = 100
@@ -306,6 +342,11 @@ do
         if (self.pendingMulticrewNotification) then
             imgui.PopStyleColor()
         end
+
+        imgui.TextUnformatted("")
+        self:_renderSectionHeader("ATC Station Information")
+
+        self.VatsimDataBlob:renderToCanvas()
 
         imgui.TextUnformatted("")
         self:_renderSectionHeader("Plane Compatibility")

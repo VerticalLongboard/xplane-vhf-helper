@@ -84,5 +84,6 @@ M.bootstrap = function()
     end
     M.getShortReadableStationName = getShortReadableStationName
     M.isVatsimbriefHelperAvailable = isVatsimbriefHelperAvailable
+    
 end
 return M

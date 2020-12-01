@@ -51,7 +51,7 @@ do
         end
 
         if (lastState == nil or self.state ~= lastState) then
-            Notifications.notificationManager:repost(self:getStateChangeNotificationId())
+            Notifications.manager:repost(self:getStateChangeNotificationId())
         end
 
         Config.Config:setValue("Multicrew", stateKey, self.state)
