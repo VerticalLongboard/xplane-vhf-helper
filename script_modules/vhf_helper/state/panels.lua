@@ -16,6 +16,7 @@ M.bootstrap = function()
         "COM",
         "COM"
     )
+    M.comFrequencyPanel:triggerStationInfoUpdate()
     M.navFrequencyPanel =
         NavFrequencySubPanel:new(
         Validation.navFrequencyValidator,

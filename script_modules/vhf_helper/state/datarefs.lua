@@ -4,6 +4,7 @@ local InterchangeLinkedDataref = require("vhf_helper.components.interchange_link
 local SpeakNato = require("vhf_helper.components.speak_nato")
 local Config = require("vhf_helper.state.config")
 local Utilities = require("shared_components.utilities")
+local StationInfo = require("vhf_helper.state.station_info")
 
 TRACK_ISSUE(
     "FlyWithLua",
@@ -58,6 +59,10 @@ end
 
 local onComLinkedChanged = function(ild, newValue)
     VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
+
+    local valueString = tostring(newValue)
+    valueString = ("%s.%s"):format(valueString:sub(1, 3), valueString:sub(4, 6))
+    StationInfo.update(valueString)
 end
 
 local onNotRequiredCallbackFunction = function(ild, newValue)

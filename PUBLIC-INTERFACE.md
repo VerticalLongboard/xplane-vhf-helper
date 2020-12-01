@@ -1,14 +1,13 @@
-## VR Radio Helper Interface
+## VR Radio Helper Public Interface
 VR Radio Helper (formerly known as VHF Helper) offers a public API via a global `VHFHelperPublicInterface` while its panel is visible:
 ```text
-if (VHFHelperPublicInterface ~= nil) then
-	if (VHFHelperPublicInterface.getInterfaceVersion() == 2) then
-		-- Setup event listener
-		...
-		-- Call method on VHFHelperPublicInterface
-		...
-		
-	end
+if (VHFHelperPublicInterface ~= nil and VHFHelperPublicInterface.getInterfaceVersion() == 2) then
+  if () then
+    -- Setup event listener
+    ...
+    -- Call method on VHFHelperPublicInterface
+    ...	
+  end
 end
 ```
 
@@ -45,8 +44,8 @@ VR Radio Helper uses an Event Bus to emit any changes (even when its panel is no
 Use the `VHFHelperEventOnFrequencyChanged` event to listen:
 ```text
 function onFrequencyChanged()
-	-- Do something when frequencies change
-	...
+  -- Do something when frequencies change
+  ...
 end
 
 -- Start listening for changes

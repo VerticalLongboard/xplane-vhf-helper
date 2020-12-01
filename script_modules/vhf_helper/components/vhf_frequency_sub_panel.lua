@@ -83,6 +83,13 @@ do
     Globals._NEWFUNC(VhfFrequencySubPanel._renderTinyFontLine)
     function VhfFrequencySubPanel:_renderTinyFontLine(leftText, rightText)
         local text = nil
+        if (leftText:len() > 16) then
+            leftText = ("%.13s..."):format(leftText)
+        end
+        if (rightText:len() > 16) then
+            rightText = ("%.13s..."):format(rightText)
+        end
+
         local tinyFontLinePadding = 34 - leftText:len() - rightText:len()
         if (tinyFontLinePadding >= 0) then
             local padWhitespace = ""
@@ -91,7 +98,7 @@ do
                 text = ("%s%s%s"):format(leftText, padWhitespace, rightText)
             end
         else
-            text = "<<<LINE TOO LONG>>>"
+            text = "<<<LINE STILL TOO LONG>>>"
         end
 
         imgui.SetWindowFontScale(0.5 * globalFontScale)

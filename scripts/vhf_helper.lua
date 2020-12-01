@@ -37,6 +37,7 @@ Globals.requireAllAndBootstrapInOrder(
         "vhf_helper.state.notifications",
         "vhf_helper.state.validation",
         "vhf_helper.state.datarefs",
+        "vhf_helper.state.station_info",
         "vhf_helper.state.panels",
         "vhf_helper.singletons.compatibility_manager",
         "vhf_helper.singletons.multicrew_manager",

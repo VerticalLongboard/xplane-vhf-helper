@@ -1,5 +1,6 @@
 local Globals = require("vhf_helper.globals")
 local VhfFrequencySubPanel = require("vhf_helper.components.vhf_frequency_sub_panel")
+local StationInfo = require("vhf_helper.state.station_info")
 
 local ComFrequencySubPanel
 do
@@ -14,6 +15,11 @@ do
     function ComFrequencySubPanel:overrideEnteredValue(newValue)
         self.enteredValue = newValue
         VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
+    end
+
+    function ComFrequencySubPanel:triggerStationInfoUpdate()
+        StationInfo.update(self:_getFullLinkedValueString(1))
+        StationInfo.update(self:_getFullLinkedValueString(2))
     end
 
     Globals.OVERRIDE(ComFrequencySubPanel.addCharacter)
@@ -57,77 +63,38 @@ do
         end
     end
 
-    function ComFrequencySubPanel:_getInfoForFrequency(fullFrequencyString)
-        if (VatsimbriefHelperPublicInterface ~= nil and VatsimbriefHelperPublicInterface.getInterfaceVersion() == 1) then
-            local atcInfos =
-                VatsimbriefHelperPublicInterface.getAtcStationsForFrequencyClosestFirst(fullFrequencyString)
-            if (atcInfos == nil or #atcInfos == 0) then
-                local lastDigit = fullFrequencyString:sub(7, 7)
-                if (lastDigit == "5") then
-                    fullFrequencyString = Globals.replaceCharacter(fullFrequencyString, 7, "0")
-                elseif (lastDigit == "0") then
-                    fullFrequencyString = Globals.replaceCharacter(fullFrequencyString, 7, "5")
-                end
-                atcInfos = VatsimbriefHelperPublicInterface.getAtcStationsForFrequencyClosestFirst(fullFrequencyString)
-                if (atcInfos == nil or #atcInfos == 0) then
-                    return nil
-                end
-            end
-            return atcInfos[1]
-        else
-            return nil
-        end
-    end
-
-    function ComFrequencySubPanel:_getShortReadableStationName(longReadableName)
-        local firstW = longReadableName:find("%w")
-        if (firstW == nil) then
-            return ""
-        end
-
-        local i = firstW
-        local lastNameCharacter = i
-        while i <= #longReadableName do
-            local char = longReadableName:sub(i, i)
-            local matchesW = char:match("%w")
-            local matchesWhitespace = char:match("%s")
-            if (matchesW) then
-                lastNameCharacter = i
-            end
-            if (matchesW or matchesWhitespace) then
-                i = i + 1
-            else
-                break
-            end
-        end
-
-        return longReadableName:sub(firstW, lastNameCharacter)
-    end
-
     Globals.OVERRIDE(ComFrequencySubPanel.renderToCanvas)
     function ComFrequencySubPanel:renderToCanvas()
-        TRACK_ISSUE("Tech Debt", "Get info only if local linked variable changed.")
         imgui.SetWindowFontScale(1.0 * globalFontScale)
 
         imgui.PushStyleVar_2(imgui.constant.StyleVar.ItemSpacing, 0.0, 2.0)
         imgui.PushStyleVar_2(imgui.constant.StyleVar.FramePadding, 0.0, 0.0)
 
-        local atcStationId1 = self.descriptor .. "1"
+        local atcStationId1 = nil
         local atcStationName1 = ""
-        local atcStationId2 = self.descriptor .. "2"
+        local atcStationId2 = nil
         local atcStationName2 = ""
 
-        local atcInfo1 = self:_getInfoForFrequency(self:_getFullLinkedValueString(1))
-        local atcInfo2 = self:_getInfoForFrequency(self:_getFullLinkedValueString(2))
+        if (StationInfo.isVatsimbriefHelperAvailable()) then
+            local atcInfo1 = StationInfo.getInfoForFrequency(self:_getFullLinkedValueString(1))
+            local atcInfo2 = StationInfo.getInfoForFrequency(self:_getFullLinkedValueString(2))
 
-        if (atcInfo1 ~= nil) then
-            atcStationId1 = atcInfo1.id
-            atcStationName1 = self:_getShortReadableStationName(atcInfo1.readableName)
-        end
+            if (atcInfo1 ~= nil) then
+                atcStationId1 = atcInfo1.id
+                atcStationName1 = atcInfo1.shortReadableName or ""
+            else
+                atcStationId1 = ("%s1: UNKNOWN"):format(self.descriptor)
+            end
 
-        if (atcInfo2 ~= nil) then
-            atcStationId2 = atcInfo2.id
-            atcStationName2 = self:_getShortReadableStationName(atcInfo2.readableName)
+            if (atcInfo2 ~= nil) then
+                atcStationId2 = atcInfo2.id
+                atcStationName2 = atcInfo2.shortReadableName or ""
+            else
+                atcStationId2 = ("%s2: UNKNOWN"):format(self.descriptor)
+            end
+        else
+            atcStationId1 = ("%s1"):format(self.descriptor)
+            atcStationId2 = ("%s2"):format(self.descriptor)
         end
 
         self:_renderTinyFontLine(atcStationName1, atcStationName2)

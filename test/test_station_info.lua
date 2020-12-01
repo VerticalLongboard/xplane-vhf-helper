@@ -1,6 +1,6 @@
 local allReadableNames = require("allReadableNames")
 local allExpectedConvertedNames = require("allExpectedConvertedNames")
-local ComFrequencySubPanel = require("vhf_helper.components.com_frequency_sub_panel")
+local StationInfo = require("vhf_helper.state.station_info")
 
 TestComFrequencyPanel = {}
 
@@ -8,7 +8,7 @@ function TestComFrequencyPanel:testFixConvertedReadableNames()
     local allActualConvertedNames = {}
     luaUnit.assertEquals(#allReadableNames, #allExpectedConvertedNames)
     for _, name in ipairs(allReadableNames) do
-        table.insert(allActualConvertedNames, ComFrequencySubPanel:_getShortReadableStationName(name))
+        table.insert(allActualConvertedNames, StationInfo.getShortReadableStationName(name))
     end
 
     for i = 1, #allActualConvertedNames do
