@@ -141,7 +141,7 @@ do
     function NumberSubPanel:_getButtonStyleSpring(springId)
         local spring = self.buttonStyleSprings[springId]
         if (self.buttonStyleSprings[springId] == nil) then
-            self.buttonStyleSprings[springId] = FlexibleLength1DSpring:new(20.0, 130.0)
+            self.buttonStyleSprings[springId] = FlexibleLength1DSpring:new(20.0, 150.0)
             spring = self.buttonStyleSprings[springId]
         end
         return spring

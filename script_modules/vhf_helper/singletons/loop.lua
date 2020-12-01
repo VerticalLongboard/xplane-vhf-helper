@@ -64,9 +64,9 @@ do
         self.lastFrameTime = LuaPlatform.Time.now()
         self.dt = self.lastFrameTime + 1 / 60.0
 
-        self.datarefInitialization = DatarefInitializationItem:new(10.0, "DatarefInitialization")
+        self.datarefInitialization = DatarefInitializationItem:new(5.0, "DatarefInitialization")
         self.vatsimbriefHelperInitialization =
-            VatsimbriefHelperEventBusInitializationItem:new(10.0, "VatsimbriefHelperEventBusInitialization")
+            VatsimbriefHelperEventBusInitializationItem:new(5.0, "VatsimbriefHelperEventBusInitialization")
     end
 
     TRACK_ISSUE(
@@ -111,8 +111,11 @@ do
         if (self.datarefInitialization:tryInitialize()) then
             do_every_frame("vhfHelperLoop:everyFrameLoop()")
             do_every_frame("vhfHelperMainWindow:everyFrameLoop()")
-            do_every_frame("vhfHelperMulticrewManager:everyFrameLoop()")
         end
+        TRACK_ISSUE(
+            "Tech Debt",
+            "If dataref initialization times out, VR Radio Helper is in a zombie state. Display a warning instead of just ignoring that."
+        )
 
         if (not self.vatsimbriefHelperInitialization:tryInitialize()) then
             return

@@ -88,6 +88,10 @@ do
         Notifications.manager:acknowledge(vhfHelperMulticrewManager.Notifications.StateChange)
 
         vhfHelperSideWindow.Constants.MulticrewStateToMessage = {}
+        vhfHelperSideWindow.Constants.MulticrewStateToMessage[vhfHelperMulticrewManager.Constants.State.Bootstrapping] = {
+            "Multicrew setup failed. That means X-Plane and/or FlyWithLua are not setup correctly.",
+            Globals.Colors.a320Red
+        }
         vhfHelperSideWindow.Constants.MulticrewStateToMessage[
                 vhfHelperMulticrewManager.Constants.State.MulticrewAvailable
             ] = {
@@ -343,6 +347,7 @@ do
                 vhfHelperSideWindow.Constants.MulticrewStateToMessage[multicrewState][2]
             )
         end
+
         imgui.TextUnformatted(vhfHelperSideWindow.Constants.MulticrewStateToMessage[multicrewState][1])
         local lastMulticrewError = vhfHelperMulticrewManager:getLastErrorOrNil()
         if (lastMulticrewError ~= nil) then

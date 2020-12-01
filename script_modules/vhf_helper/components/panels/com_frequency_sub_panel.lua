@@ -6,11 +6,6 @@ local ComFrequencySubPanel
 do
     ComFrequencySubPanel = VhfFrequencySubPanel:new()
 
-    Globals.OVERRIDE(ComFrequencySubPanel.show)
-    function ComFrequencySubPanel:show()
-        VhfFrequencySubPanel.show(self)
-    end
-
     Globals._NEWFUNC(ComFrequencySubPanel.overrideEnteredValue)
     function ComFrequencySubPanel:overrideEnteredValue(newValue)
         self.enteredValue = newValue

@@ -78,6 +78,8 @@ M.bootstrap = function()
         if (cachedInfo ~= nil) then
             cachedInfo.shortReadableName = getShortReadableStationName(cachedInfo.description)
         end
+
+        return cachedInfo
     end
     M.getInfoForFrequency = function(fullFrequencyString)
         return M.mapFrequencyToAtcInfo[fullFrequencyString]

@@ -67,8 +67,6 @@ do
         return vhfHelperMulticrewManager.Notifications.StateChange
     end
 
-    function vhfHelperMulticrewManager:everyFrameLoop()
-    end
 
     function vhfHelperMulticrewManager:getState()
         return self.state
