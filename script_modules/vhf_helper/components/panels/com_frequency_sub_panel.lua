@@ -72,8 +72,10 @@ do
 
         local atcStationId1 = nil
         local atcStationName1 = ""
+        local atcStationColor1 = Globals.Colors.greyText
         local atcStationId2 = nil
         local atcStationName2 = ""
+        local atcStationColor2 = Globals.Colors.greyText
 
         if (StationInfo.isVatsimbriefHelperAvailable()) then
             local atcInfo1 = StationInfo.getInfoForFrequency(self:_getFullLinkedValueString(1))
@@ -82,6 +84,7 @@ do
             if (atcInfo1 ~= nil) then
                 atcStationId1 = atcInfo1.id
                 atcStationName1 = atcInfo1.shortReadableName or ""
+                atcStationColor1 = Globals.Colors.darkerOrange
             else
                 atcStationId1 = ("%s1: UNKNOWN"):format(self.descriptor)
             end
@@ -89,6 +92,7 @@ do
             if (atcInfo2 ~= nil) then
                 atcStationId2 = atcInfo2.id
                 atcStationName2 = atcInfo2.shortReadableName or ""
+                atcStationColor2 = Globals.Colors.darkerOrange
             else
                 atcStationId2 = ("%s2: UNKNOWN"):format(self.descriptor)
             end
@@ -97,9 +101,9 @@ do
             atcStationId2 = ("%s2"):format(self.descriptor)
         end
 
-        self:_renderTinyFontLine(atcStationName1, atcStationName2)
+        self:_renderTinyFontLine(atcStationName1, atcStationName2, atcStationColor1, atcStationColor2)
         self:_renderValueLine()
-        self:_renderTinyFontLine(atcStationId1, atcStationId2)
+        self:_renderTinyFontLine(atcStationId1, atcStationId2, atcStationColor1, atcStationColor2)
         self:_renderNextValueLine()
 
         imgui.PopStyleVar()

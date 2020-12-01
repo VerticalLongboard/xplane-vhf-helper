@@ -11,7 +11,9 @@ do
 
     NumberSubPanel.Constants = {
         ClearButtonTitle = "Clr",
-        BackspaceButtonTitle = "Del"
+        BackspaceButtonTitle = "Del",
+        DefaultSpecialButtonWidth = 52.0,
+        DefaultSpecialButtonHeight = 33.0
     }
 
     function NumberSubPanel:new(newValidator)
@@ -47,8 +49,11 @@ do
 
     Globals.OVERRIDE(NumberSubPanel.show)
     function NumberSubPanel:show()
+        self:_resetButtonStyleSpringsToDisabled()
+    end
+
+    function NumberSubPanel:_resetButtonStyleSpringsToDisabled()
         for _, spring in ipairs(self.buttonStyleSprings) do
-            logMsg(spring)
             spring:overrideCurrentPosition(0.0)
             spring:setTarget(0.0)
         end
@@ -76,8 +81,6 @@ do
     function NumberSubPanel:_renderNumberPanel()
         self:_updateStyleSprings()
 
-        local numberFontScale = 1.3 * globalFontScale
-
         local leftSideDummyScale = 0.3 * globalFontScale
         local rightSideDummyScale = 0.1 * globalFontScale
 
@@ -91,7 +94,14 @@ do
         imgui.Dummy(Globals.defaultDummySize * rightSideDummyScale, Globals.defaultDummySize)
         imgui.SameLine()
         self:_pushButtonSettings(10, clearingEnabled)
-        if (imgui.Button(NumberSubPanel.Constants.BackspaceButtonTitle)) then
+        if
+            (imgui.Button(
+                NumberSubPanel.Constants.BackspaceButtonTitle,
+                self.Constants.DefaultSpecialButtonWidth,
+                self.Constants.DefaultSpecialButtonHeight
+            ))
+         then
+            self.buttonStyleSprings[10 + 1]:overrideCurrentPosition(0.0)
             self:backspace()
         end
         self:_popButtonSettings()
@@ -104,7 +114,14 @@ do
         imgui.Dummy(Globals.defaultDummySize * rightSideDummyScale, Globals.defaultDummySize)
         imgui.SameLine()
         self:_pushButtonSettings(11, clearingEnabled)
-        if (imgui.Button(NumberSubPanel.Constants.ClearButtonTitle)) then
+        if
+            (imgui.Button(
+                NumberSubPanel.Constants.ClearButtonTitle,
+                self.Constants.DefaultSpecialButtonWidth,
+                self.Constants.DefaultSpecialButtonHeight
+            ))
+         then
+            self.buttonStyleSprings[11 + 1]:overrideCurrentPosition(0.0)
             self:clear()
         end
         self:_popButtonSettings()
@@ -124,7 +141,7 @@ do
     function NumberSubPanel:_getButtonStyleSpring(springId)
         local spring = self.buttonStyleSprings[springId]
         if (self.buttonStyleSprings[springId] == nil) then
-            self.buttonStyleSprings[springId] = FlexibleLength1DSpring:new(10.0, 100.0)
+            self.buttonStyleSprings[springId] = FlexibleLength1DSpring:new(20.0, 130.0)
             spring = self.buttonStyleSprings[springId]
         end
         return spring
@@ -154,8 +171,24 @@ do
         local buttonHoveredColor =
             Utilities.lerpColors(0xFF222222, Globals.Colors.slightlyBrighterDefaultButtonColor, springPos)
 
-        local frameRounding = Utilities.Math.lerp(5.0, 2.0, springPos)
+        local borderColor =
+            Utilities.lerpColors(
+            Globals.Colors.defaultImguiBackground,
+            Globals.Colors.defaultImguiButtonBackground,
+            springPos
+        )
+        local frameRounding = Utilities.Math.lerp(4.0, 2.0, springPos)
+        local frameBorderSize = Utilities.Math.lerp(1.0, 0.0, springPos)
+        local fontSize = Utilities.Math.lerp(0.95 * globalFontScale, 1.0 * globalFontScale, springPos)
+
+        if (id > 9) then
+            fontSize = 1.0 * globalFontScale
+            frameBorderSize = 0.0
+        end
+        imgui.SetWindowFontScale(fontSize)
+        imgui.PushStyleColor(imgui.constant.Col.Border, borderColor)
         imgui.PushStyleVar(imgui.constant.StyleVar.FrameRounding, frameRounding)
+        imgui.PushStyleVar(imgui.constant.StyleVar.FrameBorderSize, frameBorderSize)
         imgui.PushStyleColor(imgui.constant.Col.Text, textColor)
         imgui.PushStyleColor(imgui.constant.Col.Button, buttonColor)
         imgui.PushStyleColor(imgui.constant.Col.ButtonActive, buttonActiveColor)
@@ -167,6 +200,9 @@ do
         imgui.PopStyleColor()
         imgui.PopStyleColor()
         imgui.PopStyleColor()
+
+        imgui.PopStyleColor()
+        imgui.PopStyleVar()
         imgui.PopStyleVar()
     end
 
@@ -180,6 +216,7 @@ do
             (imgui.Button(tostring(number), Globals.defaultDummySize, Globals.defaultDummySize) and
                 numberCharacter ~= nil)
          then
+            self.buttonStyleSprings[number + 1]:overrideCurrentPosition(0.0)
             self:addCharacter(numberCharacter)
         end
 

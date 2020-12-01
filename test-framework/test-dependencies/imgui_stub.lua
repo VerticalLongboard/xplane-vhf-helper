@@ -31,9 +31,10 @@ imgui = {
     constant = {
         StyleVar = {
             ItemSpacing = "ItemSpacing",
-            FrameRounding = "FrameRounding"
+            FrameRounding = "FrameRounding",
+            FrameBorderSize = "FrameBorderSize"
         },
-        Col = {Text = "Text", Button = "Button"}
+        Col = {Text = "Text", Button = "Button", Separator = "Separator"}
     },
     Constants = {
         Button = "Button",

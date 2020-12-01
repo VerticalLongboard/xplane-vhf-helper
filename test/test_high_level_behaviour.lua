@@ -32,10 +32,10 @@ local Utilities = require("shared_components.utilities")
 
 TestHighLevelBehaviour = {
 	Constants = {
-		comPanelButtonTitle = "COM",
-		navPanelButtonTitle = "NAV",
-		transponderPanelButtonTitle = "XPDR",
-		baroPanelButtonTitle = "QNH"
+		comPanelButtonTitle = " COM ",
+		navPanelButtonTitle = " NAV ",
+		transponderPanelButtonTitle = " XPDR ",
+		baroPanelButtonTitle = " QNH "
 	}
 }
 

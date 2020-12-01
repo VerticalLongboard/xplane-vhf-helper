@@ -133,14 +133,6 @@ do
                 "Vatsimbrief Helper is installed and available. ",
                 stationInfoColor
             )
-
-            TRACK_ISSUE("Interface", "Vatsimbrief Helper does not yet have an event to advertise new ATC data having arrived. When restarting both scripts in FlyWithLua, no ATC info is available until switching to another frequency", "Mention that this is a known issue.")
-            self.VatsimDataBlob:addCustomCallbackButton(
-                "Refresh Information Now",
-                function(buttonTitle)
-                    Panels.comFrequencyPanel:triggerStationInfoUpdate()
-                end
-            )
         else
             if (self.pendingStationInfoNotification) then
                 stationInfoColor = Globals.Colors.a320Orange
@@ -361,7 +353,7 @@ do
         end
 
         imgui.TextUnformatted("")
-        self:_renderSectionHeader("ATC Station Information")
+        self:_renderSectionHeader("Vatsim Data")
         self.VatsimDataBlob:renderToCanvas()
 
         imgui.TextUnformatted("")

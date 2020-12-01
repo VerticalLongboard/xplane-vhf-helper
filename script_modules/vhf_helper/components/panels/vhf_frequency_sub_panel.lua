@@ -81,7 +81,14 @@ do
         self.enteredValue = Globals.emptyString
     end
     Globals._NEWFUNC(VhfFrequencySubPanel._renderTinyFontLine)
-    function VhfFrequencySubPanel:_renderTinyFontLine(leftText, rightText)
+    function VhfFrequencySubPanel:_renderTinyFontLine(leftText, rightText, leftColor, rightColor)
+        if (leftColor == nil) then
+            leftColor = Globals.Colors.greyText
+        end
+        if (rightColor == nil) then
+            rightColor = Globals.Colors.greyText
+        end
+
         local text = nil
         if (leftText:len() > 16) then
             leftText = ("%.13s..."):format(leftText)
@@ -90,11 +97,19 @@ do
             rightText = ("%.13s..."):format(rightText)
         end
 
+        local colorDiffers = false
+
         local tinyFontLinePadding = 34 - leftText:len() - rightText:len()
+
+        local padWhitespace = ""
         if (tinyFontLinePadding >= 0) then
-            local padWhitespace = ""
             for i = 1, tinyFontLinePadding do
                 padWhitespace = padWhitespace .. " "
+            end
+
+            if (leftColor ~= rightColor) then
+                colorDiffers = true
+            else
                 text = ("%s%s%s"):format(leftText, padWhitespace, rightText)
             end
         else
@@ -102,9 +117,22 @@ do
         end
 
         imgui.SetWindowFontScale(0.5 * globalFontScale)
-        imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.greyText)
-        imgui.TextUnformatted(text)
-        imgui.PopStyleColor()
+
+        if (colorDiffers) then
+            imgui.PushStyleColor(imgui.constant.Col.Text, leftColor)
+            imgui.TextUnformatted(leftText)
+            imgui.SameLine()
+            imgui.TextUnformatted(padWhitespace)
+            imgui.PopStyleColor()
+            imgui.PushStyleColor(imgui.constant.Col.Text, rightColor)
+            imgui.SameLine()
+            imgui.TextUnformatted(rightText)
+            imgui.PopStyleColor()
+        else
+            imgui.PushStyleColor(imgui.constant.Col.Text, leftColor)
+            imgui.TextUnformatted(text)
+            imgui.PopStyleColor()
+        end
     end
 
     Globals._NEWFUNC(VhfFrequencySubPanel._getFullLinkedValueString)

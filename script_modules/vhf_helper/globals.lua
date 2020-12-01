@@ -132,6 +132,7 @@ Globals.Colors = {
     defaultImguiBackground = 0xFF121110,
     defaultImguiButtonBackground = 0xFF6F4624,
     slightlyBrighterDefaultButtonColor = 0xFF7F5634,
+    darkerOrange =  0xFF006699,
     SwitchPanel = {
         SwitchButtonColor = 0xFF00AA00,
         HoveredSwitchButtonColor = 0xFF00CC00
