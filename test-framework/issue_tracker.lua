@@ -153,7 +153,7 @@ do
 
                     for occurrenceLocation, occurrence in pairs(issue.occurrences) do
                         knownIssuesText =
-                            knownIssuesText .. (("%s\n"):format(self:_prefixAllLines(issueDescription, " ")))
+                            knownIssuesText .. (("\n%s\n"):format(self:_prefixAllLines(issueDescription, " ")))
                         assert(occurrence.workaround)
                         knownIssuesText =
                             knownIssuesText ..
