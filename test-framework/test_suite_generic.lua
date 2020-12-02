@@ -25,8 +25,8 @@ local runnerResult = runner:runSuite()
 flyWithLuaStub:printSummary()
 issueTracker:printSummary()
 Utilities.overwriteContentInFile(
-    "script_modules/" .. os.getenv("RELEASE_FILE_NAME_PREFIX") .. "/known_issues.txt",
-    issueTracker:getKnownIssuesText()
+    "script_modules/" .. os.getenv("RELEASE_FILE_NAME_PREFIX") .. "/known_issues_url_encoded.txt",
+    Utilities.osExecuteEncode(Utilities.urlEncode(issueTracker:getKnownIssuesText()))
 )
 if (os.getenv("ISSUE_TRACKER_TRIGGER_ALL_ISSUES") ~= nil) then
     issueTracker:printAllIssues()

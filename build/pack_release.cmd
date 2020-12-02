@@ -90,7 +90,15 @@ if !GITHUB_REPO_URL!==!DEFAULT_GITHUB_REPO_URL_WITHOUT_QUOTES! (
     echo.
     echo Opening release package folder and Github 'Draft Release' in %OPEN_RELEASE_PAGES_TIMEOUT% seconds ...
     timeout /T %OPEN_RELEASE_PAGES_TIMEOUT%
-    start "" %GITHUB_REPO_URL%/releases/new?tag=%TAG%^&title=RELEASE_TITLE_HERE^&body=RELEASE_DESCRIPTION_HERE^ANOTHER_ONE
+
+    set KNOWN_ISSUES_FILE_PATH=.\..\..\script_modules\!RELEASE_FILE_NAME_PREFIX!\known_issues_url_encoded.txt
+    
+    set KNOWN_ISSUES=---YOUR-MANUAL-CHANGELOG-HERE---%%0a%%0a
+    for /F "tokens=*" %%A in (!KNOWN_ISSUES_FILE_PATH!) do (
+        set KNOWN_ISSUES=!KNOWN_ISSUES!%%A
+    )
+
+    start "" %GITHUB_REPO_URL%/releases/new?tag=%TAG%^&title=---RELEASE-TITLE-HERE---^&body=!KNOWN_ISSUES!
     start "" .
 )
 
