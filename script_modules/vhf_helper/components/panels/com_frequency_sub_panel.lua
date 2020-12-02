@@ -12,6 +12,7 @@ do
         VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
     end
 
+    TRACK_ISSUE("Tech Debt", "Vatsimbrief Helper integration has almost zero test coverage.")
     function ComFrequencySubPanel:triggerStationInfoUpdate()
         StationInfo.update(self:_getFullLinkedValueString(1))
         StationInfo.update(self:_getFullLinkedValueString(2))

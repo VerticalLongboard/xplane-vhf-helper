@@ -15,14 +15,13 @@ do
 		transponderModeLinkedDataref,
 		newPanelTitle,
 		newDescriptor)
-		local newInstanceWithState = NumberSubPanel:new(newValidator)
+		local newInstanceWithState = NumberSubPanel:new(newPanelTitle, newValidator)
 
 		newInstanceWithState.Constants.FullyPaddedString = "----"
 
 		newInstanceWithState.codeDataref = transponderCodeLinkedDataref
 		newInstanceWithState.modeDataref = transponderModeLinkedDataref
 		newInstanceWithState.descriptor = newDescriptor
-		newInstanceWithState.panelTitle = newPanelTitle
 
 		setmetatable(newInstanceWithState, self)
 		self.__index = self

@@ -22,6 +22,8 @@ function closeVhfHelperMainWindow()
     vhfHelperMainWindow:destroy()
 end
 
+local RADAR_PANEL_AVAILABLE = false
+
 local vhfHelperMainWindowSingleton
 do
     vhfHelperMainWindow = {
@@ -62,7 +64,8 @@ do
         elseif (globalFontScaleDescriptor == "big") then
             globalFontScale = 2.0
             minWidthWithoutScrollbars = 258
-            minHeightWithoutScrollbars = 344
+            -- minHeightWithoutScrollbars = 344
+            minHeightWithoutScrollbars = 315
         else
             globalFontScale = 1.0
             minWidthWithoutScrollbars = 150
@@ -124,14 +127,9 @@ do
         self.currentPanel:renderToCanvas()
 
         imgui.PushStyleVar_2(imgui.constant.StyleVar.ItemSpacing, 0.0, 2.0)
-        imgui.PushStyleColor(imgui.constant.Col.Separator, 0xFF003355)
         imgui.Separator()
-        imgui.PopStyleColor()
         imgui.PopStyleVar()
-        imgui.PushStyleColor(imgui.constant.Col.Separator, 0xFF005588)
         imgui.Separator()
-        imgui.PopStyleColor()
-        
 
         imgui.SetWindowFontScale(0.6 * globalFontScale)
 
@@ -153,17 +151,9 @@ do
             vhfHelperCompatibilityManager:getCurrentConfiguration().isBarometerFeatureEnabled
         )
 
-        imgui.Separator()
+        imgui.SameLine()
+        imgui.Dummy(34.0, 0.0)
 
-        -- Globals.ImguiUtils.renderActiveInactiveButton(
-        --     "Radar",
-        --     false,
-        --     true,
-        --     function()
-        --     end
-        -- )
-
-        imgui.Dummy(218.0, 0.0)
         imgui.SameLine()
         self:_renderSidePanelButton()
 
@@ -206,7 +196,7 @@ do
 
     function vhfHelperMainWindow:_renderPanelButton(panel, enabled)
         Globals.ImguiUtils.renderActiveInactiveButton(
-            (" %s "):format(panel.panelTitle),
+            ("%s"):format(panel.panelTitle),
             self.currentPanel == panel,
             enabled,
             function()

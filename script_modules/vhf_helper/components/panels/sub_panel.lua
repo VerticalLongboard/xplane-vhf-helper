@@ -8,8 +8,10 @@ local SubPanel
 do
     SubPanel = {}
 
-    function SubPanel:new()
-        local newInstanceWithState = {}
+    function SubPanel:new(newPanelTitle)
+        local newInstanceWithState = {
+            panelTitle = newPanelTitle
+        }
         setmetatable(newInstanceWithState, self)
         self.__index = self
         return newInstanceWithState

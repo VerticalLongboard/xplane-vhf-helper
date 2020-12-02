@@ -26,12 +26,11 @@ do
         newSecondVhfLinkedDataref,
         newPanelTitle,
         newDescriptor)
-        local newInstanceWithState = NumberSubPanel:new(newValidator)
+        local newInstanceWithState = NumberSubPanel:new(newPanelTitle, newValidator)
 
         newInstanceWithState.Constants.FullyPaddedFreqString = "---.---"
 
         newInstanceWithState.linkedDatarefs = {newFirstVhfLinkedDataref, newSecondVhfLinkedDataref}
-        newInstanceWithState.panelTitle = newPanelTitle
         newInstanceWithState.descriptor = newDescriptor
 
         setmetatable(newInstanceWithState, self)

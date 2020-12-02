@@ -113,6 +113,11 @@ Utilities.roundFloatingPointToNearestInteger = function(v)
     return v + 0.5 - (v + 0.5) % 1
 end
 
+Utilities.DegToRad = 0.017453293
+Utilities.FeetToM = 0.3048
+Utilities.KnotsToKmh = 1.852
+Utilities.EarthRadius = 6371
+
 Utilities.Math = {}
 Utilities.Math.lerp = function(v1, v2, t)
     return v1 + (v2 - v1) * t

@@ -387,7 +387,7 @@ do
             imgui.PopStyleColor()
             if (cc.hasKnownIssues) then
                 if (self.pendingCompatibilityNotification) then
-                    imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
+                    imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Red)
                 end
                 imgui.TextUnformatted(("Known Issues: %s"):format(cc.knownIssuesText))
                 if (self.pendingCompatibilityNotification) then

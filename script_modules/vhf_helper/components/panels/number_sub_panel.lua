@@ -16,12 +16,12 @@ do
         DefaultSpecialButtonHeight = 33.0
     }
 
-    function NumberSubPanel:new(newValidator)
-        local newInstanceWithState = {
-            enteredValue = Globals.emptyString,
-            inputPanelValidator = newValidator,
-            buttonStyleSprings = {}
-        }
+    function NumberSubPanel:new(newPanelTitle, newValidator)
+        local newInstanceWithState = SubPanel:new(newPanelTitle)
+        newInstanceWithState.enteredValue = Globals.emptyString
+        newInstanceWithState.inputPanelValidator = newValidator
+        newInstanceWithState.buttonStyleSprings = {}
+
         setmetatable(newInstanceWithState, self)
         self.__index = self
         return newInstanceWithState
@@ -141,7 +141,7 @@ do
     function NumberSubPanel:_getButtonStyleSpring(springId)
         local spring = self.buttonStyleSprings[springId]
         if (self.buttonStyleSprings[springId] == nil) then
-            self.buttonStyleSprings[springId] = FlexibleLength1DSpring:new(20.0, 150.0)
+            self.buttonStyleSprings[springId] = FlexibleLength1DSpring:new(20.0, 100.0)
             spring = self.buttonStyleSprings[springId]
         end
         return spring
@@ -185,10 +185,13 @@ do
             fontSize = 1.0 * globalFontScale
             frameBorderSize = 0.0
         end
+
         imgui.SetWindowFontScale(fontSize)
-        imgui.PushStyleColor(imgui.constant.Col.Border, borderColor)
+
         imgui.PushStyleVar(imgui.constant.StyleVar.FrameRounding, frameRounding)
         imgui.PushStyleVar(imgui.constant.StyleVar.FrameBorderSize, frameBorderSize)
+
+        imgui.PushStyleColor(imgui.constant.Col.Border, borderColor)
         imgui.PushStyleColor(imgui.constant.Col.Text, textColor)
         imgui.PushStyleColor(imgui.constant.Col.Button, buttonColor)
         imgui.PushStyleColor(imgui.constant.Col.ButtonActive, buttonActiveColor)
@@ -200,8 +203,8 @@ do
         imgui.PopStyleColor()
         imgui.PopStyleColor()
         imgui.PopStyleColor()
-
         imgui.PopStyleColor()
+
         imgui.PopStyleVar()
         imgui.PopStyleVar()
     end
