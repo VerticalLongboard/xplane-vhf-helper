@@ -1,5 +1,6 @@
 @echo off
 call .\build\configure_environment.cmd
+if %ERRORLEVEL% NEQ 0 exit /B %ERRORLEVEL%
 
 setlocal enabledelayedexpansion
 
@@ -20,11 +21,12 @@ if exist %RELEASE_PACKAGE_FOLDER_PATH% (
 
 mkdir %RELEASE_PACKAGE_FOLDER_PATH%
 
-set DEFAULT_RELEASE_FILE_NAME_PREFIX_WITHOUT_QUOTES=%DEFAULT_RELEASE_FILE_NAME_PREFIX:"=%
-set DEFAULT_READABLE_SCRIPT_NAME_WITHOUT_QUOTES=%DEFAULT_READABLE_SCRIPT_NAME:"=%
+mkdir %RELEASE_PACKAGE_FOLDER_PATH%\Modules
+mkdir %RELEASE_PACKAGE_FOLDER_PATH%\Scripts
 
-if !RELEASE_FILE_NAME_PREFIX!==!DEFAULT_RELEASE_FILE_NAME_PREFIX_WITHOUT_QUOTES! goto :label_prompt_update_build_configuration
-if !READABLE_SCRIPT_NAME!==!DEFAULT_READABLE_SCRIPT_NAME_WITHOUT_QUOTES! goto :label_prompt_update_build_configuration
+xcopy /Y /S /E scripts\* %RELEASE_PACKAGE_FOLDER_PATH%\Scripts\*
+xcopy /Y /S /E script_modules\* %RELEASE_PACKAGE_FOLDER_PATH%\Modules\*
+xcopy /Y /S /E modules\* %RELEASE_PACKAGE_FOLDER_PATH%\Modules\*
 
 if not exist script_modules\%RELEASE_FILE_NAME_PREFIX% (
     mkdir script_modules\%RELEASE_FILE_NAME_PREFIX%
@@ -33,18 +35,11 @@ if not exist script_modules\%RELEASE_FILE_NAME_PREFIX% (
 echo %TAG%> script_modules\%RELEASE_FILE_NAME_PREFIX%\release_tag.txt
 echo %COMMIT_HASH%> script_modules\%RELEASE_FILE_NAME_PREFIX%\release_commit_hash.txt
 
-%NSIS_EXECUTABLE% "/XOutFile ..\%RELEASE_PACKAGE_FOLDER_PATH%\%RELEASE_FILE_NAME_PREFIX%-%TAG%-%COMMIT_HASH%.exe" build\generate-installer.nsi
+%NSIS_EXECUTABLE% "/XOutFile ..\%RELEASE_PACKAGE_FOLDER_PATH%\%RELEASE_FILE_NAME_PREFIX%-%TAG%-%COMMIT_HASH%.exe" .\build\generate-installer.nsi
 if %ERRORLEVEL% NEQ 0 (
     echo [91mNSIS Installer generation failed[0m.
     exit(%ERRORLEVEL%)
 )
-
-mkdir %RELEASE_PACKAGE_FOLDER_PATH%\Modules
-mkdir %RELEASE_PACKAGE_FOLDER_PATH%\Scripts
-
-xcopy /Y /S /E scripts\* %RELEASE_PACKAGE_FOLDER_PATH%\Scripts\*
-xcopy /Y /S /E script_modules\* %RELEASE_PACKAGE_FOLDER_PATH%\Modules\*
-xcopy /Y /S /E modules\* %RELEASE_PACKAGE_FOLDER_PATH%\Modules\*
 
 cd %RELEASE_PACKAGE_FOLDER_PATH%
 
@@ -101,9 +96,5 @@ if !GITHUB_REPO_URL!==!DEFAULT_GITHUB_REPO_URL_WITHOUT_QUOTES! (
 
 goto :label_end
 
-    :label_prompt_update_build_configuration
-    echo Your current build configuration still contains [93mdefault values[0m. To build a proper release,
-    echo update project name and release file name in [94m.\build_configuration.cmd[0m
-    goto :label_end
-
 :label_end
+exit /B %ERRORLEVEL%

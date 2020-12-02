@@ -1,4 +1,4 @@
-local AcfReader = require("shared_components.acf_reader")
+local AcfReader = require("vr-radio-helper.shared_components.acf_reader")
 
 TestAcfReader = {
     TestFilePath = ".\\test\\shared_components\\test_acf_file.acf"

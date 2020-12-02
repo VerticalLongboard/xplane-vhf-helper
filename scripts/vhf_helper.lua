@@ -24,7 +24,7 @@ SOFTWARE.
 
 --]]
 local LuaPlatform = require("lua_platform")
-local Globals = require("vhf_helper.globals")
+local Globals = require("vr-radio-helper.globals")
 TRACK_ISSUE(
     "Lua",
     "Switching from Lua 5.1 to 5.4 broke compatibility with almost any table.insert call. Also, loadstring got renamed.",
@@ -32,19 +32,19 @@ TRACK_ISSUE(
 )
 Globals.requireAllAndBootstrapInOrder(
     {
-        "vhf_helper.public_interface",
-        "vhf_helper.state.config",
-        "vhf_helper.state.notifications",
-        "vhf_helper.state.validation",
-        "vhf_helper.state.datarefs",
-        "vhf_helper.state.station_info",
-        "vhf_helper.state.panels",
-        "vhf_helper.singletons.compatibility_manager",
-        "vhf_helper.singletons.multicrew_manager",
-        "vhf_helper.singletons.main_window",
-        "vhf_helper.singletons.side_window",
-        "vhf_helper.singletons.loop",
-        "vhf_helper.package_export"
+        "vr-radio-helper.public_interface",
+        "vr-radio-helper.state.config",
+        "vr-radio-helper.state.notifications",
+        "vr-radio-helper.state.validation",
+        "vr-radio-helper.state.datarefs",
+        "vr-radio-helper.state.station_info",
+        "vr-radio-helper.state.panels",
+        "vr-radio-helper.singletons.compatibility_manager",
+        "vr-radio-helper.singletons.multicrew_manager",
+        "vr-radio-helper.singletons.main_window",
+        "vr-radio-helper.singletons.side_window",
+        "vr-radio-helper.singletons.loop",
+        "vr-radio-helper.package_export"
     }
 )
 

@@ -1,4 +1,4 @@
-NotificationManager = require("shared_components.notification_manager")
+NotificationManager = require("vr-radio-helper.shared_components.notification_manager")
 TestNotificationManager = {
     States = {
         Pending = NotificationManager.Constants.NotificationStates.Pending,

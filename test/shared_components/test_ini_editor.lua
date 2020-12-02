@@ -1,5 +1,5 @@
-local IniEditor = require("shared_components.ini_editor")
-local Utilities = require("shared_components.utilities")
+local IniEditor = require("vr-radio-helper.shared_components.ini_editor")
+local Utilities = require("vr-radio-helper.shared_components.utilities")
 
 TestIniEditor = {
     TestKeyMatcher = "^.-Key$",

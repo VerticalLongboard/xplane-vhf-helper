@@ -1,4 +1,4 @@
-local Utilities = require("shared_components.utilities")
+local Utilities = require("vr-radio-helper.shared_components.utilities")
 
 TestUtilities = {}
 

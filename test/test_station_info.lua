@@ -1,6 +1,6 @@
 local allReadableNames = require("allReadableNames")
 local allExpectedConvertedNames = require("allExpectedConvertedNames")
-local StationInfo = require("vhf_helper.state.station_info")
+local StationInfo = require("vr-radio-helper.state.station_info")
 
 TestComFrequencyPanel = {}
 

@@ -1,6 +1,6 @@
 TestSpeakNato = {}
 
-SpeakNato = require("vhf_helper.components.speak_nato")
+SpeakNato = require("vr-radio-helper.components.speak_nato")
 
 function TestSpeakNato:setUp()
     self.speakNato = SpeakNato:new()

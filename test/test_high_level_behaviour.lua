@@ -27,8 +27,8 @@ local flyWithLuaStub = require("xplane_fly_with_lua_stub")
 local imguiStub = require("imgui_stub")
 local LuaIniParserStub = require("LIP")
 local LuaPlatform = require("lua_platform")
-local Globals = require("vhf_helper.globals")
-local Utilities = require("shared_components.utilities")
+local Globals = require("vr-radio-helper.globals")
+local Utilities = require("vr-radio-helper.shared_components.utilities")
 
 TestHighLevelBehaviour = {
 	Constants = {

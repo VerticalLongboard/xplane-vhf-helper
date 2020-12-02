@@ -25,7 +25,7 @@ SOFTWARE.
 --]]
 TestVhfHelperConfiguration = {}
 
-local Configuration = require("shared_components.configuration")
+local Configuration = require("vr-radio-helper.shared_components.configuration")
 
 function TestVhfHelperConfiguration:testConfigurationValuesAreSetAndRetrievedCorrectly()
 	local testConfig = Configuration:new(SCRIPT_DIRECTORY .. "test_vhf_helper.ini")

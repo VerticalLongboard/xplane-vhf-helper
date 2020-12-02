@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 --]]
-Globals = require("vhf_helper.globals")
+Globals = require("vr-radio-helper.globals")
 
 TestDatarefs = {
 	Constants = {

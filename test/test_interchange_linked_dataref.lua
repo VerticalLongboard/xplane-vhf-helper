@@ -1,4 +1,4 @@
-local InterchangeLinkedDataref = require("vhf_helper.components.interchange_linked_dataref")
+local InterchangeLinkedDataref = require("vr-radio-helper.components.interchange_linked_dataref")
 
 TestInterchangeLinkedDataref = {
     Constants = {
