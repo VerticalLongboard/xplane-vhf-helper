@@ -28,9 +28,13 @@ SpeakNato._getNatoStringForFourDigitNumber = function(string)
     return SpeakNato._getNatoStringForNumbers(string)
 end
 
-SpeakNato._getNatoStringForFrequency = function(string)
-    string = string:gsub("0-$", "")
-    return SpeakNato._getNatoStringForNumbers(string)
+SpeakNato._getNatoStringForFrequency = function(str)
+    local trailingZeroCapture = str:match("^[1-9][0-9][0-9]%.[0-9][0-9]-([0]-)$")
+    if (trailingZeroCapture ~= nil) then
+        str = str:sub(1, str:len() - trailingZeroCapture:len())
+    end
+
+    return SpeakNato._getNatoStringForNumbers(str)
 end
 
 SpeakNato._getNatoStringForNumbers = function(string)

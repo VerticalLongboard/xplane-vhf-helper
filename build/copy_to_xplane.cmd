@@ -15,15 +15,30 @@ if %ERRORLEVEL% NEQ 0 (goto :label_copy_error)
 echo. >> %TASK_OUTPUT_FILENAME%
 
 if not exist .\script_modules mkdir .\script_modules
+if not exist .\script_modules\%RELEASE_FILE_NAME_PREFIX% mkdir .\script_modules\%RELEASE_FILE_NAME_PREFIX%
 
-for /F %%A in ('dir /a-d-s-h /b .\scripts ^| find /V /C ""') do set SCRIPT_FOLDER_FILES_COUNT=%%A
-if %SCRIPT_FOLDER_FILES_COUNT% NEQ 1 (
-    echo To successfully run a script within FlyWithLua, the [94m.\scripts[0m folder needs to contain [93mexactly one[0m lua file.
+for /F %%A in ('dir /a-d-s-h /b .\scripts ^| find /V /C ""') do set SCRIPTS_FOLDER_FILES_COUNT=%%A
+if %SCRIPTS_FOLDER_FILES_COUNT% NEQ 1 (
+    echo To successfully run a script within FlyWithLua, the [94m.\scripts[0m folder needs to contain [93mexactly one[0m *.lua file.
     echo.
-    echo Currently, [94m.\scripts[0m [91mcontains %SCRIPT_FOLDER_FILES_COUNT% files[0m.
+    echo Currently, [94m.\scripts[0m [91mcontains %SCRIPTS_FOLDER_FILES_COUNT% files[0m.
     echo.
-    echo If you need more than one file, place everything besides the single main script in [94m.\script_modules\CUSTOM_SUBFOLDER[0m.
-    echo All files in [94m.\script_modules[0m are copied to the FlyWithLua modules folder as well, so [93keep them in a custom subfolder[0m.
+    echo If you need more than one file, place everything besides the single main script in [94m.\script_modules\%RELEASE_FILE_NAME_PREFIX%[0m.
+    echo All files in [94m.\script_modules[0m are copied to the FlyWithLua modules folder as well, so [93mkeep them in a custom subfolder[0m.
+    echo.
+    set ERRORLEVEL=1
+    goto :label_copy_error
+)
+
+for /F %%A in ('dir /a-d-s-h /b .\script_modules ^| find /V /C ""') do set SCRIPT_MODULES_FOLDER_FILES_COUNT=%%A
+echo If you see a File Not Found, don't worry. That's fine.
+if %SCRIPT_MODULES_FOLDER_FILES_COUNT% NEQ 0 (
+    echo To not accidentally overwrite files in the FlyWithLua modules folder, all additional files besides the main script in [94m.\scripts[0m
+    echo should be in a custom subfolder, preferably [94m.\script_modules\%RELEASE_FILE_NAME_PREFIX%[0m.
+    echo.
+    echo Currently, [94m..\script_modules[0m [91mcontains %SCRIPT_MODULES_FOLDER_FILES_COUNT% files[0m.
+    echo.
+    echo Place all additional scripts in [94m.\script_modules\%RELEASE_FILE_NAME_PREFIX%[0m and re-run this task.
     echo.
     set ERRORLEVEL=1
     goto :label_copy_error

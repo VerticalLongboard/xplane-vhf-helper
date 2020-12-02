@@ -25,3 +25,7 @@ function TestSpeakNato:testSpeakingSpeaks()
     self.speakNato.speakTransponderCode("6000")
     luaUnit.assertEquals(flyWithLuaStub:getLastSpeakString(), "siccs towsent ")
 end
+
+function TestSpeakNato:testFrequenciesWithZeroAfterDecimalSpeakAtLeastOneZero()
+    luaUnit.assertEquals(SpeakNato._getNatoStringForFrequency("118.0"), "won won ate decimal zeero ")
+end
