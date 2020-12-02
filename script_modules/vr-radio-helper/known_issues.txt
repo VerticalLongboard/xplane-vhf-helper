@@ -1,0 +1,3 @@
+Known Issues in VR Radio Helper:
+ The dot right next to the FlyWithLua macro will not disappear when the window is closed, only when clicking the macro again.
+  Workaround: Use the TogglePanel command (and map it to a key) instead of the macro. Known issue in FlyWithLua

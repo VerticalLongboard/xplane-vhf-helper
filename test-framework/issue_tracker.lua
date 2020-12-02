@@ -139,6 +139,33 @@ do
         self:trackIssue(newComponent, newDescription, newWorkaround)
     end
 
+    function IssueTracker:getKnownIssuesText()
+        local knownIssuesText = ""
+        for componentName, component in pairs(self.components) do
+            local componentToPrint = ("Known Issues in %s:\n"):format(componentName)
+
+            for issueDescription, issue in pairs(component.issues) do
+                if (issue.isLinked) then
+                    if (componentToPrint ~= nil) then
+                        knownIssuesText = knownIssuesText .. componentToPrint
+                        componentToPrint = nil
+                    end
+
+                    for occurrenceLocation, occurrence in pairs(issue.occurrences) do
+                        knownIssuesText =
+                            knownIssuesText .. (("%s\n"):format(self:_prefixAllLines(issueDescription, " ")))
+                        assert(occurrence.workaround)
+                        knownIssuesText =
+                            knownIssuesText ..
+                            (("  Workaround:%s\n"):format(self:_prefixAllLines(occurrence.workaround, " ")))
+                    end
+                end
+            end
+        end
+
+        return knownIssuesText
+    end
+
     function IssueTracker:_printKnownIssues()
         local headerToPrint = "[96m[4mIssue Tracker: All linked known issues:[0m"
         for componentName, component in pairs(self.components) do

@@ -90,7 +90,7 @@ if !GITHUB_REPO_URL!==!DEFAULT_GITHUB_REPO_URL_WITHOUT_QUOTES! (
     echo.
     echo Opening release package folder and Github 'Draft Release' in %OPEN_RELEASE_PAGES_TIMEOUT% seconds ...
     timeout /T %OPEN_RELEASE_PAGES_TIMEOUT%
-    start "" %GITHUB_REPO_URL%/releases/new?tag=%TAG%^&title=RELEASE_TITLE_HERE^&body=RELEASE_DESCRIPTION_HERE
+    start "" %GITHUB_REPO_URL%/releases/new?tag=%TAG%^&title=RELEASE_TITLE_HERE^&body=RELEASE_DESCRIPTION_HERE^ANOTHER_ONE
     start "" .
 )
 
