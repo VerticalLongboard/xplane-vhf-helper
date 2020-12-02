@@ -122,7 +122,7 @@ do
             end
 
             if (num > 0) then
-                knownIssueString = knownIssueString .. " Known issue in "
+                knownIssueString = knownIssueString .. "\nKnown issue in "
                 for blamedComponentName, _ in pairs(issueToRelink.blamedComponents) do
                     knownIssueString = knownIssueString .. blamedComponentName .. "/"
                 end
@@ -153,11 +153,11 @@ do
 
                     for occurrenceLocation, occurrence in pairs(issue.occurrences) do
                         knownIssuesText =
-                            knownIssuesText .. (("\n%s\n"):format(self:_prefixAllLines(issueDescription, " ")))
+                            knownIssuesText .. (("\n%s\n"):format(self:_prefixAllLines(issueDescription, "* ")))
                         assert(occurrence.workaround)
                         knownIssuesText =
                             knownIssuesText ..
-                            (("  Workaround:%s\n"):format(self:_prefixAllLines(occurrence.workaround, " ")))
+                            (("  * Workaround:%s\n"):format(self:_prefixAllLines(occurrence.workaround, " ")))
                     end
                 end
             end
@@ -187,13 +187,19 @@ do
                             ("[94m%s[0m:%s"):format(occurrenceLocation, self:_prefixAllLines(issueDescription, " "))
                         )
                         assert(occurrence.workaround)
-                        self:_log(("  Workaround:%s"):format(self:_prefixAllLines(occurrence.workaround, " ")))
 
                         local issuesPlural = "issues"
                         if (issue.numRelatedTo == 1) then
                             issuesPlural = "issue"
                         end
-                        self:_log(("  Related to %d %s.\n"):format(issue.numRelatedTo, issuesPlural))
+
+                        self:_log(
+                            ("  Workaround:%s. Related to %d %s."):format(
+                                self:_prefixAllLines(occurrence.workaround, " "),
+                                issue.numRelatedTo,
+                                issuesPlural
+                            )
+                        )
                     end
                 end
             end

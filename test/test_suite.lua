@@ -32,3 +32,11 @@ KNOWN_ISSUE(
     "Use the TogglePanel command (and map it to a key) instead of the macro.",
     {"FlyWithLua macro"}
 )
+
+TRACK_ISSUE("X-Plane", "X-Plane does not let mouse clicks through to windows that do not yet have the focus.")
+KNOWN_ISSUE(
+    "VR Radio Helper",
+    "When interacting with other 3D panels and returning to the VR Radio Helper panel, the first click is ignored.",
+    "Click at least once anywhere into the panel and then use it normally.",
+    {"X-Plane"}
+)
