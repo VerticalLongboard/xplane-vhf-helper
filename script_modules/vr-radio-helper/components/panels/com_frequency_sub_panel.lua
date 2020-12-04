@@ -6,13 +6,31 @@ local ComFrequencySubPanel
 do
     ComFrequencySubPanel = VhfFrequencySubPanel:new()
 
+    ComFrequencySubPanel.UnicomFrequencies = {
+        -- https://www.aopa.org/advocacy/advocacy-briefs/air-traffic-services-process-brief-changing-unicom-frequencies
+        "122.800",
+        "122.700",
+        "123.000",
+        "122.725",
+        "122.975",
+        "123.050",
+        "123.075"
+    }
+
+    ComFrequencySubPanel.UnicomFrequencies["122.800"] = {}
+    ComFrequencySubPanel.UnicomFrequencies["122.700"] = {}
+    ComFrequencySubPanel.UnicomFrequencies["123.000"] = {}
+    ComFrequencySubPanel.UnicomFrequencies["122.725"] = {}
+    ComFrequencySubPanel.UnicomFrequencies["122.975"] = {}
+    ComFrequencySubPanel.UnicomFrequencies["123.050"] = {}
+    ComFrequencySubPanel.UnicomFrequencies["123.075"] = {}
+
     Globals._NEWFUNC(ComFrequencySubPanel.overrideEnteredValue)
     function ComFrequencySubPanel:overrideEnteredValue(newValue)
         self.enteredValue = newValue
         VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
     end
 
-    TRACK_ISSUE("Tech Debt", "Vatsimbrief Helper integration has almost zero test coverage.")
     function ComFrequencySubPanel:triggerStationInfoUpdate()
         StationInfo.update(self:_getFullLinkedValueString(1))
         StationInfo.update(self:_getFullLinkedValueString(2))
@@ -88,8 +106,6 @@ do
             atcStationId2 = ("%s2"):format(self.descriptor)
         end
 
-        logMsg(atcStationName1)
-
         self:_renderTinyFontLine(atcStationName1, atcStationName2, atcStationColor1, atcStationColor2)
         self:_renderValueLine()
         self:_renderTinyFontLine(atcStationId1, atcStationId2, atcStationColor1, atcStationColor2)
@@ -108,6 +124,9 @@ do
 
     function ComFrequencySubPanel:_getStationInfoForFrequency(fullString, comNumber)
         local atcInfo = StationInfo.getInfoForFrequency(fullString)
+
+        local isUnicom = self.UnicomFrequencies[fullString] ~= nil
+
         local atcStationName = ""
         local atcStationColor = Globals.Colors.greyText
         if (atcInfo ~= nil) then
@@ -115,11 +134,22 @@ do
             atcStationName = atcInfo.shortReadableName or ""
             atcStationColor = Globals.Colors.darkerOrange
         else
-            if (comNumber == nil) then
-                atcStationId = ("%s: UNKNOWN"):format(self.descriptor)
+            local idText = nil
+            if (isUnicom) then
+                idText = "Unicom"
             else
-                atcStationId = ("%s%d: UNKNOWN"):format(self.descriptor, comNumber)
+                idText = "UNKNOWN"
             end
+
+            if (comNumber == nil) then
+                atcStationId = ("%s: %s"):format(self.descriptor, idText)
+            else
+                atcStationId = ("%s%d: %s"):format(self.descriptor, comNumber, idText)
+            end
+        end
+
+        if (isUnicom) then
+            atcStationColor = Globals.Colors.darkerBlue
         end
 
         return atcStationId, atcStationName, atcStationColor

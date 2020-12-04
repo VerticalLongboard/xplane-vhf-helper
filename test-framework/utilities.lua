@@ -188,4 +188,11 @@ Utilities.lerpColors = function(color1, color2, t)
     return getColorFromComponents(0xFF000000, red, green, blue)
 end
 
+Utilities.getOccurrenceLocation = function(level)
+    local stackLevelAboveTrackIssue = level
+    local debugInfo = debug.getinfo(stackLevelAboveTrackIssue)
+    local newOccurrenceLocation = debugInfo.source:sub(2, -1) .. ":" .. debugInfo.currentline
+    return newOccurrenceLocation
+end
+
 return Utilities

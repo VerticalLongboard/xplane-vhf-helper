@@ -133,6 +133,7 @@ Globals.Colors = {
     defaultImguiButtonBackground = 0xFF6F4624,
     slightlyBrighterDefaultButtonColor = 0xFF7F5634,
     darkerOrange = 0xFF006699,
+    darkerBlue = 0xFFBB8833,
     SwitchPanel = {
         SwitchButtonColor = 0xFF00AA00,
         HoveredSwitchButtonColor = 0xFF00CC00
@@ -144,7 +145,14 @@ Globals.linkedValuesChangeBlinkTime = 2.0
 local ImguiUtils
 do
     ImguiUtils = {}
-    ImguiUtils.renderActiveInactiveButton = function(buttonTitle, active, enabled, onPressFunction, colorOverride, width, height)
+    ImguiUtils.renderActiveInactiveButton = function(
+        buttonTitle,
+        active,
+        enabled,
+        onPressFunction,
+        colorOverride,
+        width,
+        height)
         if (enabled) then
             if (active) then
                 if (colorOverride ~= nil) then

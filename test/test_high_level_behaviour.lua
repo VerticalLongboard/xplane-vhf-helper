@@ -29,6 +29,7 @@ local LuaIniParserStub = require("LIP")
 local LuaPlatform = require("lua_platform")
 local Globals = require("vr-radio-helper.globals")
 local Utilities = require("vr-radio-helper.shared_components.utilities")
+local vatsimbriefHelperStub = require("vatsimbrief_helper")
 
 TestHighLevelBehaviour = {
 	Constants = {
@@ -353,4 +354,20 @@ function TestHighLevelBehaviour:testSideWindowMulticrewSupportShowsUpInDefaultSt
 			vhfHelperPackageExport.test.vhfHelperMulticrewManager.Constants.State.SmartCopilotConfigurationMissing
 		][1]
 	)
+end
+
+function TestHighLevelBehaviour:testComPanelShowsAtcStationInfoWhenVatsimbriefHelperIsAvailable()
+	vatsimbriefHelperStub:activateInterface()
+	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
+	vatsimbriefHelperStub:emitVatsimDataRefreshEvent()
+	flyWithLuaStub.datarefs[TestDatarefs.Constants.firstComFreq].data = 129200
+	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
+	self:_assertStringShowsUp("129.200")
+	self:_assertStringShowsUp("TPA_GND")
+	self:_assertStringShowsUp("Just testing")
+	self:_assertStringShowsUp("COM2: UNKNOWN")
+
+	flyWithLuaStub.datarefs[TestDatarefs.Constants.firstComFreq].data = 122800
+	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
+	self:_assertStringShowsUp("Unicom")
 end
