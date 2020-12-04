@@ -139,6 +139,7 @@ do
 
 		imgui.SetWindowFontScale(1.0 * globalFontScale)
 		imgui.TextUnformatted(" ")
+		imgui.Dummy(0.0, 28.0)
 		imgui.Separator()
 
 		imgui.TextUnformatted("        ")

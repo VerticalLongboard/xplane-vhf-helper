@@ -33,7 +33,11 @@ KNOWN_ISSUE(
     {"FlyWithLua macro"}
 )
 
-TRACK_ISSUE("X-Plane", "X-Plane does not let mouse clicks through to windows that do not yet have the focus.")
+TRACK_ISSUE(
+    "X-Plane",
+    "X-Plane does not let mouse clicks through to windows that do not yet have the focus.",
+    "Mention that this is a known issue."
+)
 KNOWN_ISSUE(
     "VR Radio Helper",
     "When interacting with other 3D panels and returning to the VR Radio Helper panel, the first click is ignored.",

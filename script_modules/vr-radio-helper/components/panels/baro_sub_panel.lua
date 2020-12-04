@@ -137,7 +137,8 @@ do
         self:_renderOneBarometerBlock(nextValueIsSettable, 3)
 
         imgui.SetWindowFontScale(1.0 * globalFontScale)
-        imgui.Dummy(0.0, 3.0)
+        -- imgui.Dummy(0.0, 3.0)
+        imgui.Dummy(0.0, 33.0)
         imgui.Separator()
 
         imgui.TextUnformatted("        ")

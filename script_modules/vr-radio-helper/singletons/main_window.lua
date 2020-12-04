@@ -65,7 +65,7 @@ do
             globalFontScale = 2.0
             minWidthWithoutScrollbars = 258
             -- minHeightWithoutScrollbars = 344
-            minHeightWithoutScrollbars = 315
+            minHeightWithoutScrollbars = 346
         else
             globalFontScale = 1.0
             minWidthWithoutScrollbars = 150

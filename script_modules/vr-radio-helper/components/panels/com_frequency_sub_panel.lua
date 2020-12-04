@@ -21,6 +21,9 @@ do
     Globals.OVERRIDE(ComFrequencySubPanel.addCharacter)
     function ComFrequencySubPanel:addCharacter(character)
         VhfFrequencySubPanel.addCharacter(self, character)
+        if (self.enteredValue:len() > 3) then
+            StationInfo.update(self.inputPanelValidator:autocomplete(self.enteredValue))
+        end
         VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
     end
 
@@ -74,39 +77,52 @@ do
         local atcStationColor2 = Globals.Colors.greyText
 
         if (StationInfo.isVatsimbriefHelperAvailable()) then
-            local atcInfo1 = StationInfo.getInfoForFrequency(self:_getFullLinkedValueString(1))
-            local atcInfo2 = StationInfo.getInfoForFrequency(self:_getFullLinkedValueString(2))
-
-            if (atcInfo1 ~= nil) then
-                atcStationId1 = atcInfo1.id
-                atcStationName1 = atcInfo1.shortReadableName or ""
-                atcStationColor1 = Globals.Colors.darkerOrange
-            else
-                atcStationId1 = ("%s1: UNKNOWN"):format(self.descriptor)
-            end
-
-            if (atcInfo2 ~= nil) then
-                atcStationId2 = atcInfo2.id
-                atcStationName2 = atcInfo2.shortReadableName or ""
-                atcStationColor2 = Globals.Colors.darkerOrange
-            else
-                atcStationId2 = ("%s2: UNKNOWN"):format(self.descriptor)
-            end
+            atcStationId1, atcStationName1, atcStationColor1 =
+                self:_getStationInfoForFrequency(self:_getFullLinkedValueString(1), 1)
+            atcStationId2, atcStationName2, atcStationColor2 =
+                self:_getStationInfoForFrequency(self:_getFullLinkedValueString(2), 2)
+            atcStationIdNext, atcStationNameNext, atcStationColorNext =
+                self:_getStationInfoForFrequency(self.inputPanelValidator:autocomplete(self.enteredValue))
         else
             atcStationId1 = ("%s1"):format(self.descriptor)
             atcStationId2 = ("%s2"):format(self.descriptor)
         end
 
+        logMsg(atcStationName1)
+
         self:_renderTinyFontLine(atcStationName1, atcStationName2, atcStationColor1, atcStationColor2)
         self:_renderValueLine()
         self:_renderTinyFontLine(atcStationId1, atcStationId2, atcStationColor1, atcStationColor2)
-        self:_renderNextValueLine()
+        if (self.enteredValue:len() > 3) then
+            self:_renderNextValueLine(atcStationNameNext, atcStationIdNext)
+        else
+            self:_renderNextValueLine()
+        end
 
         imgui.PopStyleVar()
         imgui.PopStyleVar()
 
         imgui.Separator()
         self:_renderNumberPanel()
+    end
+
+    function ComFrequencySubPanel:_getStationInfoForFrequency(fullString, comNumber)
+        local atcInfo = StationInfo.getInfoForFrequency(fullString)
+        local atcStationName = ""
+        local atcStationColor = Globals.Colors.greyText
+        if (atcInfo ~= nil) then
+            atcStationId = atcInfo.id
+            atcStationName = atcInfo.shortReadableName or ""
+            atcStationColor = Globals.Colors.darkerOrange
+        else
+            if (comNumber == nil) then
+                atcStationId = ("%s: UNKNOWN"):format(self.descriptor)
+            else
+                atcStationId = ("%s%d: UNKNOWN"):format(self.descriptor, comNumber)
+            end
+        end
+
+        return atcStationId, atcStationName, atcStationColor
     end
 end
 

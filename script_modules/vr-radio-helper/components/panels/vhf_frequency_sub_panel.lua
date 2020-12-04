@@ -81,6 +81,38 @@ do
     end
 
     Globals._NEWFUNC(VhfFrequencySubPanel._renderTinyFontLine)
+    function VhfFrequencySubPanel:_renderTinyFontLineCentered(centerText, centerColor)
+        if (centerText:len() > 34) then
+            centerText = ("%.31s..."):format(centerText)
+        end
+        if (centerColor == nil) then
+            centerColor = Globals.Colors.greyText
+        end
+
+        local tinyFontLinePadding = 34 - centerText:len()
+        local leftPadding = nil
+        local rightPadding = nil
+        if (tinyFontLinePadding % 2 == 0) then
+            leftPadding = tinyFontLinePadding * 0.5
+            rightPadding = leftPadding
+        else
+            leftPadding = math.floor(tinyFontLinePadding * 0.5)
+            rightPadding = leftPadding + 1
+        end
+
+        local padWhitespaceLeft = string.rep(" ", leftPadding)
+        local padWhitespaceRight = string.rep(" ", rightPadding)
+
+        imgui.SetWindowFontScale(0.5 * globalFontScale)
+
+        local centerText = ("%s%s%s"):format(padWhitespaceLeft, centerText, padWhitespaceRight)
+
+        imgui.PushStyleColor(imgui.constant.Col.Text, centerColor)
+        imgui.TextUnformatted(centerText)
+        imgui.PopStyleColor()
+    end
+
+    Globals._NEWFUNC(VhfFrequencySubPanel._renderTinyFontLine)
     function VhfFrequencySubPanel:_renderTinyFontLine(leftText, rightText, leftColor, rightColor)
         if (leftColor == nil) then
             leftColor = Globals.Colors.greyText
@@ -173,7 +205,7 @@ do
     end
 
     function VhfFrequencySubPanel:_renderSwitchButton(nextVhfFrequencyIsSettable, vhfNumber)
-        imgui.SetWindowFontScale(1.0 * globalFontScale)
+        imgui.SetWindowFontScale(0.9 * globalFontScale)
         Globals.ImguiUtils.pushSwitchButtonColors(nextVhfFrequencyIsSettable)
 
         if (imgui.Button("<" .. tonumber(vhfNumber) .. ">")) then
@@ -183,18 +215,23 @@ do
         Globals.ImguiUtils.popSwitchButtonColors()
     end
 
-    function VhfFrequencySubPanel:_renderNextValueLine()
+    function VhfFrequencySubPanel:_renderNextValueLine(upperTinyFontText, lowerTinyFontText)
         local nextVhfFrequencyIsSettable = self:numberCanBeSetNow()
 
         imgui.Dummy(0.0, 1.0)
         imgui.Separator()
 
+        upperTinyFontText = upperTinyFontText or ""
+        self:_renderTinyFontLineCentered(upperTinyFontText)
+
         imgui.SetWindowFontScale(1.0 * globalFontScale)
 
         self:_renderSwitchButton(nextVhfFrequencyIsSettable, 1)
 
+        local dummyPadding = 33.0
+
         imgui.SameLine()
-        imgui.TextUnformatted("  ")
+        imgui.Dummy(dummyPadding, 0.0)
 
         Globals.ImguiUtils.pushNextValueColor(nextVhfFrequencyIsSettable)
 
@@ -207,10 +244,13 @@ do
         imgui.PopStyleColor()
 
         imgui.SameLine()
-        imgui.TextUnformatted("  ")
+        imgui.Dummy(dummyPadding, 0.0)
 
         imgui.SameLine()
         self:_renderSwitchButton(nextVhfFrequencyIsSettable, 2)
+
+        lowerTinyFontText = lowerTinyFontText or ""
+        self:_renderTinyFontLineCentered(lowerTinyFontText)
     end
 
     Globals.OVERRIDE(VhfFrequencySubPanel.renderToCanvas)
