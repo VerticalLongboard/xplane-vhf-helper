@@ -79,6 +79,7 @@ do
 
         self.enteredValue = Globals.emptyString
     end
+
     Globals._NEWFUNC(VhfFrequencySubPanel._renderTinyFontLine)
     function VhfFrequencySubPanel:_renderTinyFontLine(leftText, rightText, leftColor, rightColor)
         if (leftColor == nil) then

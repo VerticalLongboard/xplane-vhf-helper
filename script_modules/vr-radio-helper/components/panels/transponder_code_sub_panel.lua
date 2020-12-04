@@ -106,7 +106,7 @@ do
 		self:_pushBlinkingCurrentValueColor(self.codeDataref)
 
 		imgui.TextUnformatted(
-			self.inputPanelValidator:validate(self:_getCurrentLinkedValueString()) or self.FullyPaddedString
+			self.inputPanelValidator:validate(self:_getCurrentLinkedValueString()) or self.Constants.FullyPaddedString
 		)
 		imgui.PopStyleColor()
 

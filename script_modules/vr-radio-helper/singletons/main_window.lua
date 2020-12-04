@@ -152,7 +152,7 @@ do
         )
 
         imgui.SameLine()
-        imgui.Dummy(34.0, 0.0)
+        imgui.Dummy(50.0, 0.0)
 
         imgui.SameLine()
         self:_renderSidePanelButton()

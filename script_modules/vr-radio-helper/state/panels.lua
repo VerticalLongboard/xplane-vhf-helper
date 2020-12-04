@@ -30,7 +30,7 @@ M.bootstrap = function()
         Validation.transponderCodeValidator,
         Datarefs.TransponderCodeLinkedDataref,
         Datarefs.TransponderModeLinkedDataref,
-        "XPDR",
+        "TP",
         "TRANSPONDER"
     )
     M.baroPanel = BaroSubPanel:new(Validation.baroValidator, Datarefs.baroLinkedDatarefs, "BARO", "BARO")

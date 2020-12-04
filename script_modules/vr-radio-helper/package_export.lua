@@ -26,5 +26,6 @@ M.bootstrap = function()
     vhfHelperPackageExport.test.comLinkedDatarefs = Datarefs.comLinkedDatarefs
     vhfHelperPackageExport.test.navLinkedDatarefs = Datarefs.navLinkedDatarefs
     vhfHelperPackageExport.test.transponderModeToDescriptor = Datarefs.transponderModeToDescriptor
+    vhfHelperPackageExport.test.Panels = Panels
 end
 return M

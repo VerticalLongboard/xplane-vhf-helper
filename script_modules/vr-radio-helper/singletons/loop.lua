@@ -58,11 +58,13 @@ do
 
     function vhfHelperLoop:_reset()
         self.Constants = {
-            defaultMacroName = Globals.readableScriptName
+            defaultMacroName = Globals.readableScriptName,
+            MaxCappedDt = 1 / 30.0
         }
         self.alreadyInitializedCompletely = false
-        self.lastFrameTime = LuaPlatform.Time.now()
-        self.dt = self.lastFrameTime + 1 / 60.0
+
+        self.lastFrameTime = 0.0
+        self:_updateDt()
 
         self.datarefInitialization = DatarefInitializationItem:new(5.0, "DatarefInitialization")
         self.vatsimbriefHelperInitialization =
@@ -124,10 +126,20 @@ do
         self.alreadyInitializedCompletely = true
     end
 
-    function vhfHelperLoop:everyFrameLoop()
+    function vhfHelperLoop:_updateDt()
         local now = LuaPlatform.Time.now()
+
         self.dt = now - self.lastFrameTime
+        self.oneOverDt = 1.0 / self.dt
+
+        self.cappedDt = math.min(self.Constants.MaxCappedDt, self.dt)
+        self.oneOverCappedDt = 1.0 / self.cappedDt
+
         self.lastFrameTime = now
+    end
+
+    function vhfHelperLoop:everyFrameLoop()
+        self:_updateDt()
 
         if (self.datarefInitialization:hasBeenInitialized()) then
             for _, ldr in pairs(Datarefs.allLinkedDatarefs) do
@@ -144,6 +156,18 @@ do
 
     function vhfHelperLoop:getDt()
         return self.dt
+    end
+
+    function vhfHelperLoop:getOneOverDt()
+        return self.oneOverDt
+    end
+
+    function vhfHelperLoop:getCappedDt()
+        return self.cappedDt
+    end
+
+    function vhfHelperLoop:getOneOverCappedDt()
+        return self.oneOverCappedDt
     end
 end
 

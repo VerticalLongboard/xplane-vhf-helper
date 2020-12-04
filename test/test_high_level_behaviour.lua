@@ -32,10 +32,10 @@ local Utilities = require("vr-radio-helper.shared_components.utilities")
 
 TestHighLevelBehaviour = {
 	Constants = {
-		comPanelButtonTitle = "COM",
-		navPanelButtonTitle = "NAV",
-		transponderPanelButtonTitle = "XPDR",
-		baroPanelButtonTitle = "BARO"
+		comPanelButtonTitle = vhfHelperPackageExport.test.Panels.comFrequencyPanel.panelTitle,
+		navPanelButtonTitle = vhfHelperPackageExport.test.Panels.navFrequencyPanel.panelTitle,
+		transponderPanelButtonTitle = vhfHelperPackageExport.test.Panels.transponderCodePanel.panelTitle,
+		baroPanelButtonTitle = vhfHelperPackageExport.test.Panels.baroPanel.panelTitle
 	}
 }
 
@@ -258,6 +258,14 @@ function TestHighLevelBehaviour:testSwitchingTransponderDoesSwitch()
 	self:_pressButton(self.Constants.transponderPanelButtonTitle)
 	self:_switchToOtherTransponder(TestDatarefs.Constants.transponderCode, "4066")
 	self:_switchToOtherTransponder(TestDatarefs.Constants.transponderCode, "1000")
+end
+
+function TestHighLevelBehaviour:testInvalidTransonderCodeIsDisplayedCorrectly()
+	flyWithLuaStub.datarefs[TestDatarefs.Constants.transponderCode].data = 9999
+	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
+
+	self:_pressButton(self.Constants.transponderPanelButtonTitle)
+	self:_assertStringShowsUp("----")
 end
 
 function TestHighLevelBehaviour:testCurrentTransponderCodeIsShownSomewhere()

@@ -141,7 +141,7 @@ do
     function NumberSubPanel:_getButtonStyleSpring(springId)
         local spring = self.buttonStyleSprings[springId]
         if (self.buttonStyleSprings[springId] == nil) then
-            self.buttonStyleSprings[springId] = FlexibleLength1DSpring:new(20.0, 100.0)
+            self.buttonStyleSprings[springId] = FlexibleLength1DSpring:new(100.0, 0.2)
             spring = self.buttonStyleSprings[springId]
         end
         return spring
@@ -149,7 +149,7 @@ do
 
     function NumberSubPanel:_updateStyleSprings()
         for _, spring in ipairs(self.buttonStyleSprings) do
-            spring:moveSpring(vhfHelperLoop:getDt())
+            spring:moveSpring(vhfHelperLoop:getCappedDt(), vhfHelperLoop:getOneOverCappedDt())
         end
     end
 
