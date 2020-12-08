@@ -6,17 +6,9 @@ local ComFrequencySubPanel
 do
     ComFrequencySubPanel = VhfFrequencySubPanel:new()
 
-    ComFrequencySubPanel.UnicomFrequencies = {
-        -- https://www.aopa.org/advocacy/advocacy-briefs/air-traffic-services-process-brief-changing-unicom-frequencies
-        "122.800",
-        "122.700",
-        "123.000",
-        "122.725",
-        "122.975",
-        "123.050",
-        "123.075"
-    }
+    ComFrequencySubPanel.UnicomFrequencies = {}
 
+    -- https://www.aopa.org/advocacy/advocacy-briefs/air-traffic-services-process-brief-changing-unicom-frequencies
     ComFrequencySubPanel.UnicomFrequencies["122.800"] = {}
     ComFrequencySubPanel.UnicomFrequencies["122.700"] = {}
     ComFrequencySubPanel.UnicomFrequencies["123.000"] = {}

@@ -15,16 +15,17 @@ flyWithLuaStub:suppressLogMessagesContaining(
     }
 )
 
-require("shared_components.test_suite")
+-- require("shared_components.test_suite")
 
-require("test_station_info")
-require("multicrew.test_multicrew")
-require("test_speak_nato")
-require("test_public_interface")
-require("test_datarefs")
-require("test_input_validation")
-require("test_high_level_behaviour")
-require("test_interchange_linked_dataref")
+-- require("test_station_info")
+-- require("multicrew.test_multicrew")
+-- require("test_speak_nato")
+-- require("test_public_interface")
+-- require("test_datarefs")
+-- require("test_input_validation")
+-- require("test_high_level_behaviour")
+-- require("test_interchange_linked_dataref")
+require("test_radar")
 
 KNOWN_ISSUE(
     "VR Radio Helper",

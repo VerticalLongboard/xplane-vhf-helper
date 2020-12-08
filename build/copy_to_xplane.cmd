@@ -31,10 +31,9 @@ if %SCRIPTS_FOLDER_FILES_COUNT% NEQ 1 (
 )
 
 for /F %%A in ('dir /a-d-s-h /b .\script_modules ^| find /V /C ""') do set SCRIPT_MODULES_FOLDER_FILES_COUNT=%%A
-echo If you see a File Not Found, don't worry. That's fine.
 if %SCRIPT_MODULES_FOLDER_FILES_COUNT% NEQ 0 (
     echo To not accidentally overwrite files in the FlyWithLua modules folder, all additional files besides the main script in [94m.\scripts[0m
-    echo should be in a custom subfolder, preferably [94m.\script_modules\%RELEASE_FILE_NAME_PREFIX%[0m.
+    echo should be in a [93mcustom subfolder[0m, preferably [94m.\script_modules\%RELEASE_FILE_NAME_PREFIX%[0m.
     echo.
     echo Currently, [94m..\script_modules[0m [91mcontains %SCRIPT_MODULES_FOLDER_FILES_COUNT% files[0m.
     echo.
@@ -42,6 +41,8 @@ if %SCRIPT_MODULES_FOLDER_FILES_COUNT% NEQ 0 (
     echo.
     set ERRORLEVEL=1
     goto :label_copy_error
+) else (
+    echo If you see a File Not Found, don't worry. That's fine.
 )
 
 echo Script Modules to %MODULES_TARGET_PATH%: >> %TASK_OUTPUT_FILENAME%
