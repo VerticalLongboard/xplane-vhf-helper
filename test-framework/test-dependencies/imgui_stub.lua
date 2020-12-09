@@ -37,6 +37,8 @@ imgui = {
         Col = {Text = "Text", Button = "Button", Separator = "Separator"}
     },
     Constants = {
+        DrawList_AddImage = "DrawList_AddImage",
+        Image = "Image",
         Button = "Button",
         SmallButton = "SmallButton",
         TextUnformatted = "TextUnformatted",
@@ -50,6 +52,12 @@ imgui = {
         SetCursorPos = "SetCursorPos"
     },
     LastFrameCommandList = {},
+    DrawList_AddImage = function(imageId, top, left, right, bottom, uv0x, uv0y, uv1x, uv1y, someColor)
+        table.insert(imgui.LastFrameCommandList, {type = imgui.Constants.DrawList_AddImage})
+    end,
+    Image = function(imageId, size, uv0x, uv0y, uv1x, uv1y, blaColor, blaColor2, blaColor3, blaColor4)
+        table.insert(imgui.LastFrameCommandList, {type = imgui.Constants.Image})
+    end,
     SetCursorPos = function(x, y)
         table.insert(imgui.LastFrameCommandList, {type = imgui.Constants.SetCursorPos})
     end,

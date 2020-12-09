@@ -505,6 +505,10 @@ function flyWithLuaStub:getLastSpeakString()
     return self.lastSpeakString
 end
 
+function float_wnd_load_image(path)
+    return nil
+end
+
 function float_wnd_set_title(window, newTitle)
     window.title = newTitle
 end

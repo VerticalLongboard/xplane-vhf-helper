@@ -6,6 +6,24 @@ Utilities.prefixAllLines = function(linesString, prefix)
     return prefix .. linesString:gsub("\n", "\n" .. prefix)
 end
 
+TRACK_ISSUE(
+    "Lua",
+    "There are no directory-related functions in Lua.",
+    "Use os.rename to check if something exists (can be a directory)"
+)
+Utilities.fileOrDirectoryExists = function(path)
+    local result, error, errorCode = os.rename(path, path)
+    if (not result) then
+        local permissionDeniedErrorCode = 13
+        if (code == permissionDeniedErrorCode) then
+            return true
+        end
+
+        return false
+    end
+    return true
+end
+
 Utilities.fileExists = function(filePath)
     local file = LuaPlatform.IO.open(filePath, LuaPlatform.IO.Constants.Modes.Read)
     if file == nil then
