@@ -3,6 +3,7 @@ local Utilities = require("vr-radio-helper.shared_components.utilities")
 local SubPanel = require("vr-radio-helper.components.panels.sub_panel")
 local FlexibleLength1DSpring = require("vr-radio-helper.shared_components.flexible_length_1d_spring")
 local VatsimData = require("vr-radio-helper.state.vatsim_data")
+local Datarefs = require("vr-radio-helper.state.datarefs")
 
 local RadarPanel
 do
@@ -46,6 +47,10 @@ do
         self.zoomSpring:setTarget(self.zoomRange)
         self.vatsimClients = nil
 
+        self.renderClients = {}
+
+        self.totalVatsimClients = 0
+
         return newInstanceWithState
     end
 
@@ -59,11 +64,21 @@ do
 
     function RadarPanel:_convertVatsimClientsToRenderClients(vatsimclientTable)
         local clients = {}
+        if (vatsimclientTable == nil) then
+            return clients
+        end
+
+        local num = 0
         for _, vatsimClient in ipairs(vatsimclientTable) do
-            -- if (vatsimClient.currentDistance > RadarPanel.Constants.MaxZoomRange) then
-            --     imgui.TextUnformatted(tostring())
-            --     break
-            -- end
+            if (vatsimClient.currentDistance > RadarPanel.Constants.MaxZoomRange) then
+                logMsg(
+                    "break at client=" ..
+                        (vatsimClient.callSign or vatsimClient.id) ..
+                            " num=" .. tostring(num) .. "/" .. tostring(#vatsimclientTable)
+                )
+                break
+            end
+            num = num + 1
             local clientType = nil
             if (vatsimClient.type == "Plane") then
                 clientType = RadarPanel.Constants.ClientType.Plane
@@ -225,12 +240,15 @@ do
 
     function RadarPanel:refreshVatsimClients()
         local vatsimClients, ownCallSign, timeStamp = VatsimData.getAllVatsimClientsWithOwnCallsignAndTimestamp()
-        self.renderClients = self:_convertVatsimClientsToRenderClients(vatsimClients)
+        self.totalVatsimClients = #vatsimClients
+        local newRenderClients = self:_convertVatsimClientsToRenderClients(vatsimClients)
+        if (#newRenderClients > 0) then
+            self.renderClients = newRenderClients
+        end
 
-        local TEST_callsign = "KSFO_ATIS"
         self.ownClient = nil
         for _, client in ipairs(self.renderClients) do
-            if (client.name == TEST_callsign) then
+            if (client.name == ownCallSign) then
                 self.ownClient = client
                 break
             end
@@ -239,27 +257,37 @@ do
 
     Globals.OVERRIDE(RadarPanel.renderToCanvas)
     function RadarPanel:renderToCanvas()
-        if (self.ownClient == nil) then
-            return
-        end
-
+        -- TODO: Add own render client
+        -- TODO: Add timestamp
+        -- TODO: Add pos
+        -- TODO: Add heading line
         self.zoomSpring:setTarget(self.zoomRange)
 
         if (self.currentHeadingMode == RadarPanel.Constants.HeadingMode.Heading) then
-            self:_setNewHeadingTarget(self.ownClient.worldHeading)
+            self:_setNewHeadingTarget(Datarefs.getCurrentHeading())
         else
             self:_setNewHeadingTarget(0.0)
         end
 
         local heading = self.headingSpring:getCurrentPosition() % 360.0
 
-        self:_precomputeFrameConstants(heading, {self.ownClient.worldPos[1], self.ownClient.worldPos[2]})
+        local ownWorldPos =
+            self:_convertVatsimLocationToFlat3DKm(Datarefs.getCurrentLatitude(), Datarefs.getCurrentLongitude(), 0.0)
+
+        self:_precomputeFrameConstants(heading, {ownWorldPos[1], ownWorldPos[2]})
+
+        local ownScreenPos = self:_worldToCameraSpace(ownWorldPos)
+        ownScreenPos = self:_cameraToClipSpace(ownScreenPos)
+        ownScreenPos = self:_clipToScreenSpace(ownScreenPos)
+
+        local numVisible = 0
 
         for _, client in ipairs(self.renderClients) do
             client.cameraPos = self:_worldToCameraSpace(client.worldPos)
             client.cameraHeading = client.worldHeading - heading
             client.clipPos = self:_cameraToClipSpace(client.cameraPos)
             if (self:_isVisible(client.clipPos)) then
+                numVisible = numVisible + 1
                 client.isVisible = true
                 client.screenPos = self:_clipToScreenSpace(client.clipPos)
             else
@@ -268,8 +296,6 @@ do
         end
 
         imgui.PushClipRect(0, 0, self.realScreenWidth, self.realScreenHeight, true)
-
-        local ownScreenPos = self.ownClient.screenPos
 
         self:_renderDistanceCircles(ownScreenPos, heading)
         self:_renderCompass()
@@ -281,9 +307,15 @@ do
             end
         end
 
-        self:_drawClient(self.ownClient, self.ownClient)
+        if (self.ownClient ~= nil) then
+            self:_drawClient(self.ownClient, self.ownClient)
+        end
 
         imgui.PopClipRect()
+
+        -- imgui.SetCursorPos(5, 20)
+        -- imgui.TextUnformatted("")
+        -- imgui.TextUnformatted(("%d/%d/%d"):format(numVisible, #self.renderClients, self.totalVatsimClients))
 
         self:_renderControlButtons()
 
@@ -304,7 +336,7 @@ do
 
         imgui.SameLine()
         if (imgui.Button("+")) then
-            if (self.zoomRange > 4.6875) then
+            if (self.zoomRange > 0.29296875) then
                 self.zoomRange = self.zoomRange * 0.5
             end
         end
@@ -331,9 +363,9 @@ do
     end
 
     function RadarPanel:_renderDistanceCircles(ownScreenPos, heading)
-        local currentCircleNm = 2.5
+        local currentCircleNm = 0.15625
         local circleRotation = Matrix2x2:newRotationMatrix((-45.0 - heading) * Utilities.DegToRad)
-        for c = 1, 8 do
+        for c = 1, 12 do
             local circleKm = currentCircleNm * Utilities.NmToKm
 
             local circlePoint = {0.0, circleKm * 1.0}
@@ -351,12 +383,12 @@ do
             )
 
             local circleStr = nil
-            if (currentCircleNm == 2.5) then
-                circleStr = ("%.1f"):format(currentCircleNm)
+            if (currentCircleNm <= 2.5) then
+                circleStr = ("%.2f"):format(currentCircleNm)
             else
                 circleStr = ("%.0f"):format(currentCircleNm)
             end
-            imgui.SetCursorPos(math.floor(circlePoint[1]) - (circleStr:len() * 2.7), math.floor(circlePoint[2] - 8))
+            imgui.SetCursorPos(math.floor(circlePoint[1] - (circleStr:len() * 2.7)) - 5, math.floor(circlePoint[2] - 8))
 
             local circleAlpha =
                 math.min(255.0, Utilities.Math.lerp(0, 255.0, circleKm / self.zoomSpring:getCurrentPosition()))

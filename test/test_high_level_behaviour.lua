@@ -37,7 +37,8 @@ TestHighLevelBehaviour = {
 		navPanelButtonTitle = vhfHelperPackageExport.test.Panels.navFrequencyPanel.panelTitle,
 		radarPanelButtonTitle = vhfHelperPackageExport.test.Panels.radarPanel.panelTitle,
 		transponderPanelButtonTitle = vhfHelperPackageExport.test.Panels.transponderCodePanel.panelTitle,
-		baroPanelButtonTitle = vhfHelperPackageExport.test.Panels.baroPanel.panelTitle
+		baroPanelButtonTitle = vhfHelperPackageExport.test.Panels.baroPanel.panelTitle,
+		SkrgPos = {6.1708, -75.4276}
 	}
 }
 
@@ -91,6 +92,22 @@ function TestHighLevelBehaviour:_switchToOtherBaro(baroNumber, linkedDatarefId, 
 end
 
 function TestHighLevelBehaviour:_createInternalDatarefs()
+	flyWithLuaStub:createSharedDatarefHandle(
+		TestDatarefs.Constants.currentLatitude,
+		flyWithLuaStub.Constants.DatarefTypeFloat,
+		TestDatarefs.Constants.initialLatitude
+	)
+	flyWithLuaStub:createSharedDatarefHandle(
+		TestDatarefs.Constants.currentLongitude,
+		flyWithLuaStub.Constants.DatarefTypeFloat,
+		TestDatarefs.Constants.initialLongitude
+	)
+	flyWithLuaStub:createSharedDatarefHandle(
+		TestDatarefs.Constants.currentTruePsi,
+		flyWithLuaStub.Constants.DatarefTypeFloat,
+		TestDatarefs.Constants.initialTruePsi
+	)
+
 	flyWithLuaStub:createSharedDatarefHandle(
 		TestDatarefs.Constants.firstComFreq,
 		flyWithLuaStub.Constants.DatarefTypeInteger,

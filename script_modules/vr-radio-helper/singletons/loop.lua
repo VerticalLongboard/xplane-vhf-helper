@@ -25,6 +25,8 @@ do
         for _, ldr in pairs(Datarefs.allLinkedDatarefs) do
             ldr:initialize()
         end
+
+        Datarefs.initializeReadDatarefs()
     end
 end
 

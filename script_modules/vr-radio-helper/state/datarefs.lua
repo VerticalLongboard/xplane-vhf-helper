@@ -137,8 +137,26 @@ local isNewTransponderModeValid = function(ild, newValue)
     return true
 end
 
+VrRadioHelperCurrentLatitudeRead = 0
+VrRadioHelperCurrentLongitudeRead = 0
+VrRadioHelperCurrentTruePsiRead = 0
+
 local M = {}
+M.getCurrentLatitude = function()
+    return VrRadioHelperCurrentLatitudeRead
+end
+M.getCurrentLongitude = function()
+    return VrRadioHelperCurrentLongitudeRead
+end
+M.getCurrentHeading = function()
+    return VrRadioHelperCurrentTruePsiRead
+end
 M.transponderModeToDescriptor = transponderModeToDescriptor
+M.initializeReadDatarefs = function()
+    dataref("VrRadioHelperCurrentLatitudeRead", "sim/flightmodel/position/latitude", "readable")
+    dataref("VrRadioHelperCurrentLongitudeRead", "sim/flightmodel/position/longitude", "readable")
+    dataref("VrRadioHelperCurrentTruePsiRead", "sim/flightmodel/position/true_psi", "readable")
+end
 M.bootstrap = function()
     M.comLinkedDatarefs = {
         InterchangeLinkedDataref:new(
