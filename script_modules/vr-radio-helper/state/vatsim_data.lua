@@ -1,15 +1,5 @@
 Globals = require("vr-radio-helper.globals")
 
-TRACK_ISSUE(
-    "Tech Debt",
-    MULTILINE_TEXT(
-        "When reloading both Vatsimbrief Helper and VR Radio Helper, the currently set frequencies will",
-        "not match any ATC info because there's nothing downloaded yet. That only happens when reloading",
-        "the scripts though and when changing the frequency the next time, it will just work again."
-    ),
-    "Accept that developer inconvenience for now. Added a Refresh button to side panel."
-)
-
 local function retrieveInfoForAlternateFrequency(fullFrequencyString)
     local lastDigit = fullFrequencyString:sub(7, 7)
     if (lastDigit == "5") then
@@ -26,19 +16,19 @@ local function retrieveInfoForAlternateFrequency(fullFrequencyString)
 end
 
 local function isVatsimbriefHelperAvailable()
-    return VatsimbriefHelperPublicInterface ~= nil and VatsimbriefHelperPublicInterface.getInterfaceVersion() == 1
+    return VatsimbriefHelperPublicInterface ~= nil and VatsimbriefHelperPublicInterface.getInterfaceVersion() == 2
 end
 
 local function retrieveInfoForFrequency(fullFrequencyString)
-    if (isVatsimbriefHelperAvailable()) then
-        local atcInfos = VatsimbriefHelperPublicInterface.getAtcStationsForFrequencyClosestFirst(fullFrequencyString)
-        if (atcInfos == nil or #atcInfos == 0) then
-            return retrieveInfoForAlternateFrequency(fullFrequencyString)
-        end
-        return atcInfos[1]
-    else
+    if (not isVatsimbriefHelperAvailable()) then
         return nil
     end
+
+    local atcInfos = VatsimbriefHelperPublicInterface.getAtcStationsForFrequencyClosestFirst(fullFrequencyString)
+    if (atcInfos == nil or #atcInfos == 0) then
+        return retrieveInfoForAlternateFrequency(fullFrequencyString)
+    end
+    return atcInfos[1]
 end
 
 local function getShortReadableStationName(longReadableName)
@@ -69,10 +59,21 @@ local function getShortReadableStationName(longReadableName)
     return longReadableName:sub(firstW, lastNameCharacter)
 end
 
+local function getAllVatsimClientsWithOwnCallsignAndTimestamp()
+    if (not isVatsimbriefHelperAvailable()) then
+        return nil, nil, 0
+    end
+
+    local clients, timestamp = VatsimbriefHelperPublicInterface.getAllVatsimClientsClosestFirstWithTimestamp()
+    local ownCallsign = VatsimbriefHelperPublicInterface.getOwnCallSign()
+
+    return clients, ownCallsign, timestamp
+end
+
 local M = {}
 M.bootstrap = function()
     M.mapFrequencyToAtcInfo = {}
-    M.update = function(fullFrequencyString)
+    M.updateInfoForFrequency = function(fullFrequencyString)
         M.mapFrequencyToAtcInfo[fullFrequencyString] = retrieveInfoForFrequency(fullFrequencyString)
         local cachedInfo = M.mapFrequencyToAtcInfo[fullFrequencyString]
         if (cachedInfo ~= nil) then
@@ -86,5 +87,6 @@ M.bootstrap = function()
     end
     M.getShortReadableStationName = getShortReadableStationName
     M.isVatsimbriefHelperAvailable = isVatsimbriefHelperAvailable
+    M.getAllVatsimClientsWithOwnCallsignAndTimestamp = getAllVatsimClientsWithOwnCallsignAndTimestamp
 end
 return M

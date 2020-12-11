@@ -1,6 +1,6 @@
 local allReadableNames = require("allReadableNames")
 local allExpectedConvertedNames = require("allExpectedConvertedNames")
-local StationInfo = require("vr-radio-helper.state.station_info")
+local VatsimData = require("vr-radio-helper.state.vatsim_data")
 
 TestComFrequencyPanel = {}
 
@@ -8,7 +8,7 @@ function TestComFrequencyPanel:testFixConvertedReadableNames()
     local allActualConvertedNames = {}
     luaUnit.assertEquals(#allReadableNames, #allExpectedConvertedNames)
     for _, name in ipairs(allReadableNames) do
-        table.insert(allActualConvertedNames, StationInfo.getShortReadableStationName(name))
+        table.insert(allActualConvertedNames, VatsimData.getShortReadableStationName(name))
     end
 
     for i = 1, #allActualConvertedNames do

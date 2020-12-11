@@ -37,7 +37,7 @@ Globals.requireAllAndBootstrapInOrder(
         "vr-radio-helper.state.notifications",
         "vr-radio-helper.state.validation",
         "vr-radio-helper.state.datarefs",
-        "vr-radio-helper.state.station_info",
+        "vr-radio-helper.state.vatsim_data",
         "vr-radio-helper.state.panels",
         "vr-radio-helper.singletons.compatibility_manager",
         "vr-radio-helper.singletons.multicrew_manager",

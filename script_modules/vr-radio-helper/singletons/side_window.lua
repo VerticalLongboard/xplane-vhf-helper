@@ -5,7 +5,7 @@ local Utilities = require("vr-radio-helper.shared_components.utilities")
 local InlineButtonBlob = require("vr-radio-helper.shared_components.inline_button_blob")
 local Notifications = require("vr-radio-helper.state.notifications")
 local LuaPlatform = require("lua_platform")
-local StationInfo = require("vr-radio-helper.state.station_info")
+local VatsimData = require("vr-radio-helper.state.vatsim_data")
 local Panels = require("vr-radio-helper.state.panels")
 
 TRACK_ISSUE(
@@ -66,7 +66,7 @@ do
         },
         Notifications = {
             HaveALookAtMe = "SideWindow_HaveALookAtMe",
-            StationInfoAvailable = "SideWindow_StationInfoAvailable"
+            VatsimDataAvailable = "SideWindow_VatsimDataAvailable"
         }
     }
 
@@ -79,11 +79,11 @@ do
             Notifications.manager:isPending(vhfHelperMulticrewManager.Notifications.StateChange)
         self.pendingCompatibilityNotification =
             Notifications.manager:isPending(vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate)
-        self.pendingStationInfoNotification =
-            Notifications.manager:isPending(vhfHelperSideWindow.Notifications.StationInfoAvailable)
+        self.pendingVatsimDataNotification =
+            Notifications.manager:isPending(vhfHelperSideWindow.Notifications.VatsimDataAvailable)
 
         Notifications.manager:acknowledge(vhfHelperSideWindow.Notifications.HaveALookAtMe)
-        Notifications.manager:acknowledge(vhfHelperSideWindow.Notifications.StationInfoAvailable)
+        Notifications.manager:acknowledge(vhfHelperSideWindow.Notifications.VatsimDataAvailable)
         Notifications.manager:acknowledge(vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate)
         Notifications.manager:acknowledge(vhfHelperMulticrewManager.Notifications.StateChange)
 
@@ -124,32 +124,33 @@ do
         }
 
         self.VatsimDataBlob = InlineButtonBlob:new()
-        local stationInfoColor = Globals.Colors.white
+        local VatsimDataColor = Globals.Colors.white
 
-        if (StationInfo.isVatsimbriefHelperAvailable()) then
-            if (self.pendingStationInfoNotification) then
-                stationInfoColor = Globals.Colors.a320Green
+        if (VatsimData.isVatsimbriefHelperAvailable()) then
+            if (self.pendingVatsimDataNotification) then
+                VatsimDataColor = Globals.Colors.a320Green
             else
-                stationInfoColor = Globals.Colors.a320Blue
+                VatsimDataColor = Globals.Colors.a320Blue
             end
 
             self.VatsimDataBlob:addColorTextWithoutNewline(
                 "Vatsimbrief Helper is installed and available. ",
-                stationInfoColor
+                VatsimDataColor
             )
         else
-            if (self.pendingStationInfoNotification) then
-                stationInfoColor = Globals.Colors.a320Orange
+            if (self.pendingVatsimDataNotification) then
+                VatsimDataColor = Globals.Colors.a320Orange
             end
             self.VatsimDataBlob:addColorTextWithoutNewline(
                 "Vatsimbrief Helper is not installed or incompatible.",
-                stationInfoColor
+                VatsimDataColor
             )
             self.VatsimDataBlob:addNewline()
             self.VatsimDataBlob:addColorTextWithoutNewline(
-                "Install the newest version if you'd like to see ATC station info.",
-                stationInfoColor
+                "Update VR Radio Helper and/or Vatsimbrief Helper.",
+                VatsimDataColor
             )
+
             self.VatsimDataBlob:addNewline()
             ClickableFeedbackBrowserLink:new():addLinkToBlob(
                 self.VatsimDataBlob,
@@ -307,15 +308,15 @@ do
     function vhfHelperSideWindow:bootstrap()
         self:_reset()
         Notifications.manager:postOnce(vhfHelperSideWindow.Notifications.HaveALookAtMe)
-        if (StationInfo.isVatsimbriefHelperAvailable()) then
-            Notifications.manager:postOnce(vhfHelperSideWindow.Notifications.StationInfoAvailable)
+        if (VatsimData.isVatsimbriefHelperAvailable()) then
+            Notifications.manager:postOnce(vhfHelperSideWindow.Notifications.VatsimDataAvailable)
         end
     end
 
     function vhfHelperSideWindow:areAnyNotificationsPending()
         if
             (Notifications.manager:isPending(vhfHelperSideWindow.Notifications.HaveALookAtMe) or
-                Notifications.manager:isPending(vhfHelperSideWindow.Notifications.StationInfoAvailable) or
+                Notifications.manager:isPending(vhfHelperSideWindow.Notifications.VatsimDataAvailable) or
                 Notifications.manager:isPending(vhfHelperCompatibilityManager.Notifications.CompatibilityUpdate) or
                 Notifications.manager:isPending(vhfHelperMulticrewManager.Notifications.StateChange))
          then

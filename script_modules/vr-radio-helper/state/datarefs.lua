@@ -4,7 +4,7 @@ local InterchangeLinkedDataref = require("vr-radio-helper.components.interchange
 local SpeakNato = require("vr-radio-helper.components.speak_nato")
 local Config = require("vr-radio-helper.state.config")
 local Utilities = require("vr-radio-helper.shared_components.utilities")
-local StationInfo = require("vr-radio-helper.state.station_info")
+local VatsimData = require("vr-radio-helper.state.vatsim_data")
 
 TRACK_ISSUE(
     "FlyWithLua",
@@ -62,7 +62,7 @@ local onComLinkedChanged = function(ild, newValue)
 
     local valueString = tostring(newValue)
     valueString = ("%s.%s"):format(valueString:sub(1, 3), valueString:sub(4, 6))
-    StationInfo.update(valueString)
+    VatsimData.updateInfoForFrequency(valueString)
 end
 
 local onNotRequiredCallbackFunction = function(ild, newValue)

@@ -30,7 +30,7 @@ flyWithLuaStub:suppressLogMessagesContaining(
 
 require("shared_components.test_suite")
 
-require("test_station_info")
+require("test_vatsim_data")
 require("multicrew.test_multicrew")
 require("test_speak_nato")
 require("test_public_interface")

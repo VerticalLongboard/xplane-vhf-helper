@@ -1,6 +1,6 @@
 local Globals = require("vr-radio-helper.globals")
 local VhfFrequencySubPanel = require("vr-radio-helper.components.panels.vhf_frequency_sub_panel")
-local StationInfo = require("vr-radio-helper.state.station_info")
+local VatsimData = require("vr-radio-helper.state.vatsim_data")
 
 local ComFrequencySubPanel
 do
@@ -24,15 +24,15 @@ do
     end
 
     function ComFrequencySubPanel:triggerStationInfoUpdate()
-        StationInfo.update(self:_getFullLinkedValueString(1))
-        StationInfo.update(self:_getFullLinkedValueString(2))
+        VatsimData.updateInfoForFrequency(self:_getFullLinkedValueString(1))
+        VatsimData.updateInfoForFrequency(self:_getFullLinkedValueString(2))
     end
 
     Globals.OVERRIDE(ComFrequencySubPanel.addCharacter)
     function ComFrequencySubPanel:addCharacter(character)
         VhfFrequencySubPanel.addCharacter(self, character)
         if (self.enteredValue:len() > 3) then
-            StationInfo.update(self.inputPanelValidator:autocomplete(self.enteredValue))
+            VatsimData.updateInfoForFrequency(self.inputPanelValidator:autocomplete(self.enteredValue))
         end
         VHFHelperEventBus.emit(VHFHelperEventOnFrequencyChanged)
     end
@@ -86,13 +86,13 @@ do
         local atcStationName2 = ""
         local atcStationColor2 = Globals.Colors.greyText
 
-        if (StationInfo.isVatsimbriefHelperAvailable()) then
+        if (VatsimData.isVatsimbriefHelperAvailable()) then
             atcStationId1, atcStationName1, atcStationColor1 =
-                self:_getStationInfoForFrequency(self:_getFullLinkedValueString(1), 1)
+                self:_getVatsimDataForFrequency(self:_getFullLinkedValueString(1), 1)
             atcStationId2, atcStationName2, atcStationColor2 =
-                self:_getStationInfoForFrequency(self:_getFullLinkedValueString(2), 2)
+                self:_getVatsimDataForFrequency(self:_getFullLinkedValueString(2), 2)
             atcStationIdNext, atcStationNameNext, atcStationColorNext =
-                self:_getStationInfoForFrequency(self.inputPanelValidator:autocomplete(self.enteredValue))
+                self:_getVatsimDataForFrequency(self.inputPanelValidator:autocomplete(self.enteredValue))
         else
             atcStationId1 = ("%s1"):format(self.descriptor)
             atcStationId2 = ("%s2"):format(self.descriptor)
@@ -114,8 +114,8 @@ do
         self:_renderNumberPanel()
     end
 
-    function ComFrequencySubPanel:_getStationInfoForFrequency(fullString, comNumber)
-        local atcInfo = StationInfo.getInfoForFrequency(fullString)
+    function ComFrequencySubPanel:_getVatsimDataForFrequency(fullString, comNumber)
+        local atcInfo = VatsimData.getInfoForFrequency(fullString)
 
         local isUnicom = self.UnicomFrequencies[fullString] ~= nil
 

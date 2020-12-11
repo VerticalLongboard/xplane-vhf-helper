@@ -2,6 +2,7 @@ local Globals = require("vr-radio-helper.globals")
 local Utilities = require("vr-radio-helper.shared_components.utilities")
 local SubPanel = require("vr-radio-helper.components.panels.sub_panel")
 local FlexibleLength1DSpring = require("vr-radio-helper.shared_components.flexible_length_1d_spring")
+local VatsimData = require("vr-radio-helper.state.vatsim_data")
 
 local RadarPanel
 do
@@ -16,7 +17,8 @@ do
             North = "North",
             Heading = "Heading"
         },
-        ImguiTopLeftPadding = 5
+        ImguiTopLeftPadding = 5,
+        MaxZoomRange = 600.0
     }
     TRACK_ISSUE(
         "Imgui",
@@ -40,9 +42,10 @@ do
         self.currentHeadingMode = RadarPanel.Constants.HeadingMode.Heading
         self.headingSpring = FlexibleLength1DSpring:new(100, 0.2)
         self.zoomSpring = FlexibleLength1DSpring:new(100, 0.2)
-        self.zoomRange = 600.0
+        self.zoomRange = RadarPanel.Constants.MaxZoomRange
         self.zoomSpring:setTarget(self.zoomRange)
-        self.ownHeading = 270.0
+        self.vatsimClients = nil
+
         return newInstanceWithState
     end
 
@@ -57,26 +60,43 @@ do
     function RadarPanel:_convertVatsimClientsToRenderClients(vatsimclientTable)
         local clients = {}
         for _, vatsimClient in ipairs(vatsimclientTable) do
+            -- if (vatsimClient.currentDistance > RadarPanel.Constants.MaxZoomRange) then
+            --     imgui.TextUnformatted(tostring())
+            --     break
+            -- end
             local clientType = nil
-            if (vatsimClient.type == "PILOT") then
+            if (vatsimClient.type == "Plane") then
                 clientType = RadarPanel.Constants.ClientType.Plane
-            elseif (vatsimClient.type == "ATC") then
+            elseif (vatsimClient.type == "Station") then
                 clientType = RadarPanel.Constants.ClientType.Station
             end
 
             if (clientType ~= nil) then
+                local newWorldPos =
+                    self:_convertVatsimLocationToFlat3DKm(
+                    tonumber(vatsimClient.latitude),
+                    tonumber(vatsimClient.longitude),
+                    tonumber(vatsimClient.altitude) or 0.0
+                )
+
+                local newName = vatsimClient.callSign or vatsimClient.id
+                local newHeading = 0.0
+                if (vatsimClient.heading ~= nil) then
+                    newHeading = tonumber(vatsimClient.heading)
+                end
+                local newSpeed = 0.0
+                if (vatsimClient.groundSpeed ~= nil) then
+                    newSpeed = tonumber(vatsimClient.groundSpeed) * Utilities.KnotsToKmh
+                end
+
                 table.insert(
                     clients,
                     {
                         type = clientType,
-                        callSign = vatsimClient.callSign,
-                        worldPos = self:_convertVatsimLocationToFlat3DKm(
-                            vatsimClient.latitude,
-                            vatsimClient.longitude,
-                            vatsimClient.altitude
-                        ),
-                        worldHeading = vatsimClient.heading,
-                        speed = vatsimClient.groundSpeed * Utilities.KnotsToKmh,
+                        name = newName,
+                        worldPos = newWorldPos,
+                        worldHeading = newHeading,
+                        speed = newSpeed,
                         frequency = vatsimClient.frequency
                     }
                 )
@@ -203,76 +223,39 @@ do
         self.headingSpring:setTarget(newTarget)
     end
 
+    function RadarPanel:refreshVatsimClients()
+        local vatsimClients, ownCallSign, timeStamp = VatsimData.getAllVatsimClientsWithOwnCallsignAndTimestamp()
+        self.renderClients = self:_convertVatsimClientsToRenderClients(vatsimClients)
+
+        local TEST_callsign = "ASA234"
+        self.ownClient = nil
+        for _, client in ipairs(self.renderClients) do
+            if (client.name == TEST_callsign) then
+                self.ownClient = client
+                break
+            end
+        end
+    end
+
     Globals.OVERRIDE(RadarPanel.renderToCanvas)
     function RadarPanel:renderToCanvas()
-        local vatsimClients = {
-            {
-                type = "PILOT",
-                callSign = "THATSME",
-                latitude = "6.1708",
-                longitude = "-75.4276",
-                altitude = "39000.0",
-                heading = "270.0",
-                groundSpeed = "450"
-            },
-            {
-                type = "PILOT",
-                callSign = "DLH53N",
-                latitude = "8.0",
-                longitude = "-76.0",
-                altitude = "24000.0",
-                heading = "183.0",
-                groundSpeed = "409"
-            },
-            {
-                type = "PILOT",
-                callSign = "DLH62X",
-                latitude = "7.0",
-                longitude = "-76.0",
-                altitude = "13000.0",
-                heading = "51.0",
-                groundSpeed = "220"
-            },
-            {
-                type = "PILOT",
-                callSign = "DLH57D",
-                latitude = "10.0",
-                longitude = "-73.0",
-                altitude = "23000.0",
-                heading = "355.0",
-                groundSpeed = "320"
-            },
-            {
-                type = "ATC",
-                callSign = "SKRG_APP",
-                latitude = "5.0",
-                longitude = "-75.0",
-                altitude = "0.0",
-                heading = "0.0",
-                groundSpeed = "0",
-                frequency = "118.000"
-            }
-        }
-
-        local clients = self:_convertVatsimClientsToRenderClients(vatsimClients)
-
-        local ownClient = clients[1]
+        if (self.ownClient == nil) then
+            return
+        end
 
         self.zoomSpring:setTarget(self.zoomRange)
 
-        ownClient.worldHeading = self.ownHeading
-
         if (self.currentHeadingMode == RadarPanel.Constants.HeadingMode.Heading) then
-            self:_setNewHeadingTarget(ownClient.worldHeading)
+            self:_setNewHeadingTarget(self.ownClient.worldHeading)
         else
             self:_setNewHeadingTarget(0.0)
         end
 
         local heading = self.headingSpring:getCurrentPosition() % 360.0
 
-        self:_precomputeFrameConstants(heading, {ownClient.worldPos[1], ownClient.worldPos[2]})
+        self:_precomputeFrameConstants(heading, {self.ownClient.worldPos[1], self.ownClient.worldPos[2]})
 
-        for _, client in ipairs(clients) do
+        for _, client in ipairs(self.renderClients) do
             client.cameraPos = self:_worldToCameraSpace(client.worldPos)
             client.cameraHeading = client.worldHeading - heading
             client.clipPos = self:_cameraToClipSpace(client.cameraPos)
@@ -286,14 +269,71 @@ do
 
         imgui.PushClipRect(0, 0, self.realScreenWidth, self.realScreenHeight, true)
 
-        local ownScreenPos = ownClient.screenPos
+        local ownScreenPos = self.ownClient.screenPos
 
-        -- Real Vatsim Data
-        -- Client Cache
+        self:_renderDistanceCircles(ownScreenPos, heading)
+        self:_renderCompass()
 
-        local currentCircleNm = 10.0
+        imgui.SetWindowFontScale(1.0)
+        for _, client in ipairs(self.renderClients) do
+            if (client ~= self.ownClient and client.isVisible) then
+                self:_drawClient(client, self.ownClient)
+            end
+        end
+
+        self:_drawClient(self.ownClient, self.ownClient)
+
+        imgui.PopClipRect()
+
+        self:_renderControlButtons()
+
+        imgui.SetCursorPos(0.0, 309.0)
+    end
+
+    function RadarPanel:_renderControlButtons()
+        imgui.SetCursorPos(5, 5)
+        imgui.PushStyleColor(imgui.constant.Col.Button, Globals.Colors.defaultImguiButtonBackground)
+        imgui.PushStyleColor(imgui.constant.Col.ButtonActive, Globals.Colors.defaultImguiButtonBackground)
+        imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, Globals.Colors.slightlyBrighterDefaultButtonColor)
+
+        if (imgui.Button("-")) then
+            if (self.zoomRange < RadarPanel.Constants.MaxZoomRange) then
+                self.zoomRange = self.zoomRange * 2.0
+            end
+        end
+
+        imgui.SameLine()
+        if (imgui.Button("+")) then
+            if (self.zoomRange > 4.6875) then
+                self.zoomRange = self.zoomRange * 0.5
+            end
+        end
+
+        imgui.SameLine()
+        local modeButtonText = nil
+        if (self.currentHeadingMode == RadarPanel.Constants.HeadingMode.Heading) then
+            modeButtonText = "North"
+        else
+            modeButtonText = "Headg"
+        end
+
+        if (imgui.Button(modeButtonText)) then
+            if (self.currentHeadingMode == RadarPanel.Constants.HeadingMode.Heading) then
+                self.currentHeadingMode = RadarPanel.Constants.HeadingMode.North
+            else
+                self.currentHeadingMode = RadarPanel.Constants.HeadingMode.Heading
+            end
+        end
+
+        imgui.PopStyleColor()
+        imgui.PopStyleColor()
+        imgui.PopStyleColor()
+    end
+
+    function RadarPanel:_renderDistanceCircles(ownScreenPos, heading)
+        local currentCircleNm = 2.5
         local circleRotation = Matrix2x2:newRotationMatrix((-45.0 - heading) * Utilities.DegToRad)
-        for c = 1, 6 do
+        for c = 1, 8 do
             local circleKm = currentCircleNm * Utilities.NmToKm
 
             local circlePoint = {0.0, circleKm * 1.0}
@@ -310,7 +350,12 @@ do
                 {RadarPanel.Constants.ImguiTopLeftPadding, RadarPanel.Constants.ImguiTopLeftPadding}
             )
 
-            local circleStr = tostring(math.floor(currentCircleNm))
+            local circleStr = nil
+            if (currentCircleNm == 2.5) then
+                circleStr = ("%.1f"):format(currentCircleNm)
+            else
+                circleStr = ("%.0f"):format(currentCircleNm)
+            end
             imgui.SetCursorPos(math.floor(circlePoint[1]) - (circleStr:len() * 2.7), math.floor(circlePoint[2] - 8))
 
             local circleAlpha =
@@ -330,12 +375,14 @@ do
             )
 
             imgui.PushStyleColor(imgui.constant.Col.Text, circleTextColor)
-            imgui.TextUnformatted(("%d"):format(circleStr))
+            imgui.TextUnformatted(circleStr)
             imgui.PopStyleColor()
 
             currentCircleNm = currentCircleNm * 2.0
         end
+    end
 
+    function RadarPanel:_renderCompass()
         local northPoint = {0.0, self.zoomSpring:getCurrentPosition() * 0.75}
         for n = 0, 359 do
             if (n % 30 == 0) then
@@ -362,58 +409,16 @@ do
                 if (n % 90 == 0) then
                     compassColor = Globals.Colors.a320Blue
                 end
-                imgui.PushStyleColor(imgui.constant.Col.Text, compassColor)
-                imgui.TextUnformatted(("%s"):format(compassStr))
+                if (n == 0) then
+                    imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.darkerOrange)
+                    imgui.TextUnformatted("N")
+                else
+                    imgui.PushStyleColor(imgui.constant.Col.Text, compassColor)
+                    imgui.TextUnformatted(("%s"):format(compassStr))
+                end
                 imgui.PopStyleColor()
             end
         end
-
-        imgui.SetWindowFontScale(1.0)
-        for _, client in ipairs(clients) do
-            if (client ~= ownClient and client.isVisible) then
-                self:_drawClient(client, ownClient)
-            end
-        end
-
-        self:_drawClient(ownClient, ownClient)
-
-        imgui.PopClipRect()
-
-        imgui.SetCursorPos(5, 5)
-        Globals.pushDefaultButtonColorsToImguiStack()
-
-        if (imgui.Button("-")) then
-            if (self.zoomRange < 600.0) then
-                self.zoomRange = self.zoomRange * 2.0
-            end
-        end
-
-        imgui.SameLine()
-        if (imgui.Button("+")) then
-            if (self.zoomRange > 18.75) then
-                self.zoomRange = self.zoomRange * 0.5
-            end
-        end
-
-        imgui.SameLine()
-        local modeButtonText = nil
-        if (self.currentHeadingMode == RadarPanel.Constants.HeadingMode.Heading) then
-            modeButtonText = "North"
-        else
-            modeButtonText = "Headg"
-        end
-
-        if (imgui.Button(modeButtonText)) then
-            if (self.currentHeadingMode == RadarPanel.Constants.HeadingMode.Heading) then
-                self.currentHeadingMode = RadarPanel.Constants.HeadingMode.North
-            else
-                self.currentHeadingMode = RadarPanel.Constants.HeadingMode.Heading
-            end
-        end
-
-        Globals.popDefaultButtonColorsFromImguiStack()
-
-        imgui.SetCursorPos(0.0, 309.0)
     end
 
     function RadarPanel:_drawClient(client, ownClient)
@@ -434,9 +439,9 @@ do
         end
 
         if (client ~= ownClient) then
-            imgui.SetCursorPos(math.floor(client.screenPos[1] - client.callSign:len() * 2.7), client.screenPos[2] + 10)
+            imgui.SetCursorPos(math.floor(client.screenPos[1] - client.name:len() * 2.7), client.screenPos[2] + 10)
             imgui.PushStyleColor(imgui.constant.Col.Text, color)
-            imgui.TextUnformatted(client.callSign)
+            imgui.TextUnformatted(client.name)
             imgui.PopStyleColor()
         end
 

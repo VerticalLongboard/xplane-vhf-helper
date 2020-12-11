@@ -45,6 +45,12 @@ do
                 Panels.comFrequencyPanel:triggerStationInfoUpdate()
             end
         )
+        VatsimbriefHelperEventBus.on(
+            VatsimbriefHelperEventOnVatsimDataRefreshed,
+            function()
+                Panels.radarPanel:refreshVatsimClients()
+            end
+        )
     end
 end
 
