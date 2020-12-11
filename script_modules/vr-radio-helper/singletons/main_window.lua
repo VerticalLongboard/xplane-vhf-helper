@@ -124,6 +124,7 @@ do
     function vhfHelperMainWindow:renderToCanvas()
         Globals.pushDefaultsToImguiStack()
 
+        self.currentPanel:loop(vhfHelperLoop:getFrameTime())
         self.currentPanel:renderToCanvas()
 
         imgui.PushStyleVar_2(imgui.constant.StyleVar.ItemSpacing, 0.0, 2.0)
@@ -150,9 +151,11 @@ do
             Panels.baroPanel,
             vhfHelperCompatibilityManager:getCurrentConfiguration().isBarometerFeatureEnabled
         )
-
         imgui.SameLine()
-        imgui.Dummy(50.0, 0.0)
+        self:_renderPanelButton(Panels.radarPanel, true)
+
+        -- imgui.SameLine()
+        -- imgui.Dummy(50.0, 0.0)
 
         imgui.SameLine()
         self:_renderSidePanelButton()

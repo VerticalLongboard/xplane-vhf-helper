@@ -17,6 +17,9 @@ do
         return newInstanceWithState
     end
 
+    function SubPanel:loop(frameTime)
+    end
+
     function SubPanel:show()
     end
 

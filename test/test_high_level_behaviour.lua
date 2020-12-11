@@ -35,6 +35,7 @@ TestHighLevelBehaviour = {
 	Constants = {
 		comPanelButtonTitle = vhfHelperPackageExport.test.Panels.comFrequencyPanel.panelTitle,
 		navPanelButtonTitle = vhfHelperPackageExport.test.Panels.navFrequencyPanel.panelTitle,
+		radarPanelButtonTitle = vhfHelperPackageExport.test.Panels.radarPanel.panelTitle,
 		transponderPanelButtonTitle = vhfHelperPackageExport.test.Panels.transponderCodePanel.panelTitle,
 		baroPanelButtonTitle = vhfHelperPackageExport.test.Panels.baroPanel.panelTitle
 	}
@@ -323,6 +324,11 @@ function TestHighLevelBehaviour:testTransmoderModeIsSwitched()
 	local newMode2 = 3
 	self:_pressButton(vhfHelperPackageExport.test.transponderModeToDescriptor[newMode2 + 1])
 	luaUnit.assertEquals(tm.data, newMode2)
+end
+
+function TestHighLevelBehaviour:testRadarPanelOpensCorrectly()
+	self:_pressButton(self.Constants.radarPanelButtonTitle)
+	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
 end
 
 function TestHighLevelBehaviour:testSideWindowOpensAndRendersCorrectly()

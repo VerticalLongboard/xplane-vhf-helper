@@ -57,7 +57,8 @@ M.IO = {
     Constants = {
         Modes = {
             Overwrite = "w",
-            Read = "r"
+            Read = "r",
+            Binary = "b"
         }
     }
 }

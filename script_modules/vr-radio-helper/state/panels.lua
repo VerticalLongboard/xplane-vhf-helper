@@ -5,6 +5,7 @@ local ComFrequencySubPanel = require("vr-radio-helper.components.panels.com_freq
 local NavFrequencySubPanel = require("vr-radio-helper.components.panels.nav_frequency_sub_panel")
 local TransponderCodeSubPanel = require("vr-radio-helper.components.panels.transponder_code_sub_panel")
 local BaroSubPanel = require("vr-radio-helper.components.panels.baro_sub_panel")
+local RadarPanel = require("vr-radio-helper.components.panels.radar_panel")
 
 local M = {}
 
@@ -34,5 +35,6 @@ M.bootstrap = function()
         "TRANSPONDER"
     )
     M.baroPanel = BaroSubPanel:new(Validation.baroValidator, Datarefs.baroLinkedDatarefs, "BARO", "BARO")
+    M.radarPanel = RadarPanel:new("Radar")
 end
 return M

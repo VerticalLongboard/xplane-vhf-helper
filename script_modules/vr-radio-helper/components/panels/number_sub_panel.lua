@@ -78,9 +78,13 @@ do
         imgui.PushStyleColor(imgui.constant.Col.Text, self:_getBlinkingCurrentValueColor(linkedDataref))
     end
 
-    function NumberSubPanel:_renderNumberPanel()
-        self:_updateStyleSprings()
+    Globals.OVERRIDE(NumberSubPanel.loop)
+    function NumberSubPanel:loop(frameTime)
+        SubPanel.loop(self, frameTime)
+        self:_updateStyleSprings(frameTime)
+    end
 
+    function NumberSubPanel:_renderNumberPanel()
         local leftSideDummyScale = 0.3 * globalFontScale
         local rightSideDummyScale = 0.1 * globalFontScale
 
@@ -141,15 +145,15 @@ do
     function NumberSubPanel:_getButtonStyleSpring(springId)
         local spring = self.buttonStyleSprings[springId]
         if (self.buttonStyleSprings[springId] == nil) then
-            self.buttonStyleSprings[springId] = FlexibleLength1DSpring:new(100.0, 0.2)
+            self.buttonStyleSprings[springId] = FlexibleLength1DSpring:new(200.0, 0.2)
             spring = self.buttonStyleSprings[springId]
         end
         return spring
     end
 
-    function NumberSubPanel:_updateStyleSprings()
+    function NumberSubPanel:_updateStyleSprings(frameTime)
         for _, spring in ipairs(self.buttonStyleSprings) do
-            spring:moveSpring(vhfHelperLoop:getCappedDt(), vhfHelperLoop:getOneOverCappedDt())
+            spring:moveSpring(frameTime.cappedDt, frameTime.oneOverCappedDt)
         end
     end
 

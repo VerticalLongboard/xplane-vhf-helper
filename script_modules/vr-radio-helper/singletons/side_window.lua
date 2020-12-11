@@ -159,7 +159,48 @@ do
         end
 
         self.PlaneCompatibilityBlob = InlineButtonBlob:new()
+        local cc = vhfHelperCompatibilityManager:getCurrentConfiguration()
+
         local compatColor = Globals.Colors.white
+        if (cc.isDefaultPlane) then
+            self.PlaneCompatibilityBlob:addTextWithoutNewline(
+                "No compatibility information for your current plane found."
+            )
+            self.PlaneCompatibilityBlob:addNewline()
+
+            if (self.pendingCompatibilityNotification) then
+                compatColor = Globals.Colors.a320Orange
+            else
+                compatColor = Globals.Colors.white
+            end
+
+            self.PlaneCompatibilityBlob:addColorTextWithoutNewline(
+                "All features are enabled, but some may not work correctly.",
+                compatColor
+            )
+        else
+            self.PlaneCompatibilityBlob:addTextWithoutNewline("Your plane looks like a ")
+            self.PlaneCompatibilityBlob:addColorTextWithoutNewline(cc.readableName, Globals.Colors.a320Blue)
+
+            if (cc.hasKnownIssues) then
+                if (self.pendingCompatibilityNotification) then
+                    compatColor = Globals.Colors.a320Red
+                else
+                    compatColor = Globals.Colors.white
+                end
+
+                self.PlaneCompatibilityBlob:addNewline()
+                self.PlaneCompatibilityBlob:addColorTextWithoutNewline(
+                    ("Known Issues: %s"):format(cc.knownIssuesText),
+                    compatColor
+                )
+            end
+        end
+
+        self.PlaneCompatibilityBlob:addNewline()
+        self.PlaneCompatibilityBlob:addTextWithoutNewline(" ")
+        self.PlaneCompatibilityBlob:addNewline()
+
         if (self.pendingCompatibilityNotification) then
             compatColor = Globals.Colors.a320Orange
         end
@@ -224,6 +265,28 @@ do
         )
         self.FeedbackLinkBlob:addNewline()
         self.FeedbackLinkBlob:addTextWithoutNewline("Much appreciated!")
+
+        self.MulticrewBlob = InlineButtonBlob:new()
+        local multicrewState = vhfHelperMulticrewManager:getState()
+        local maxStringWidth = 60
+
+        local multicrewColor = Globals.Colors.white
+        if (self.pendingMulticrewNotification) then
+            multicrewColor = vhfHelperSideWindow.Constants.MulticrewStateToMessage[multicrewState][2]
+        end
+
+        self.MulticrewBlob:addColorTextWithoutNewline(
+            vhfHelperSideWindow.Constants.MulticrewStateToMessage[multicrewState][1],
+            multicrewColor
+        )
+
+        local lastMulticrewError = vhfHelperMulticrewManager:getLastErrorOrNil()
+        if (lastMulticrewError ~= nil) then
+            self.MulticrewBlob:addColorTextWithoutNewline(
+                Utilities.newlineBreakStringAtWidth(lastMulticrewError, maxStringWidth),
+                multicrewColor
+            )
+        end
     end
 
     function vhfHelperSideWindow:_getUrlWithDiagnosticParams(urlFirstPart)
@@ -314,7 +377,6 @@ do
         self:show(self.window == nil)
     end
 
-    TRACK_ISSUE("Tech Debt", "Move static panel text to blobs.")
     function vhfHelperSideWindow:renderToCanvas()
         Globals.pushDefaultsToImguiStack()
 
@@ -336,26 +398,7 @@ do
 
         imgui.TextUnformatted("")
         self:_renderSectionHeader("Multicrew Support")
-
-        local multicrewState = vhfHelperMulticrewManager:getState()
-
-        local maxStringWidth = 60
-
-        if (self.pendingMulticrewNotification) then
-            imgui.PushStyleColor(
-                imgui.constant.Col.Text,
-                vhfHelperSideWindow.Constants.MulticrewStateToMessage[multicrewState][2]
-            )
-        end
-
-        imgui.TextUnformatted(vhfHelperSideWindow.Constants.MulticrewStateToMessage[multicrewState][1])
-        local lastMulticrewError = vhfHelperMulticrewManager:getLastErrorOrNil()
-        if (lastMulticrewError ~= nil) then
-            imgui.TextUnformatted(Utilities.newlineBreakStringAtWidth(lastMulticrewError, maxStringWidth))
-        end
-        if (self.pendingMulticrewNotification) then
-            imgui.PopStyleColor()
-        end
+        self.MulticrewBlob:renderToCanvas()
 
         imgui.TextUnformatted("")
         self:_renderSectionHeader("Vatsim Data")
@@ -367,36 +410,6 @@ do
 
         imgui.TextUnformatted("")
         self:_renderSectionHeader("Plane Compatibility")
-
-        local cc = vhfHelperCompatibilityManager:getCurrentConfiguration()
-
-        if (cc.isDefaultPlane) then
-            imgui.TextUnformatted("No compatibility information for your current plane found.")
-            if (self.pendingCompatibilityNotification) then
-                imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
-            end
-            imgui.TextUnformatted("All features are enabled, but some may not work correctly.")
-            if (self.pendingCompatibilityNotification) then
-                imgui.PopStyleColor()
-            end
-        else
-            imgui.TextUnformatted("Your plane looks like a")
-            imgui.SameLine()
-            imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Blue)
-            imgui.TextUnformatted(("%s"):format(cc.readableName))
-            imgui.PopStyleColor()
-            if (cc.hasKnownIssues) then
-                if (self.pendingCompatibilityNotification) then
-                    imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Red)
-                end
-                imgui.TextUnformatted(("Known Issues: %s"):format(cc.knownIssuesText))
-                if (self.pendingCompatibilityNotification) then
-                    imgui.PopStyleColor()
-                end
-            end
-        end
-
-        imgui.TextUnformatted("")
         self.PlaneCompatibilityBlob:renderToCanvas()
 
         imgui.TextUnformatted("")

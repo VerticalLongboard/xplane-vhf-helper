@@ -25,7 +25,7 @@ SOFTWARE.
 --]]
 local luaUnit = require("luaunit")
 local imguiStub = require("imgui_stub")
-local Utilities = require("utilities")
+local Utilities = require("test_utilities")
 
 SCRIPT_DIRECTORY = os.getenv("TEMP_TEST_SCRIPT_FOLDER") .. "\\"
 
@@ -506,7 +506,7 @@ function flyWithLuaStub:getLastSpeakString()
 end
 
 function float_wnd_load_image(path)
-    return nil
+    return 1
 end
 
 function float_wnd_set_title(window, newTitle)

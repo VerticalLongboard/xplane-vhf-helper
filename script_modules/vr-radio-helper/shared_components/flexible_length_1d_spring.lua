@@ -49,6 +49,10 @@ do
         return self.currentPosition
     end
 
+    function FlexibleLength1DSpring:getCurrentTargetPosition()
+        return self.currentTargetPosition
+    end
+
     function FlexibleLength1DSpring:overrideCurrentPosition(newPosition)
         if (newPosition ~= self.currentPosition) then
             self.isResting = false

@@ -8,7 +8,7 @@ TRACK_ISSUE(
     "Redefine basic language features according to current interpreter version."
 )
 
-local Utilities = require("utilities")
+local Utilities = require("test_utilities")
 
 local luaUnitOutput = require("luaunit_output")
 local luaUnit = require("luaunit")

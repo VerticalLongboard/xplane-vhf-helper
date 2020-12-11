@@ -64,6 +64,7 @@ do
         self.alreadyInitializedCompletely = false
 
         self.lastFrameTime = 0.0
+        self.frameTime = {}
         self:_updateDt()
 
         self.datarefInitialization = DatarefInitializationItem:new(5.0, "DatarefInitialization")
@@ -129,13 +130,17 @@ do
     function vhfHelperLoop:_updateDt()
         local now = LuaPlatform.Time.now()
 
-        self.dt = now - self.lastFrameTime
-        self.oneOverDt = 1.0 / self.dt
+        self.frameTime.dt = now - self.lastFrameTime
+        self.frameTime.oneOverDt = 1.0 / self.frameTime.dt
 
-        self.cappedDt = math.min(self.Constants.MaxCappedDt, self.dt)
-        self.oneOverCappedDt = 1.0 / self.cappedDt
+        self.frameTime.cappedDt = math.min(self.Constants.MaxCappedDt, self.frameTime.dt)
+        self.frameTime.oneOverCappedDt = 1.0 / self.frameTime.cappedDt
 
         self.lastFrameTime = now
+    end
+
+    function vhfHelperLoop:getFrameTime()
+        return self.frameTime
     end
 
     function vhfHelperLoop:everyFrameLoop()
@@ -152,22 +157,6 @@ do
         if (not self.alreadyInitializedCompletely) then
             return
         end
-    end
-
-    function vhfHelperLoop:getDt()
-        return self.dt
-    end
-
-    function vhfHelperLoop:getOneOverDt()
-        return self.oneOverDt
-    end
-
-    function vhfHelperLoop:getCappedDt()
-        return self.cappedDt
-    end
-
-    function vhfHelperLoop:getOneOverCappedDt()
-        return self.oneOverCappedDt
     end
 end
 

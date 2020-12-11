@@ -2,6 +2,19 @@ local luaUnitOutput = require("luaunit_output")
 local luaUnit = require("luaunit")
 local flyWithLuaStub = require("xplane_fly_with_lua_stub")
 local imguiStub = require("imgui_stub")
+local LuaPlatform = require("lua_platform")
+
+local Utilities = require("vr-radio-helper.shared_components.utilities")
+os.execute("mkdir TEMP\\TEST_RUN\\vr_radio_helper_data")
+
+Utilities.copyBinaryFile(
+    SCRIPT_DIRECTORY .. "../../scripts/vr_radio_helper_data/radar_plane.png",
+    SCRIPT_DIRECTORY .. "vr_radio_helper_data/radar_plane.png"
+)
+Utilities.copyBinaryFile(
+    SCRIPT_DIRECTORY .. "../../scripts/vr_radio_helper_data/radar_station.png",
+    SCRIPT_DIRECTORY .. "vr_radio_helper_data/radar_station.png"
+)
 
 local vhfHelper = dofile("scripts/vhf_helper.lua")
 
@@ -15,16 +28,16 @@ flyWithLuaStub:suppressLogMessagesContaining(
     }
 )
 
--- require("shared_components.test_suite")
+require("shared_components.test_suite")
 
--- require("test_station_info")
--- require("multicrew.test_multicrew")
--- require("test_speak_nato")
--- require("test_public_interface")
--- require("test_datarefs")
--- require("test_input_validation")
--- require("test_high_level_behaviour")
--- require("test_interchange_linked_dataref")
+require("test_station_info")
+require("multicrew.test_multicrew")
+require("test_speak_nato")
+require("test_public_interface")
+require("test_datarefs")
+require("test_input_validation")
+require("test_high_level_behaviour")
+require("test_interchange_linked_dataref")
 require("test_radar")
 
 KNOWN_ISSUE(
