@@ -227,7 +227,7 @@ do
         local vatsimClients, ownCallSign, timeStamp = VatsimData.getAllVatsimClientsWithOwnCallsignAndTimestamp()
         self.renderClients = self:_convertVatsimClientsToRenderClients(vatsimClients)
 
-        local TEST_callsign = "ASA234"
+        local TEST_callsign = "KSFO_ATIS"
         self.ownClient = nil
         for _, client in ipairs(self.renderClients) do
             if (client.name == TEST_callsign) then
