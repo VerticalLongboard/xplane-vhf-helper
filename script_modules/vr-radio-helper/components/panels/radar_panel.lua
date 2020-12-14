@@ -4,6 +4,7 @@ local SubPanel = require("vr-radio-helper.components.panels.sub_panel")
 local FlexibleLength1DSpring = require("vr-radio-helper.shared_components.flexible_length_1d_spring")
 local VatsimData = require("vr-radio-helper.state.vatsim_data")
 local Datarefs = require("vr-radio-helper.state.datarefs")
+local LuaPlatform = require("lua_platform")
 
 local RadarPanel
 do
@@ -19,7 +20,8 @@ do
             Heading = "Heading"
         },
         ImguiTopLeftPadding = 5,
-        MaxZoomRange = 600.0
+        MaxZoomRange = 600.0,
+        HalfIconSize = 5
     }
     TRACK_ISSUE(
         "Imgui",
@@ -50,6 +52,8 @@ do
         self.renderClients = {}
 
         self.totalVatsimClients = 0
+
+        self.newVatsimClientsUpdateAvailable = false
 
         return newInstanceWithState
     end
@@ -154,11 +158,11 @@ do
         end
     end
 
-    function vector2Substract(v, minusV)
+    local function vector2Substract(v, minusV)
         return {v[1] - minusV[1], v[2] - minusV[2]}
     end
 
-    function vector2Add(v, plusV)
+    local function vector2Add(v, plusV)
         return {v[1] + plusV[1], v[2] + plusV[2]}
     end
 
@@ -190,6 +194,10 @@ do
     Globals.OVERRIDE(RadarPanel.loop)
     function RadarPanel:loop(frameTime)
         SubPanel.loop(self, frameTime)
+        if (self.newVatsimClientsUpdateAvailable) then
+            self:_refreshVatsimClientsNow()
+        end
+
         self.headingSpring:moveSpring(frameTime.cappedDt, frameTime.oneOverCappedDt)
         self.zoomSpring:moveSpring(frameTime.cappedDt, frameTime.oneOverCappedDt)
     end
@@ -238,29 +246,68 @@ do
         self.headingSpring:setTarget(newTarget)
     end
 
-    function RadarPanel:refreshVatsimClients()
+    function RadarPanel:_refreshVatsimClientsNow()
+        if (not self.newVatsimClientsUpdateAvailable) then
+            return
+        end
+
+        self.newVatsimClientsUpdateAvailable = false
+
         local vatsimClients, ownCallSign, timeStamp = VatsimData.getAllVatsimClientsWithOwnCallsignAndTimestamp()
         self.totalVatsimClients = #vatsimClients
         local newRenderClients = self:_convertVatsimClientsToRenderClients(vatsimClients)
         if (#newRenderClients > 0) then
             self.renderClients = newRenderClients
+            self.dataTimestamp = timeStamp
         end
 
-        self.ownClient = nil
+        TRACK_ISSUE(
+            "Tech Debt / Optimization",
+            MULTILINE_TEXT(
+                "There are not too many airplanes within the maximum radar range usually (up to 120 at most),",
+                "but finding your own callsign in this table can be made faster, i.e. O(1), maybe on Vatsimbrief Helper side."
+            )
+        )
+        self.ownClients = {}
+        local ownClientCallSign = ownCallSign
+        local ownClientObserverCallSign = ("%sA"):format(ownCallSign)
         for _, client in ipairs(self.renderClients) do
-            if (client.name == ownCallSign) then
-                self.ownClient = client
+            if (client.name == ownClientCallSign or client.name == ownClientObserverCallSign) then
+                self.ownClients[client.name] = client
                 break
+            end
+        end
+    end
+
+    function RadarPanel:refreshVatsimClients()
+        self.newVatsimClientsUpdateAvailable = true
+    end
+
+    function RadarPanel:_transformAndClipAllClients(viewHeading)
+        for _, client in ipairs(self.renderClients) do
+            client.cameraPos = self:_worldToCameraSpace(client.worldPos)
+            client.cameraHeading = client.worldHeading - viewHeading
+            client.clipPos = self:_cameraToClipSpace(client.cameraPos)
+            if (self:_isVisible(client.clipPos)) then
+                client.isVisible = true
+                client.screenPos = self:_clipToScreenSpace(client.clipPos)
+            else
+                client.isVisible = false
+            end
+        end
+    end
+
+    function RadarPanel:_drawAllClients()
+        imgui.SetWindowFontScale(1.0)
+        for _, client in ipairs(self.renderClients) do
+            if (client.isVisible) then
+                self:_drawClient(client)
             end
         end
     end
 
     Globals.OVERRIDE(RadarPanel.renderToCanvas)
     function RadarPanel:renderToCanvas()
-        -- TODO: Add own render client
-        -- TODO: Add timestamp
-        -- TODO: Add pos
-        -- TODO: Add heading line
         self.zoomSpring:setTarget(self.zoomRange)
 
         if (self.currentHeadingMode == RadarPanel.Constants.HeadingMode.Heading) then
@@ -269,61 +316,108 @@ do
             self:_setNewHeadingTarget(0.0)
         end
 
-        local heading = self.headingSpring:getCurrentPosition() % 360.0
-
+        local viewHeading = self.headingSpring:getCurrentPosition() % 360.0
         local ownWorldPos =
             self:_convertVatsimLocationToFlat3DKm(Datarefs.getCurrentLatitude(), Datarefs.getCurrentLongitude(), 0.0)
 
-        self:_precomputeFrameConstants(heading, {ownWorldPos[1], ownWorldPos[2]})
+        self:_precomputeFrameConstants(viewHeading, {ownWorldPos[1], ownWorldPos[2]})
 
         local ownScreenPos = self:_worldToCameraSpace(ownWorldPos)
         ownScreenPos = self:_cameraToClipSpace(ownScreenPos)
         ownScreenPos = self:_clipToScreenSpace(ownScreenPos)
 
-        local numVisible = 0
-
-        for _, client in ipairs(self.renderClients) do
-            client.cameraPos = self:_worldToCameraSpace(client.worldPos)
-            client.cameraHeading = client.worldHeading - heading
-            client.clipPos = self:_cameraToClipSpace(client.cameraPos)
-            if (self:_isVisible(client.clipPos)) then
-                numVisible = numVisible + 1
-                client.isVisible = true
-                client.screenPos = self:_clipToScreenSpace(client.clipPos)
-            else
-                client.isVisible = false
-            end
-        end
+        self:_transformAndClipAllClients(viewHeading)
 
         imgui.PushClipRect(0, 0, self.realScreenWidth, self.realScreenHeight, true)
 
-        self:_renderDistanceCircles(ownScreenPos, heading)
+        self:_renderDistanceCircles(ownScreenPos, viewHeading)
         self:_renderCompass()
+        self:_renderHeadingLine(ownScreenPos, Datarefs.getCurrentHeading())
 
-        imgui.SetWindowFontScale(1.0)
-        for _, client in ipairs(self.renderClients) do
-            if (client ~= self.ownClient and client.isVisible) then
-                self:_drawClient(client, self.ownClient)
-            end
-        end
-
-        if (self.ownClient ~= nil) then
-            self:_drawClient(self.ownClient, self.ownClient)
-        end
+        self:_drawOwnMarker(ownScreenPos, Datarefs.getCurrentHeading(), viewHeading)
+        self:_drawAllClients()
 
         imgui.PopClipRect()
 
-        -- imgui.SetCursorPos(5, 20)
-        -- imgui.TextUnformatted("")
-        -- imgui.TextUnformatted(("%d/%d/%d"):format(numVisible, #self.renderClients, self.totalVatsimClients))
-
         self:_renderControlButtons()
+        self:_renderTimestamp()
 
         imgui.SetCursorPos(0.0, 309.0)
     end
 
+    function RadarPanel:_renderTimestamp()
+        imgui.SetCursorPos(RadarPanel.Constants.ImguiTopLeftPadding, 290)
+
+        if (self.dataTimestamp == nil) then
+            imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
+            imgui.TextUnformatted("No data")
+            imgui.PopStyleColor()
+        else
+            local now = LuaPlatform.Time.now()
+            local diff = now - self.dataTimestamp
+            local diffStr = nil
+            if (diff > 60.0) then
+                diffStr = ("%dm ago"):format(diff / 60.0)
+            elseif (diff > 10.0) then
+                local roundedDiff = math.floor(diff / 10.0) * 10.0
+                diffStr = ("%ds ago"):format(roundedDiff)
+            else
+                diffStr = ("now"):format(diff)
+            end
+
+            local color = Globals.Colors.white
+            if (diff > 120.0) then
+                color = Globals.Colors.a320Red
+            elseif (diff > 70.0) then
+                color = Globals.Colors.a320Orange
+            else
+                color = Globals.Colors.greyText
+            end
+
+            imgui.PushStyleColor(imgui.constant.Col.Text, color)
+            imgui.TextUnformatted(("Updated %s"):format(diffStr))
+            imgui.PopStyleColor()
+        end
+    end
+
+    function RadarPanel:_renderHeadingLine(ownScreenPos, ownWorldHeading)
+        local upAheadPoint = {0.0, self.zoomSpring:getCurrentPosition() * 0.7}
+        local headingRotation = Matrix2x2:newRotationMatrix(-ownWorldHeading * Utilities.DegToRad)
+        local headingPoint = headingRotation:multiplyVector2(upAheadPoint)
+        headingPoint = vector2Add(self.worldViewPosition, headingPoint)
+
+        headingPoint = self:_worldToCameraSpace(headingPoint)
+        headingPoint = self:_cameraToClipSpace(headingPoint)
+        headingPoint = self:_clipToScreenSpace(headingPoint)
+
+        headingPoint =
+            vector2Add(
+            headingPoint,
+            {RadarPanel.Constants.ImguiTopLeftPadding, RadarPanel.Constants.ImguiTopLeftPadding}
+        )
+
+        imgui.DrawList_AddLine(
+            ownScreenPos[1] + RadarPanel.Constants.ImguiTopLeftPadding,
+            ownScreenPos[2] + RadarPanel.Constants.ImguiTopLeftPadding,
+            headingPoint[1],
+            headingPoint[2],
+            0xFF003355,
+            2.0
+        )
+    end
+
+    function RadarPanel:_drawOwnMarker(ownScreenPos, ownWorldHeading, viewHeading)
+        self:_drawImageQuad(
+            self.planeIcon,
+            RadarPanel.Constants.HalfIconSize,
+            ownScreenPos,
+            ownWorldHeading - viewHeading,
+            Globals.Colors.a320Orange
+        )
+    end
+
     function RadarPanel:_renderControlButtons()
-        imgui.SetCursorPos(5, 5)
+        imgui.SetCursorPos(RadarPanel.Constants.ImguiTopLeftPadding, RadarPanel.Constants.ImguiTopLeftPadding)
         imgui.PushStyleColor(imgui.constant.Col.Button, Globals.Colors.defaultImguiButtonBackground)
         imgui.PushStyleColor(imgui.constant.Col.ButtonActive, Globals.Colors.defaultImguiButtonBackground)
         imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, Globals.Colors.slightlyBrighterDefaultButtonColor)
@@ -453,31 +547,40 @@ do
         end
     end
 
-    function RadarPanel:_drawClient(client, ownClient)
-        local halfIconSize = 5
-
+    function RadarPanel:_drawClient(client)
         local icon = nil
         local color = Globals.Colors.white
+        local isOwnClient = false
+        local isOwnObserverClient = false
+
+        if (self.ownClients[client.name] ~= nil) then
+            isOwnClient = true
+        end
+
         if (client.type == RadarPanel.Constants.ClientType.Plane) then
-            if (client == ownClient) then
-                color = Globals.Colors.a320Orange
-            end
             icon = self.planeIcon
         else
             if (VHFHelperPublicInterface.isCurrentlyTunedIn(client.frequency)) then
                 color = Globals.Colors.a320Orange
             end
+            if (isOwnClient) then
+                isOwnObserverClient = true
+            end
             icon = self.stationIcon
         end
 
-        if (client ~= ownClient) then
+        if (isOwnClient) then
+            color = Globals.Colors.darkerOrange
+        else
             imgui.SetCursorPos(math.floor(client.screenPos[1] - client.name:len() * 2.7), client.screenPos[2] + 10)
             imgui.PushStyleColor(imgui.constant.Col.Text, color)
             imgui.TextUnformatted(client.name)
             imgui.PopStyleColor()
         end
 
-        self:_drawImageQuad(icon, halfIconSize, client.screenPos, client.cameraHeading, color)
+        if (not isOwnObserverClient) then
+            self:_drawImageQuad(icon, RadarPanel.Constants.HalfIconSize, client.screenPos, client.cameraHeading, color)
+        end
     end
 
     function RadarPanel:_drawImageQuad(imageId, imageHalfSize, screenPos, rotation, color)

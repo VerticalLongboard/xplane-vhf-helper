@@ -53,7 +53,8 @@ imgui = {
         SetCursorPos = "SetCursorPos",
         PushClipRect = "PushClipRect",
         PopClipRect = "PopClipRect",
-        DrawList_AddCircle = "DrawList_AddCircle"
+        DrawList_AddCircle = "DrawList_AddCircle",
+        DrawList_AddLine = "DrawList_AddLine"
     },
     LastFrameCommandList = {},
     DrawList_AddImageQuad = function(
@@ -88,6 +89,9 @@ imgui = {
     end,
     DrawList_AddImage = function(imageId, top, left, right, bottom, uv0x, uv0y, uv1x, uv1y, someColor)
         table.insert(imgui.LastFrameCommandList, {type = imgui.Constants.DrawList_AddImage})
+    end,
+    DrawList_AddLine = function(p0x, p0y, p1x, p1y, color, thickness)
+        table.insert(imgui.LastFrameCommandList, {type = imgui.Constants.DrawList_AddLine})
     end,
     Image = function(imageId, size, uv0x, uv0y, uv1x, uv1y, blaColor, blaColor2, blaColor3, blaColor4)
         table.insert(imgui.LastFrameCommandList, {type = imgui.Constants.Image})
