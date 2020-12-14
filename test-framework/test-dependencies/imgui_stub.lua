@@ -54,7 +54,8 @@ imgui = {
         PushClipRect = "PushClipRect",
         PopClipRect = "PopClipRect",
         DrawList_AddCircle = "DrawList_AddCircle",
-        DrawList_AddLine = "DrawList_AddLine"
+        DrawList_AddLine = "DrawList_AddLine",
+        DrawList_AddCircleFilled = "DrawList_AddCircleFilled"
     },
     LastFrameCommandList = {},
     DrawList_AddImageQuad = function(
@@ -86,6 +87,9 @@ imgui = {
     end,
     DrawList_AddCircle = function(centerX, centerY, radius, color, numSegments, thickness)
         table.insert(imgui.LastFrameCommandList, {type = imgui.Constants.DrawList_AddCircle})
+    end,
+    DrawList_AddCircleFilled = function(centerX, centerY, radius, color, numSegments)
+        table.insert(imgui.LastFrameCommandList, {type = imgui.Constants.DrawList_AddCircleFilled})
     end,
     DrawList_AddImage = function(imageId, top, left, right, bottom, uv0x, uv0y, uv1x, uv1y, someColor)
         table.insert(imgui.LastFrameCommandList, {type = imgui.Constants.DrawList_AddImage})

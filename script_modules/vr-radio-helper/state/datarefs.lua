@@ -151,6 +151,7 @@ end
 M.getCurrentHeading = function()
     return VrRadioHelperCurrentTruePsiRead
 end
+
 M.transponderModeToDescriptor = transponderModeToDescriptor
 M.initializeReadDatarefs = function()
     dataref("VrRadioHelperCurrentLatitudeRead", "sim/flightmodel/position/latitude", "readable")

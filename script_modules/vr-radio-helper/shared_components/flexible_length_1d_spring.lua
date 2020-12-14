@@ -8,9 +8,7 @@ do
 
     function FlexibleLength1DSpring:_reset()
         self.currentSpeed = 0.0
-        self.lastTargetPosition = 0.0
         self.currentTargetPosition = 0.0
-        self.currentTargetSpeed = 0.0
         self.currentPosition = 0.0
         self.lastDistance = 0.0
         self.currentAcceleration = 0.0

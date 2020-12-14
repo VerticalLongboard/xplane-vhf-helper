@@ -133,6 +133,7 @@ Utilities.EarthRadius = 6371
 Utilities.FullCircleRadians = 6.28319
 Utilities.NmToKm = 1.852
 Utilities.KmToNm = 0.539957
+Utilities.MeterToFeet = 3.28084
 
 Utilities.computeDistanceOnEarth = function(latLon1, latLon2)
     latLon1[1] = latLon1[1] * Utilities.DegToRad
