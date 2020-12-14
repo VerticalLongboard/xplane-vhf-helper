@@ -127,6 +127,7 @@ Utilities.roundFloatingPointToNearestInteger = function(v)
 end
 
 Utilities.DegToRad = 0.017453293
+Utilities.RadToDeg = 57.2958
 Utilities.FeetToM = 0.3048
 Utilities.KnotsToKmh = 1.852
 Utilities.EarthRadius = 6371
@@ -148,6 +149,10 @@ Utilities.computeDistanceOnEarth = function(latLon1, latLon2)
     local earthRadius = 6371.0
     local d = centralAngle * earthRadius
     return d
+end
+
+Utilities.logVector = function(vec)
+    logMsg(("%s/%s/%s"):format(tostring(vec[1]), tostring(vec[2]) or "nil", tostring(vec[3] or "nil")))
 end
 
 Utilities.Math = {}

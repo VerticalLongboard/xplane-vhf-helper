@@ -145,14 +145,7 @@ Globals.linkedValuesChangeBlinkTime = 2.0
 local ImguiUtils
 do
     ImguiUtils = {}
-    ImguiUtils.renderActiveInactiveButton = function(
-        buttonTitle,
-        active,
-        enabled,
-        onPressFunction,
-        colorOverride,
-        width,
-        height)
+    ImguiUtils.renderActiveInactiveButton = function(buttonTitle, active, enabled, onPressFunction, colorOverride)
         if (enabled) then
             if (active) then
                 if (colorOverride ~= nil) then

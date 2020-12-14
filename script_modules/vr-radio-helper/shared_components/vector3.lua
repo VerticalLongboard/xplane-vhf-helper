@@ -15,6 +15,10 @@ do
         return Vector3:new(0.0, 0.0, 0.0)
     end
 
+    function Vector3:newFromVector3(otherVector3)
+        return Vector3:new(otherVector3[1], otherVector3[2], otherVector3[3])
+    end
+
     function Vector3.add(v1, v2)
         return Vector3:new(v1[1] + v2[1], v1[2] + v2[2], v1[3] + v2[3])
     end

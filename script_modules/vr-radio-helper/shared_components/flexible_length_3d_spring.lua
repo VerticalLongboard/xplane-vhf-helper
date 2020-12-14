@@ -85,10 +85,6 @@ do
     end
 
     function FlexibleLength3DSpring:_moveDampenedSpring(dt, oneOverDt)
-        local logVector3 = function(vec)
-            logMsg(("%f/%f/%f"):format(vec[1], vec[2], vec[3]))
-        end
-
         local direction = Vector3.substract(self.currentPosition, self.currentTargetPosition)
         local distance = Vector3.length(direction)
         self.lastDistance = distance

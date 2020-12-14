@@ -20,6 +20,10 @@ do
             North = "North",
             Heading = "Heading"
         },
+        FollowMode = {
+            Free = "Free",
+            Follow = "Follow"
+        },
         ImguiTopLeftPadding = 5,
         MaxZoomRange = 600.0,
         HalfIconSize = 5
@@ -44,6 +48,8 @@ do
         assert(self.stationIcon)
 
         self.currentHeadingMode = RadarPanel.Constants.HeadingMode.Heading
+        self.currentFollowMode = RadarPanel.Constants.FollowMode.Follow
+
         self.headingSpring = FlexibleLength1DSpring:new(100, 0.2)
         self.zoomSpring = FlexibleLength1DSpring:new(100, 0.2)
         self.zoomRange = RadarPanel.Constants.MaxZoomRange
@@ -166,6 +172,14 @@ do
         return {v[1] + plusV[1], v[2] + plusV[2]}
     end
 
+    local function vector2Length(v)
+        return math.sqrt(v[1] * v[1] + v[2] * v[2])
+    end
+
+    local function vector3Scale(v, scale)
+        return {v[1] * scale, v[2] * scale}
+    end
+
     function RadarPanel:_worldToCameraSpace(worldPos)
         local translated = vector2Substract(worldPos, self.worldViewPosition)
         local rotated = self.rotationMatrix:multiplyVector2(translated)
@@ -242,58 +256,7 @@ do
 
         self.newVatsimClientsUpdateAvailable = false
 
-        -- local testVatsimClients = {
-        --     {
-        --         type = "Plane",
-        --         callSign = "DLH97P",
-        --         latitude = "6.1708",
-        --         longitude = "-75.4276",
-        --         altitude = "39000.0",
-        --         heading = "270.0",
-        --         groundSpeed = "450",
-        --         currentDistance = 0.0
-        --     },
-        --     {
-        --         type = "Plane",
-        --         callSign = "DLH53N",
-        --         latitude = "8.0",
-        --         longitude = "-76.0",
-        --         altitude = "24000.0",
-        --         heading = "183.0",
-        --         groundSpeed = "409",
-        --         currentDistance = 10.0
-        --     },
-        --     {
-        --         type = "Plane",
-        --         callSign = "DLH62X",
-        --         latitude = "7.0",
-        --         longitude = "-76.0",
-        --         altitude = "13000.0",
-        --         heading = "51.0",
-        --         groundSpeed = "220",
-        --         currentDistance = 20.0
-        --     },
-        --     {
-        --         type = "Plane",
-        --         callSign = "DLH57D",
-        --         latitude = "10.0",
-        --         longitude = "-73.0",
-        --         altitude = "23000.0",
-        --         heading = "355.0",
-        --         groundSpeed = "320",
-        --         currentDistance = 30.0
-        --     },
-        --     {
-        --         type = "Station",
-        --         id = "SKRG_APP",
-        --         latitude = "5.0",
-        --         longitude = "-75.0",
-        --         frequency = "118.000",
-        --         currentDistance = 40.0
-        --     }
-        -- }
         local vatsimClients, ownCallSign, timeStamp = VatsimData.getAllVatsimClientsWithOwnCallsignAndTimestamp()
-        -- local vatsimClients = testVatsimClients
         self.totalVatsimClients = #vatsimClients
         local newRenderClients = self:_convertVatsimClientsToRenderClients(vatsimClients)
         if (#newRenderClients > 0) then
@@ -363,7 +326,9 @@ do
         self.zoomSpring:setTarget(self.zoomRange)
 
         if (self.currentHeadingMode == RadarPanel.Constants.HeadingMode.Heading) then
-            self:_setNewHeadingTarget(Datarefs.getCurrentHeading())
+            if (self.currentFollowMode == RadarPanel.Constants.FollowMode.Follow) then
+                self:_setNewHeadingTarget(Datarefs.getCurrentHeading())
+            end
         else
             self:_setNewHeadingTarget(0.0)
         end
@@ -372,12 +337,10 @@ do
         local ownWorldPos =
             self:_convertVatsimLocationToFlat3DKm(Datarefs.getCurrentLatitude(), Datarefs.getCurrentLongitude(), 0.0)
 
-        if (self.xAdd == nil) then
-            self.xAdd = 0.0
-            self.yAdd = 0.0
-            self.zAdd = 0.0
+        if (self.currentFollowMode == RadarPanel.Constants.FollowMode.Follow) then
+            self.worldViewPosSpring:setTarget(ownWorldPos)
         end
-        self.worldViewPosSpring:setTarget(Vector3.add(ownWorldPos, {self.xAdd, self.yAdd, self.zAdd}))
+
         local worldViewPos = self.worldViewPosSpring:getCurrentPosition()
 
         self:_precomputeFrameConstants(viewHeading, {worldViewPos[1], worldViewPos[2]})
@@ -390,7 +353,7 @@ do
 
         imgui.PushClipRect(0, 0, self.realScreenWidth, self.realScreenHeight, true)
 
-        self:_renderDistanceCircles(ownScreenPos, viewHeading)
+        self:_renderDistanceCircles(ownWorldPos, ownScreenPos, worldViewPos, viewHeading)
         self:_renderCompass()
         self:_renderHeadingLine(ownScreenPos, ownWorldPos, Datarefs.getCurrentHeading())
 
@@ -399,7 +362,7 @@ do
 
         imgui.PopClipRect()
 
-        self:_renderControlButtons()
+        self:_renderControlButtons(ownWorldPos, viewHeading)
         self:_renderTimestamp()
 
         imgui.SetCursorPos(0.0, 309.0)
@@ -476,7 +439,7 @@ do
         )
     end
 
-    function RadarPanel:_renderControlButtons()
+    function RadarPanel:_renderControlButtons(ownWorldPos, viewHeading)
         imgui.SetCursorPos(RadarPanel.Constants.ImguiTopLeftPadding, RadarPanel.Constants.ImguiTopLeftPadding)
         imgui.PushStyleColor(imgui.constant.Col.Button, Globals.Colors.defaultImguiButtonBackground)
         imgui.PushStyleColor(imgui.constant.Col.ButtonActive, Globals.Colors.defaultImguiButtonBackground)
@@ -511,61 +474,154 @@ do
             end
         end
 
-        -- local panRange = 0.3 * self.zoomRange
-        -- if (imgui.Button("L")) then
-        --     self.xAdd = self.xAdd - panRange
-        -- end
+        local diffVec = vector2Substract(self.worldViewPosSpring:getCurrentTargetPosition(), ownWorldPos)
+        local d = vector2Length(diffVec)
 
-        -- if (imgui.Button("R")) then
-        --     self.xAdd = self.xAdd + panRange
-        -- end
+        imgui.SameLine()
+        Globals.ImguiUtils.renderActiveInactiveButton(
+            "Follow",
+            self.currentFollowMode == RadarPanel.Constants.FollowMode.Follow,
+            true,
+            function(buttonTitle)
+                self.currentFollowMode = RadarPanel.Constants.FollowMode.Follow
+            end
+        )
 
-        -- if (imgui.Button("U")) then
-        --     self.yAdd = self.yAdd + panRange
-        -- end
+        local panRange = 0.3 * self.zoomRange
+        local panVector = {0.0, 0.0}
 
-        -- if (imgui.Button("D")) then
-        --     self.yAdd = self.yAdd - panRange
-        -- end
+        local panButtonSize = math.min(self.screenWidth, self.screenHeight) * 0.33
+        local halfPanButtonSize = panButtonSize * 0.5
+
+        local centerPoint = {
+            self.screenWidth * 0.5 + RadarPanel.Constants.ImguiTopLeftPadding,
+            self.screenHeight * 0.5 + RadarPanel.Constants.ImguiTopLeftPadding
+        }
+
+        imgui.PushStyleColor(imgui.constant.Col.Text, 0x00444444)
+        imgui.PushStyleColor(imgui.constant.Col.Button, 0x00222222)
+        imgui.PushStyleColor(imgui.constant.Col.ButtonActive, 0x00222222)
+        imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, 0x00222222)
+
+        imgui.SetCursorPos(centerPoint[1] - 3.0 * halfPanButtonSize, centerPoint[2] - 3.0 * halfPanButtonSize)
+        if (imgui.Button("UL", panButtonSize, panButtonSize)) then
+            self.currentFollowMode = RadarPanel.Constants.FollowMode.Free
+            panVector[2] = panVector[2] + panRange
+            panVector[1] = panVector[1] - panRange
+        end
+
+        imgui.SetCursorPos(centerPoint[1] - halfPanButtonSize, centerPoint[2] - 3.0 * halfPanButtonSize)
+        if (imgui.Button("U", panButtonSize, panButtonSize)) then
+            self.currentFollowMode = RadarPanel.Constants.FollowMode.Free
+            panVector[2] = panVector[2] + panRange
+        end
+
+        imgui.SetCursorPos(centerPoint[1] + halfPanButtonSize, centerPoint[2] - 3.0 * halfPanButtonSize)
+        if (imgui.Button("UR", panButtonSize, panButtonSize)) then
+            self.currentFollowMode = RadarPanel.Constants.FollowMode.Free
+            panVector[2] = panVector[2] + panRange
+            panVector[1] = panVector[1] + panRange
+        end
+
+        imgui.SetCursorPos(centerPoint[1] - 3.0 * halfPanButtonSize, centerPoint[2] - halfPanButtonSize)
+        if (imgui.Button("L", panButtonSize, panButtonSize)) then
+            self.currentFollowMode = RadarPanel.Constants.FollowMode.Free
+            panVector[1] = panVector[1] - panRange
+        end
+
+        imgui.SetCursorPos(centerPoint[1] + halfPanButtonSize, centerPoint[2] - halfPanButtonSize)
+        if (imgui.Button("R", panButtonSize, panButtonSize)) then
+            self.currentFollowMode = RadarPanel.Constants.FollowMode.Free
+            panVector[1] = panVector[1] + panRange
+        end
+
+        imgui.SetCursorPos(centerPoint[1] - 3.0 * halfPanButtonSize, centerPoint[2] + halfPanButtonSize)
+        if (imgui.Button("DL", panButtonSize, panButtonSize)) then
+            self.currentFollowMode = RadarPanel.Constants.FollowMode.Free
+            panVector[2] = panVector[2] - panRange
+            panVector[1] = panVector[1] - panRange
+        end
+
+        imgui.SetCursorPos(centerPoint[1] - halfPanButtonSize, centerPoint[2] + halfPanButtonSize)
+        if (imgui.Button("D", panButtonSize, panButtonSize)) then
+            self.currentFollowMode = RadarPanel.Constants.FollowMode.Free
+            panVector[2] = panVector[2] - panRange
+        end
+
+        imgui.SetCursorPos(centerPoint[1] + halfPanButtonSize, centerPoint[2] + halfPanButtonSize)
+        if (imgui.Button("DR", panButtonSize, panButtonSize)) then
+            self.currentFollowMode = RadarPanel.Constants.FollowMode.Free
+            panVector[2] = panVector[2] - panRange
+            panVector[1] = panVector[1] + panRange
+        end
+
+        imgui.PopStyleColor()
+        imgui.PopStyleColor()
+        imgui.PopStyleColor()
+        imgui.PopStyleColor()
+
+        local panRotation = Matrix2x2:newRotationMatrix((360.0 - viewHeading) * Utilities.DegToRad)
+        panVector = panRotation:multiplyVector2(panVector)
+
+        local currentWorldViewTarget = Vector3:newFromVector3(self.worldViewPosSpring:getCurrentTargetPosition())
+        currentWorldViewTarget[1] = currentWorldViewTarget[1] + panVector[1]
+        currentWorldViewTarget[2] = currentWorldViewTarget[2] + panVector[2]
+        self.worldViewPosSpring:setTarget(currentWorldViewTarget)
 
         imgui.PopStyleColor()
         imgui.PopStyleColor()
         imgui.PopStyleColor()
     end
 
-    function RadarPanel:_renderDistanceCircles(ownScreenPos, heading)
+    function RadarPanel:_renderDistanceCircles(ownWorldPos, ownScreenPos, worldViewPos, heading)
+        local diffVec = vector2Substract(worldViewPos, ownWorldPos)
+        local d = vector2Length(diffVec)
+
+        local textAngle = nil
+        if (d < 1.0) then
+            textAngle = (-45 - heading) * Utilities.DegToRad
+        else
+            local diffAngle = math.atan2(diffVec[2], diffVec[1])
+            textAngle = diffAngle - (90.0 * Utilities.DegToRad)
+        end
+
         local currentCircleNm = 0.15625
-        local circleRotation = Matrix2x2:newRotationMatrix((-45.0 - heading) * Utilities.DegToRad)
+        local circleRotation = Matrix2x2:newRotationMatrix(textAngle)
         for c = 1, 12 do
             local circleKm = currentCircleNm * Utilities.NmToKm
 
             local circlePoint = {0.0, circleKm * 1.0}
             circlePoint = circleRotation:multiplyVector2(circlePoint)
-            circlePoint = vector2Add(self.worldViewPosition, circlePoint)
+            circlePoint = vector2Add(ownWorldPos, circlePoint)
 
             circlePoint = self:_worldToCameraSpace(circlePoint)
             circlePoint = self:_cameraToClipSpace(circlePoint)
-            circlePoint = self:_clipToScreenSpace(circlePoint)
-
-            circlePoint =
-                vector2Add(
-                circlePoint,
-                {RadarPanel.Constants.ImguiTopLeftPadding, RadarPanel.Constants.ImguiTopLeftPadding}
-            )
-
             local circleStr = nil
-            if (currentCircleNm <= 2.5) then
-                circleStr = ("%.2f"):format(currentCircleNm)
-            else
-                circleStr = ("%.0f"):format(currentCircleNm)
+            local renderDistanceText = false
+            if (self:_isVisible(circlePoint)) then
+                renderDistanceText = true
+                circlePoint = self:_clipToScreenSpace(circlePoint)
+
+                circlePoint =
+                    vector2Add(
+                    circlePoint,
+                    {RadarPanel.Constants.ImguiTopLeftPadding, RadarPanel.Constants.ImguiTopLeftPadding}
+                )
+
+                if (currentCircleNm <= 2.5) then
+                    circleStr = ("%.2f"):format(currentCircleNm)
+                else
+                    circleStr = ("%.0f"):format(currentCircleNm)
+                end
+                imgui.SetCursorPos(
+                    math.floor(circlePoint[1] - (circleStr:len() * 2.7)) - 5,
+                    math.floor(circlePoint[2] - 8)
+                )
             end
-            imgui.SetCursorPos(math.floor(circlePoint[1] - (circleStr:len() * 2.7)) - 5, math.floor(circlePoint[2] - 8))
 
             local circleAlpha =
                 math.min(255.0, Utilities.Math.lerp(0, 255.0, circleKm / self.zoomSpring:getCurrentPosition()))
-            local circleTextColor = 0x00CCCCCC
             local circleColor = 0x00222222
-            circleTextColor = Utilities.Color.setAlpha(circleTextColor, circleAlpha)
             circleColor = Utilities.Color.setAlpha(circleColor, circleAlpha)
 
             imgui.DrawList_AddCircle(
@@ -577,9 +633,13 @@ do
                 math.max(2.0, currentCircleNm * 0.1)
             )
 
-            imgui.PushStyleColor(imgui.constant.Col.Text, circleTextColor)
-            imgui.TextUnformatted(circleStr)
-            imgui.PopStyleColor()
+            if (renderDistanceText) then
+                local circleTextColor = 0x00CCCCCC
+                circleTextColor = Utilities.Color.setAlpha(circleTextColor, circleAlpha)
+                imgui.PushStyleColor(imgui.constant.Col.Text, circleTextColor)
+                imgui.TextUnformatted(circleStr)
+                imgui.PopStyleColor()
+            end
 
             currentCircleNm = currentCircleNm * 2.0
         end
