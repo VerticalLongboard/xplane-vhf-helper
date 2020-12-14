@@ -357,16 +357,16 @@ do
             local diff = now - self.dataTimestamp
             local diffStr = nil
             if (diff > 60.0) then
-                diffStr = ("%dm ago"):format(diff / 60.0)
+                diffStr = ("%dm ago"):format(math.floor(diff / 60.0))
             elseif (diff > 10.0) then
                 local roundedDiff = math.floor(diff / 10.0) * 10.0
                 diffStr = ("%ds ago"):format(roundedDiff)
             else
-                diffStr = ("now"):format(diff)
+                diffStr = "now"
             end
 
             local color = Globals.Colors.white
-            if (diff > 120.0) then
+            if (diff > 130.0) then
                 color = Globals.Colors.a320Red
             elseif (diff > 70.0) then
                 color = Globals.Colors.a320Orange
