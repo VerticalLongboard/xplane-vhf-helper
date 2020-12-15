@@ -18,9 +18,9 @@ VR Radio Helper:
 ## Installation
 * Install FlyWithLua: https://forums.x-plane.org/index.php?/files/file/38445-flywithlua-ng-next-generation-edition-for-x-plane-11-win-lin-mac/
 * Download [latest release](https://github.com/VerticalLongboard/xplane-vhf-helper/releases/latest)
-* *Use installer executable* and specify your X-Plane installation folder or unzip manually:
-  * Move dependencies to `<X-Plane 11 Folder>/Resources/plugins/FlyWithLua/Modules`
-  * Move `vhf_helper.lua` to `<X-Plane 11 Folder>/Resources/plugins/FlyWithLua/Scripts`
+* *Use installer executable* and specify your X-Plane installation folder or unzip manually (including subfolders):
+  * Move dependencies from `Modules` to `<X-Plane 11 Folder>/Resources/plugins/FlyWithLua/Modules`
+  * Move script files and data from `Scripts` to `<X-Plane 11 Folder>/Resources/plugins/FlyWithLua/Scripts`
 
 To make it multicrew-ready (do that in **BOTH** pilot's airplanes):
 * Install SmartCopilot: https://sky4crew.com/smartcopilot/ and install aircraft-specific `smartcopilot.cfg`
