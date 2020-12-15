@@ -6,11 +6,11 @@ Flying VR multicrew in X-Plane with ATC is a blast! Yet, the default X-Plane 11 
 
 VR Radio Helper:
 * Makes tuning in a new ATC frequency a breeze!
-  * It replaces most ATC/navigation-related knobs with a number panel, like COM, NAV, Transponder and Barometer settings.
-* Works with SmartCopilot (both pilots need to install it) and synchronizes COM/NAV frequencies and transponder codes between two pilots
+  * It replaces most ATC/navigation-related knobs with a number panel, like **COM, NAV, Transponder and Barometer** settings.
+* Works with SmartCopilot (both pilots need to install it) and synchronizes COM/NAV frequencies and transponder codes between **two pilots**
   * Required changes to an existing SmartCopilot installation are applied automatically.
 * Works in VR (free positioning in 3D space)
-* Integrates well with ATC networks (e.g. VATSIM)
+* Integrates well with ATC networks (e.g. VATSIM), showing **ATC station names** and a **Real-Time Radar**
 
 ![VR Radio Helper Screenshot](screenshots/VHFHelperScreenshot2.png "VHF Helper Screenshot")
 
@@ -40,7 +40,7 @@ For ATC Station Names and Radar:
   * All Vatsim clients close to your current location in `Radar`
 
 For multicrew:
- * Check if multicrew support is available via clicking the `>` button. If something doesn`t work yet, you`ll find more information in the options panel.
+ * Check if multicrew support is available via clicking the `>` button. If something doesn`t work yet, you`ll get notified and will find more information in the options panel.
  * Connect via SmartCopilot
 
 ## Plane Compatibility
