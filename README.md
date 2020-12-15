@@ -13,7 +13,6 @@ VR Radio Helper:
 * Integrates well with ATC networks (e.g. VATSIM)
 
 ![VR Radio Helper Screenshot](screenshots/VHFHelperScreenshot2.png "VHF Helper Screenshot")
-![VR Radio Helper Video](screenshots/VHFHelperUsageVideo.gif "VHF Helper Video")
 
 ## Installation
 * Install FlyWithLua: https://forums.x-plane.org/index.php?/files/file/38445-flywithlua-ng-next-generation-edition-for-x-plane-11-win-lin-mac/
