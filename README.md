@@ -36,7 +36,7 @@ To make it multicrew-ready (do that in **BOTH** pilot's airplanes):
 For ATC Station Names and Radar:
 * Install Vatsimbrief Helper: https://github.com/RedXi/vatsimbrief-helper
 * As long as Vatsimbrief Helper is installed and able to access Vatsim Data, you will see:
-  * ATC station names for tuned-in or entered frequencies
+  * ATC station names and short description for tuned-in or entered frequencies
   * All Vatsim clients close to your current location in `Radar`
 
 For multicrew:
