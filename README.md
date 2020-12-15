@@ -39,7 +39,7 @@ To see ATC station information and real-time radar positions:
 
 For ATC Station Names and Radar:
 * Install Vatsimbrief Helper
-* Check if the installation is working via clicking the `>` button
+* Check if Vatsim data transfer is available via clicking the `>` button
 * As long as Vatsimbrief Helper is installed and able to access Vatsim Data, you will see:
   * ATC station names and short description for tuned-in or entered frequencies
   * All Vatsim clients close to your current location in `Radar`
