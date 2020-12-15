@@ -42,7 +42,9 @@ For ATC Station Names and Radar:
   * All Vatsim clients close to your current location in `Radar`
 
 For multicrew:
- * Check if multicrew support is available via clicking the `>` button. If something doesn't work yet, you'll get notified and will find more information in the options panel.
+ * Install SmartCopilot
+ * Check if multicrew support is available via clicking the `>` button
+ * If something doesn't work yet, you'll get notified and will find more information in the options panel.
  * Connect via SmartCopilot
 
 ## Plane Compatibility
