@@ -29,13 +29,19 @@ To make it multicrew-ready (do that in **BOTH** pilot's airplanes):
 * Go to `Plugins/FlyWithLua/FlyWithLua Macros/VR Radio Helper`.
 * Place and scale the panel wherever you like (in 2D and VR).
 * Use the number buttons to enter the new VHF frequency. The last two digits do not need to be entered manually.
-* Press `NAV`, `XPDR` or `QNH` to change to NAV, Transponder and Barometer panels.
+* Press `NAV`, `TP` or `BARO` to change to NAV, Transponder and Barometer panels.
 * Press the corresponding switch button to tune in new frequencies, transponder codes or barometer pressures.
 * **Chat with ATC! :-)**
 * If you like, bind the toggle-panel command `FlyWithLua/VR Radio Helper/TogglePanel` to a key of your choice.
 
+For ATC Station Names and Radar:
+* Install Vatsimbrief Helper: https://github.com/RedXi/vatsimbrief-helper
+* As long as Vatsimbrief Helper is installed and able to access Vatsim Data, you will see:
+  * ATC station names for tuned-in or entered frequencies
+  * All Vatsim clients close to your current location in `Radar`
+
 For multicrew:
- * Check if multicrew support is available (click the `?` button)
+ * Check if multicrew support is available via clicking the `>` button. If something doesn`t work yet, you`ll find more information in the options panel.
  * Connect via SmartCopilot
 
 ## Plane Compatibility
