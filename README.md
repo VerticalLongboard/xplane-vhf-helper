@@ -25,6 +25,9 @@ VR Radio Helper:
 To make it multicrew-ready (do that in **BOTH** pilot's airplanes):
 * Install SmartCopilot: https://sky4crew.com/smartcopilot/ and install aircraft-specific `smartcopilot.cfg`
 
+To see ATC station information and real-time radar positions:
+* Install Vatsimbrief Helper: https://github.com/RedXi/vatsimbrief-helper
+
 ## Usage
 * Go to `Plugins/FlyWithLua/FlyWithLua Macros/VR Radio Helper`.
 * Place and scale the panel wherever you like (in 2D and VR).
@@ -35,7 +38,7 @@ To make it multicrew-ready (do that in **BOTH** pilot's airplanes):
 * If you like, bind the toggle-panel command `FlyWithLua/VR Radio Helper/TogglePanel` to a key of your choice.
 
 For ATC Station Names and Radar:
-* Install Vatsimbrief Helper: https://github.com/RedXi/vatsimbrief-helper
+* Install Vatsimbrief Helper
 * Check if the installation is working via clicking the `>` button
 * As long as Vatsimbrief Helper is installed and able to access Vatsim Data, you will see:
   * ATC station names and short description for tuned-in or entered frequencies
@@ -46,6 +49,7 @@ For multicrew:
  * Check if multicrew support is available via clicking the `>` button
  * If something doesn't work yet, you'll get notified and will find more information in the options panel.
  * Connect via SmartCopilot
+ * If SmartCopilot works correctly, entered freqencies, pressures and codes will be synchronized between two pilots
 
 ## Plane Compatibility
 VR Radio Helper uses the default X-Plane way of setting COM/NAV frequencies, barometer pressures and transponder codes. By default, all features are enabled. If you find that this does not work out-of-the-box in your plane, please use the integrated feedback collector (click the `?` button) to leave a description of the issues that you encountered. The plane compatibility reports automatically generate diagnostic information that is necessary to distinguish between different planes.
