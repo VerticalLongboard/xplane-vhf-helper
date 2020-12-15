@@ -61,6 +61,11 @@ do
         self.totalVatsimClients = 0
         self.newVatsimClientsUpdateAvailable = false
 
+        self.realScreenWidth = 254
+        self.realScreenHeight = 308
+        self.screenWidth = 254 - RadarPanel.Constants.ImguiTopLeftPadding
+        self.screenHeight = 308 - RadarPanel.Constants.ImguiTopLeftPadding
+
         return newInstanceWithState
     end
 
@@ -206,10 +211,6 @@ do
     end
 
     function RadarPanel:_precomputeFrameConstants(viewRotation, worldViewPosition)
-        self.realScreenWidth = 254
-        self.realScreenHeight = 308
-        self.screenWidth = 254 - RadarPanel.Constants.ImguiTopLeftPadding
-        self.screenHeight = 308 - RadarPanel.Constants.ImguiTopLeftPadding
         self.zoomRatio = nil
 
         local aspect = self.screenWidth / self.screenHeight
@@ -309,6 +310,15 @@ do
         end
     end
 
+    function RadarPanel:_renderAllClientsIconBlockingPass()
+        imgui.SetWindowFontScale(1.0)
+        for _, client in ipairs(self.renderClients) do
+            if (client.isVisible) then
+                self:_renderClientIconBlockingPass(client)
+            end
+        end
+    end
+
     Globals.OVERRIDE(RadarPanel.loop)
     function RadarPanel:loop(frameTime)
         SubPanel.loop(self, frameTime)
@@ -323,6 +333,8 @@ do
 
     Globals.OVERRIDE(RadarPanel.renderToCanvas)
     function RadarPanel:renderToCanvas()
+        self:_createBlockingGrid()
+
         self.zoomSpring:setTarget(self.zoomRange)
 
         if (self.currentHeadingMode == RadarPanel.Constants.HeadingMode.Heading) then
@@ -357,8 +369,9 @@ do
         self:_renderCompass()
         self:_renderHeadingLine(ownScreenPos, ownWorldPos, Datarefs.getCurrentHeading())
 
-        self:_renderOwnMarker(ownScreenPos, Datarefs.getCurrentHeading(), viewHeading)
+        self:_renderAllClientsIconBlockingPass()
         self:_renderAllClients()
+        self:_renderOwnMarker(ownScreenPos, Datarefs.getCurrentHeading(), viewHeading)
 
         imgui.PopClipRect()
 
@@ -439,6 +452,18 @@ do
         )
     end
 
+    function RadarPanel:_zoomIn()
+        if (self.zoomRange > 0.146484375) then
+            self.zoomRange = self.zoomRange * 0.5
+        end
+    end
+
+    function RadarPanel:_zoomOut()
+        if (self.zoomRange < RadarPanel.Constants.MaxZoomRange) then
+            self.zoomRange = self.zoomRange * 2.0
+        end
+    end
+
     function RadarPanel:_renderControlButtons(ownWorldPos, viewHeading)
         imgui.SetCursorPos(RadarPanel.Constants.ImguiTopLeftPadding, RadarPanel.Constants.ImguiTopLeftPadding)
         imgui.PushStyleColor(imgui.constant.Col.Button, Globals.Colors.defaultImguiButtonBackground)
@@ -446,16 +471,12 @@ do
         imgui.PushStyleColor(imgui.constant.Col.ButtonHovered, Globals.Colors.slightlyBrighterDefaultButtonColor)
 
         if (imgui.Button("-")) then
-            if (self.zoomRange < RadarPanel.Constants.MaxZoomRange) then
-                self.zoomRange = self.zoomRange * 2.0
-            end
+            self:_zoomOut()
         end
 
         imgui.SameLine()
         if (imgui.Button("+")) then
-            if (self.zoomRange > 0.29296875) then
-                self.zoomRange = self.zoomRange * 0.5
-            end
+            self:_zoomIn()
         end
 
         imgui.SameLine()
@@ -471,6 +492,9 @@ do
                 self.currentHeadingMode = RadarPanel.Constants.HeadingMode.North
             else
                 self.currentHeadingMode = RadarPanel.Constants.HeadingMode.Heading
+                if (self.currentFollowMode == RadarPanel.Constants.FollowMode.Free) then
+                    self:_setNewHeadingTarget(Datarefs.getCurrentHeading())
+                end
             end
         end
 
@@ -505,52 +529,49 @@ do
 
         imgui.SetCursorPos(centerPoint[1] - 3.0 * halfPanButtonSize, centerPoint[2] - 3.0 * halfPanButtonSize)
         if (imgui.Button("UL", panButtonSize, panButtonSize)) then
-            self.currentFollowMode = RadarPanel.Constants.FollowMode.Free
             panVector[2] = panVector[2] + panRange
             panVector[1] = panVector[1] - panRange
         end
 
         imgui.SetCursorPos(centerPoint[1] - halfPanButtonSize, centerPoint[2] - 3.0 * halfPanButtonSize)
         if (imgui.Button("U", panButtonSize, panButtonSize)) then
-            self.currentFollowMode = RadarPanel.Constants.FollowMode.Free
             panVector[2] = panVector[2] + panRange
         end
 
         imgui.SetCursorPos(centerPoint[1] + halfPanButtonSize, centerPoint[2] - 3.0 * halfPanButtonSize)
         if (imgui.Button("UR", panButtonSize, panButtonSize)) then
-            self.currentFollowMode = RadarPanel.Constants.FollowMode.Free
             panVector[2] = panVector[2] + panRange
             panVector[1] = panVector[1] + panRange
         end
 
         imgui.SetCursorPos(centerPoint[1] - 3.0 * halfPanButtonSize, centerPoint[2] - halfPanButtonSize)
         if (imgui.Button("L", panButtonSize, panButtonSize)) then
-            self.currentFollowMode = RadarPanel.Constants.FollowMode.Free
             panVector[1] = panVector[1] - panRange
+        end
+
+        imgui.SetCursorPos(centerPoint[1] - halfPanButtonSize, centerPoint[2] - halfPanButtonSize)
+        if (imgui.Button("ZoomIn", panButtonSize, panButtonSize)) then
+            self:_zoomIn()
         end
 
         imgui.SetCursorPos(centerPoint[1] + halfPanButtonSize, centerPoint[2] - halfPanButtonSize)
         if (imgui.Button("R", panButtonSize, panButtonSize)) then
-            self.currentFollowMode = RadarPanel.Constants.FollowMode.Free
             panVector[1] = panVector[1] + panRange
         end
 
         imgui.SetCursorPos(centerPoint[1] - 3.0 * halfPanButtonSize, centerPoint[2] + halfPanButtonSize)
         if (imgui.Button("DL", panButtonSize, panButtonSize)) then
-            self.currentFollowMode = RadarPanel.Constants.FollowMode.Free
             panVector[2] = panVector[2] - panRange
             panVector[1] = panVector[1] - panRange
         end
 
         imgui.SetCursorPos(centerPoint[1] - halfPanButtonSize, centerPoint[2] + halfPanButtonSize)
         if (imgui.Button("D", panButtonSize, panButtonSize)) then
-            self.currentFollowMode = RadarPanel.Constants.FollowMode.Free
             panVector[2] = panVector[2] - panRange
         end
 
         imgui.SetCursorPos(centerPoint[1] + halfPanButtonSize, centerPoint[2] + halfPanButtonSize)
         if (imgui.Button("DR", panButtonSize, panButtonSize)) then
-            self.currentFollowMode = RadarPanel.Constants.FollowMode.Free
             panVector[2] = panVector[2] - panRange
             panVector[1] = panVector[1] + panRange
         end
@@ -560,17 +581,101 @@ do
         imgui.PopStyleColor()
         imgui.PopStyleColor()
 
-        local panRotation = Matrix2x2:newRotationMatrix((360.0 - viewHeading) * Utilities.DegToRad)
-        panVector = panRotation:multiplyVector2(panVector)
+        if (vector2Length(panVector) > 0.0) then
+            self.currentFollowMode = RadarPanel.Constants.FollowMode.Free
 
-        local currentWorldViewTarget = Vector3:newFromVector3(self.worldViewPosSpring:getCurrentTargetPosition())
-        currentWorldViewTarget[1] = currentWorldViewTarget[1] + panVector[1]
-        currentWorldViewTarget[2] = currentWorldViewTarget[2] + panVector[2]
-        self.worldViewPosSpring:setTarget(currentWorldViewTarget)
+            local panRotation = Matrix2x2:newRotationMatrix((360.0 - viewHeading) * Utilities.DegToRad)
+            panVector = panRotation:multiplyVector2(panVector)
+
+            local currentWorldViewTarget = Vector3:newFromVector3(self.worldViewPosSpring:getCurrentTargetPosition())
+            currentWorldViewTarget[1] = currentWorldViewTarget[1] + panVector[1]
+            currentWorldViewTarget[2] = currentWorldViewTarget[2] + panVector[2]
+            self.worldViewPosSpring:setTarget(currentWorldViewTarget)
+        end
 
         imgui.PopStyleColor()
         imgui.PopStyleColor()
         imgui.PopStyleColor()
+    end
+
+    function RadarPanel:_createBlockingGrid()
+        self.blockingGridLen = 10
+        if (self.blockingGrid == nil) then
+            self.blockingGrid = {}
+        end
+
+        for y = 1, self.blockingGridLen do
+            for x = 1, self.blockingGridLen do
+                self.blockingGrid[y * self.blockingGridLen + x] = 0
+            end
+        end
+    end
+
+    function RadarPanel:_fillBlockingGrid(x, y)
+        local i = y * self.blockingGridLen + x
+        local v = self.blockingGrid[i]
+        self.blockingGrid[i] = v + 1
+    end
+
+    function RadarPanel:_emptyBlockingGrid(x, y)
+        local i = y * self.blockingGridLen + x
+        local v = self.blockingGrid[i]
+        self.blockingGrid[i] = v - 1
+    end
+
+    function RadarPanel:_getBlockValueFromGrid(x, y)
+        return self.blockingGrid[y * self.blockingGridLen + x]
+    end
+
+    function RadarPanel:_mapToBlockingGrid(screenPos)
+        local gridX =
+            math.max(
+            1,
+            math.min(self.blockingGridLen, (math.floor((self.blockingGridLen * screenPos[1]) / self.screenWidth) + 1))
+        )
+        local gridY =
+            math.max(
+            1,
+            math.min(self.blockingGridLen, (math.floor((self.blockingGridLen * screenPos[2]) / self.screenHeight) + 1))
+        )
+
+        return gridX, gridY
+    end
+
+    function RadarPanel:_emptyIconInBlockingGrid(screenPos)
+        local actualScreenPos = {
+            screenPos[1] + RadarPanel.Constants.HalfIconSize,
+            screenPos[2] + RadarPanel.Constants.HalfIconSize
+        }
+        local gridX, gridY = self:_mapToBlockingGrid(actualScreenPos)
+        self:_emptyBlockingGrid(gridX, gridY)
+    end
+
+    function RadarPanel:_renderIconToBlockingGrid(screenPos)
+        local actualScreenPos = {
+            screenPos[1] + RadarPanel.Constants.HalfIconSize,
+            screenPos[2] + RadarPanel.Constants.HalfIconSize
+        }
+        local gridX, gridY = self:_mapToBlockingGrid(actualScreenPos)
+        self:_fillBlockingGrid(gridX, gridY)
+    end
+
+    function RadarPanel:_renderTextToBlockingGrid(screenPos, textLen)
+        local actualScreenPos = {screenPos[1], screenPos[2] - 2.7}
+        local blockage = 0
+        local startX, constantY = self:_mapToBlockingGrid(actualScreenPos)
+        local maxX = startX
+        for t = 0, textLen do
+            local gridX, gridY = self:_mapToBlockingGrid({actualScreenPos[1] + t * 5.4, actualScreenPos[2]})
+            maxX = math.max(maxX, gridX)
+            blockage = blockage + self:_getBlockValueFromGrid(gridX, gridY)
+        end
+
+        for x = startX, maxX do
+            self:_fillBlockingGrid(x, constantY)
+        end
+
+        return blockage
     end
 
     function RadarPanel:_renderDistanceCircles(ownWorldPos, ownScreenPos, worldViewPos, heading)
@@ -578,16 +683,16 @@ do
         local d = vector2Length(diffVec)
 
         local textAngle = nil
-        if (d < 1.0) then
+        if (d < 0.1) then
             textAngle = (-45 - heading) * Utilities.DegToRad
         else
             local diffAngle = math.atan2(diffVec[2], diffVec[1])
             textAngle = diffAngle - (90.0 * Utilities.DegToRad)
         end
 
-        local currentCircleNm = 0.15625
+        local currentCircleNm = 0.078125
         local circleRotation = Matrix2x2:newRotationMatrix(textAngle)
-        for c = 1, 12 do
+        for c = 1, 13 do
             local circleKm = currentCircleNm * Utilities.NmToKm
 
             local circlePoint = {0.0, circleKm * 1.0}
@@ -684,6 +789,10 @@ do
         end
     end
 
+    function RadarPanel:_renderClientIconBlockingPass(client)
+        self:_renderIconToBlockingGrid(client.screenPos)
+    end
+
     function RadarPanel:_renderClient(client)
         local icon = nil
         local color = Globals.Colors.white
@@ -706,13 +815,22 @@ do
             icon = self.stationIcon
         end
 
+        if (not isOwnObserverClient) then
+            self:_emptyIconInBlockingGrid(client.screenPos)
+        end
+
         if (isOwnClient) then
             color = Globals.Colors.darkerOrange
         else
-            imgui.SetCursorPos(math.floor(client.screenPos[1] - client.name:len() * 2.7), client.screenPos[2] + 10)
-            imgui.PushStyleColor(imgui.constant.Col.Text, color)
-            imgui.TextUnformatted(client.name)
-            imgui.PopStyleColor()
+            local textScreenPos = {math.floor(client.screenPos[1] - client.name:len() * 2.7), client.screenPos[2] + 10}
+            local textLen = client.name:len()
+            local blockage = self:_renderTextToBlockingGrid(textScreenPos, textLen)
+            if (blockage == 0) then
+                imgui.SetCursorPos(math.floor(client.screenPos[1] - textLen * 2.7), client.screenPos[2] + 10)
+                imgui.PushStyleColor(imgui.constant.Col.Text, color)
+                imgui.TextUnformatted(client.name)
+                imgui.PopStyleColor()
+            end
         end
 
         if (not isOwnObserverClient) then
@@ -723,6 +841,8 @@ do
                 client.cameraHeading,
                 color
             )
+
+            self:_renderIconToBlockingGrid(client.screenPos)
         end
     end
 
