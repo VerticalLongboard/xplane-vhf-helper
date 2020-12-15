@@ -26,6 +26,7 @@ do
         },
         ImguiTopLeftPadding = 5,
         MaxZoomRange = 600.0,
+        IconSize = 10,
         HalfIconSize = 5
     }
     TRACK_ISSUE(
@@ -47,6 +48,9 @@ do
         self.stationIcon = float_wnd_load_image(SCRIPT_DIRECTORY .. "vr_radio_helper_data/radar_station.png")
         assert(self.stationIcon)
 
+        self.whiteImage = float_wnd_load_image(SCRIPT_DIRECTORY .. "vr_radio_helper_data/white.png")
+        assert(self.stationIcon)
+
         self.currentHeadingMode = RadarPanel.Constants.HeadingMode.Heading
         self.currentFollowMode = RadarPanel.Constants.FollowMode.Follow
 
@@ -65,6 +69,9 @@ do
         self.realScreenHeight = 308
         self.screenWidth = 254 - RadarPanel.Constants.ImguiTopLeftPadding
         self.screenHeight = 308 - RadarPanel.Constants.ImguiTopLeftPadding
+
+        self.DEBUG_BLOCKING_GRID = function()
+        end
 
         return newInstanceWithState
     end
@@ -87,10 +94,15 @@ do
         for _, vatsimClient in ipairs(vatsimclientTable) do
             if (vatsimClient.currentDistance > RadarPanel.Constants.MaxZoomRange) then
                 logMsg(
-                    "break at client=" ..
-                        (vatsimClient.callSign or vatsimClient.id) ..
-                            " num=" .. tostring(num) .. "/" .. tostring(#vatsimclientTable)
+                    ("VR Radio Helper Radar: Stopping Vatsim data processing at client=%s distance=%.1fkm/%.1fnm num=%d/%d"):format(
+                        vatsimClient.callSign or vatsimClient.id,
+                        vatsimClient.currentDistance,
+                        vatsimClient.currentDistance * Utilities.KmToNm,
+                        num,
+                        #vatsimclientTable
+                    )
                 )
+
                 break
             end
             num = num + 1
@@ -373,6 +385,12 @@ do
         self:_renderAllClients()
         self:_renderOwnMarker(ownScreenPos, Datarefs.getCurrentHeading(), viewHeading)
 
+        self.DEBUG_BLOCKING_GRID(
+            function()
+                self:_renderBlockingGrid()
+            end
+        )
+
         imgui.PopClipRect()
 
         self:_renderControlButtons(ownWorldPos, viewHeading)
@@ -599,7 +617,7 @@ do
     end
 
     function RadarPanel:_createBlockingGrid()
-        self.blockingGridLen = 10
+        self.blockingGridLen = 20
         if (self.blockingGrid == nil) then
             self.blockingGrid = {}
         end
@@ -611,68 +629,147 @@ do
         end
     end
 
-    function RadarPanel:_fillBlockingGrid(x, y)
-        local i = y * self.blockingGridLen + x
+    function RadarPanel:_fillBlockingGrid(gridPos)
+        local i = gridPos[2] * self.blockingGridLen + gridPos[1]
         local v = self.blockingGrid[i]
         self.blockingGrid[i] = v + 1
     end
 
-    function RadarPanel:_emptyBlockingGrid(x, y)
-        local i = y * self.blockingGridLen + x
+    function RadarPanel:_emptyBlockingGrid(gridPos)
+        local i = gridPos[2] * self.blockingGridLen + gridPos[1]
         local v = self.blockingGrid[i]
         self.blockingGrid[i] = v - 1
     end
 
-    function RadarPanel:_getBlockValueFromGrid(x, y)
-        return self.blockingGrid[y * self.blockingGridLen + x]
+    function RadarPanel:_getBlockValueFromGrid(gridPos)
+        return self.blockingGrid[gridPos[2] * self.blockingGridLen + gridPos[1]]
     end
 
     function RadarPanel:_mapToBlockingGrid(screenPos)
-        local gridX =
+        return {
             math.max(
-            1,
-            math.min(self.blockingGridLen, (math.floor((self.blockingGridLen * screenPos[1]) / self.screenWidth) + 1))
-        )
-        local gridY =
+                1,
+                math.min(
+                    self.blockingGridLen,
+                    (math.floor((self.blockingGridLen * screenPos[1]) / self.screenWidth) + 1)
+                )
+            ),
             math.max(
-            1,
-            math.min(self.blockingGridLen, (math.floor((self.blockingGridLen * screenPos[2]) / self.screenHeight) + 1))
-        )
-
-        return gridX, gridY
+                1,
+                math.min(
+                    self.blockingGridLen,
+                    (math.floor((self.blockingGridLen * screenPos[2]) / self.screenHeight) + 1)
+                )
+            )
+        }
     end
 
     function RadarPanel:_emptyIconInBlockingGrid(screenPos)
-        local actualScreenPos = {
-            screenPos[1] + RadarPanel.Constants.HalfIconSize,
-            screenPos[2] + RadarPanel.Constants.HalfIconSize
-        }
-        local gridX, gridY = self:_mapToBlockingGrid(actualScreenPos)
-        self:_emptyBlockingGrid(gridX, gridY)
+        self:_emptyBlockingGridAtScreenPos(
+            {
+                screenPos[1] - RadarPanel.Constants.HalfIconSize,
+                screenPos[2] - RadarPanel.Constants.HalfIconSize
+            }
+        )
+        self:_emptyBlockingGridAtScreenPos(
+            {
+                screenPos[1] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize,
+                screenPos[2] - RadarPanel.Constants.HalfIconSize
+            }
+        )
+        self:_emptyBlockingGridAtScreenPos(
+            {
+                screenPos[1] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize,
+                screenPos[2] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize
+            }
+        )
+        self:_emptyBlockingGridAtScreenPos(
+            {
+                screenPos[1] - RadarPanel.Constants.HalfIconSize,
+                screenPos[2] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize
+            }
+        )
+    end
+
+    function RadarPanel:_fillBlockingGridAtScreenPos(screenPos)
+        self:_fillBlockingGrid(self:_mapToBlockingGrid(screenPos))
+        self.DEBUG_BLOCKING_GRID(
+            function()
+                self:_renderDebugPixels(screenPos, 1, 1, 0xFF00FFFF)
+            end
+        )
+    end
+
+    function RadarPanel:_emptyBlockingGridAtScreenPos(screenPos)
+        self:_emptyBlockingGrid(self:_mapToBlockingGrid(screenPos))
     end
 
     function RadarPanel:_renderIconToBlockingGrid(screenPos)
-        local actualScreenPos = {
-            screenPos[1] + RadarPanel.Constants.HalfIconSize,
-            screenPos[2] + RadarPanel.Constants.HalfIconSize
-        }
-        local gridX, gridY = self:_mapToBlockingGrid(actualScreenPos)
-        self:_fillBlockingGrid(gridX, gridY)
+        self:_fillBlockingGridAtScreenPos(
+            {
+                screenPos[1] - RadarPanel.Constants.HalfIconSize,
+                screenPos[2] - RadarPanel.Constants.HalfIconSize
+            }
+        )
+        self:_fillBlockingGridAtScreenPos(
+            {
+                screenPos[1] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize,
+                screenPos[2] - RadarPanel.Constants.HalfIconSize
+            }
+        )
+        self:_fillBlockingGridAtScreenPos(
+            {
+                screenPos[1] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize,
+                screenPos[2] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize
+            }
+        )
+        self:_fillBlockingGridAtScreenPos(
+            {
+                screenPos[1] - RadarPanel.Constants.HalfIconSize,
+                screenPos[2] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize
+            }
+        )
     end
 
     function RadarPanel:_renderTextToBlockingGrid(screenPos, textLen)
-        local actualScreenPos = {screenPos[1], screenPos[2] - 2.7}
+        local actualScreenPos = {screenPos[1] - 9, screenPos[2] - 3}
         local blockage = 0
-        local startX, constantY = self:_mapToBlockingGrid(actualScreenPos)
+        local startPos = self:_mapToBlockingGrid(actualScreenPos)
+        local startX = startPos[1]
+        local startY = startPos[2]
         local maxX = startX
-        for t = 0, textLen do
-            local gridX, gridY = self:_mapToBlockingGrid({actualScreenPos[1] + t * 5.4, actualScreenPos[2]})
-            maxX = math.max(maxX, gridX)
-            blockage = blockage + self:_getBlockValueFromGrid(gridX, gridY)
+        local maxY = startY
+        for t = 1, textLen do
+            local currentCharacterPos = nil
+            local gridPos = nil
+
+            currentCharacterPos = {actualScreenPos[1] + t * 7, actualScreenPos[2]}
+            gridPos = self:_mapToBlockingGrid(currentCharacterPos)
+            maxX = math.max(maxX, gridPos[1])
+            blockage = blockage + self:_getBlockValueFromGrid(gridPos)
+
+            self.DEBUG_BLOCKING_GRID(
+                function()
+                    self:_renderDebugPixels(currentCharacterPos, 1, 1, 0xFF00FFFF)
+                end
+            )
+
+            currentCharacterPos = {actualScreenPos[1] + t * 7, actualScreenPos[2] + 9}
+            gridPos = self:_mapToBlockingGrid(currentCharacterPos)
+            maxY = math.max(maxY, gridPos[2])
+            blockage = blockage + self:_getBlockValueFromGrid(gridPos)
+
+            self.DEBUG_BLOCKING_GRID(
+                function()
+                    self:_renderDebugPixels(currentCharacterPos, 1, 1, 0xFF00FFFF)
+                end
+            )
         end
 
         for x = startX, maxX do
-            self:_fillBlockingGrid(x, constantY)
+            for y = startY, maxY do
+                self:_fillBlockingGrid({x, y})
+            end
         end
 
         return blockage
@@ -791,6 +888,50 @@ do
 
     function RadarPanel:_renderClientIconBlockingPass(client)
         self:_renderIconToBlockingGrid(client.screenPos)
+    end
+
+    function RadarPanel:_renderBlockingGrid()
+        for y = 1, self.blockingGridLen do
+            for x = 1, self.blockingGridLen do
+                local v = self.blockingGrid[y * self.blockingGridLen + x]
+                self:_renderDebugPixels(
+                    {
+                        ((x - 1) * self.screenWidth) / self.blockingGridLen,
+                        ((y - 1) * self.screenHeight) / self.blockingGridLen
+                    },
+                    self.screenWidth / self.blockingGridLen,
+                    self.screenHeight / self.blockingGridLen,
+                    Utilities.lerpColors(0x2200FF00, 0x220000FF, Utilities.Math.lerp(0.0, 1.0, math.min(1.0, v)))
+                )
+            end
+        end
+    end
+
+    function RadarPanel:_renderDebugPixels(screenPos, rectWidth, rectHeight, color)
+        local actualScreenPos = {
+            screenPos[1] + RadarPanel.Constants.ImguiTopLeftPadding,
+            screenPos[2] + RadarPanel.Constants.ImguiTopLeftPadding
+        }
+        imgui.DrawList_AddImageQuad(
+            self.whiteImage,
+            actualScreenPos[1],
+            actualScreenPos[2],
+            actualScreenPos[1] + rectWidth,
+            actualScreenPos[2],
+            actualScreenPos[1] + rectWidth,
+            actualScreenPos[2] + rectHeight,
+            actualScreenPos[1],
+            actualScreenPos[2] + rectHeight,
+            0,
+            0,
+            1,
+            0,
+            1,
+            1,
+            0,
+            1,
+            color
+        )
     end
 
     function RadarPanel:_renderClient(client)

@@ -176,7 +176,7 @@ do
                 (Globals.ImguiUtils.renderButtonWithColors(
                     sidePanelButtonTitle,
                     Globals.Colors.black,
-                    Utilities.getBlinkingColor(0xFFFFFFFF, 0.4, 5.0),
+                    Utilities.getBlinkingColor(0xFFFFFFFF, 0.1, 10.0),
                     Globals.Colors.white,
                     Globals.Colors.white
                 ))

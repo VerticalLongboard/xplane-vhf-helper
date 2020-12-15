@@ -194,12 +194,16 @@ Utilities.lerpColors = function(color1, color2, t)
     local getBlue = function(color)
         return shiftByte(color, 0x00FF0000, 16)
     end
+    local getAlpha = function(color)
+        return shiftByte(color, 0xFF000000, 24)
+    end
 
     local red = Utilities.Math.lerp(getRed(color1), getRed(color2), t)
     local green = Utilities.Math.lerp(getGreen(color1), getGreen(color2), t)
     local blue = Utilities.Math.lerp(getBlue(color1), getBlue(color2), t)
+    local alpha = Utilities.Math.lerp(getAlpha(color1), getAlpha(color2), t)
 
-    return Utilities.Color.getColorFromComponents(red, green, blue, 255)
+    return Utilities.Color.getColorFromComponents(red, green, blue, alpha)
 end
 
 Utilities.setByte = function(fourBytes, newByte, shift)
