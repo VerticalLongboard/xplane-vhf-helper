@@ -70,7 +70,8 @@ do
         self.screenWidth = 254 - RadarPanel.Constants.ImguiTopLeftPadding
         self.screenHeight = 308 - RadarPanel.Constants.ImguiTopLeftPadding
 
-        self.DEBUG_BLOCKING_GRID = function()
+        self.DEBUG_BLOCKING_GRID = function(f)
+            f()
         end
 
         return newInstanceWithState
@@ -270,6 +271,7 @@ do
         self.newVatsimClientsUpdateAvailable = false
 
         local vatsimClients, ownCallSign, timeStamp = VatsimData.getAllVatsimClientsWithOwnCallsignAndTimestamp()
+
         self.totalVatsimClients = #vatsimClients
         local newRenderClients = self:_convertVatsimClientsToRenderClients(vatsimClients)
         if (#newRenderClients > 0) then
@@ -282,14 +284,26 @@ do
             MULTILINE_TEXT(
                 "There are not too many airplanes within the maximum radar range usually (up to 120 at most),",
                 "but finding your own callsign in this table can be made faster, i.e. O(1), maybe on Vatsimbrief Helper side."
-            )
+            ),
+            "Your own airplane is usually the first or one of the first in this list (because it's sorted by distance). Leave it for now."
         )
+
         self.ownClients = {}
         local ownClientCallSign = ownCallSign
         local ownClientObserverCallSign = ("%sA"):format(ownCallSign)
+        local ownClientFound = false
+        local ownObserverFound = false
         for _, client in ipairs(self.renderClients) do
-            if (client.name == ownClientCallSign or client.name == ownClientObserverCallSign) then
+            if (client.name == ownClientCallSign) then
                 self.ownClients[client.name] = client
+                self.ownClientFound = true
+            end
+            if (client.name == ownClientObserverCallSign) then
+                self.ownClients[client.name] = client
+                self.ownObserverFound = true
+            end
+
+            if (ownObserverFound and ownClientFound) then
                 break
             end
         end
@@ -300,11 +314,13 @@ do
     end
 
     function RadarPanel:_transformAndClipAllClients(viewHeading)
+        local numVisible = 0
         for _, client in ipairs(self.renderClients) do
             client.cameraPos = self:_worldToCameraSpace(client.worldPos)
             client.cameraHeading = client.worldHeading - viewHeading
             client.clipPos = self:_cameraToClipSpace(client.cameraPos)
             if (self:_isVisible(client.clipPos)) then
+                numVisible = numVisible + 1
                 client.isVisible = true
                 client.screenPos = self:_clipToScreenSpace(client.clipPos)
             else
@@ -358,6 +374,7 @@ do
         end
 
         local viewHeading = self.headingSpring:getCurrentPosition() % 360.0
+
         local ownWorldPos =
             self:_convertVatsimLocationToFlat3DKm(Datarefs.getCurrentLatitude(), Datarefs.getCurrentLongitude(), 0.0)
 
@@ -385,11 +402,11 @@ do
         self:_renderAllClients()
         self:_renderOwnMarker(ownScreenPos, Datarefs.getCurrentHeading(), viewHeading)
 
-        self.DEBUG_BLOCKING_GRID(
-            function()
-                self:_renderBlockingGrid()
-            end
-        )
+        -- self.DEBUG_BLOCKING_GRID(
+        --     function()
+        --         self:_renderBlockingGrid()
+        --     end
+        -- )
 
         imgui.PopClipRect()
 
@@ -693,11 +710,11 @@ do
 
     function RadarPanel:_fillBlockingGridAtScreenPos(screenPos)
         self:_fillBlockingGrid(self:_mapToBlockingGrid(screenPos))
-        self.DEBUG_BLOCKING_GRID(
-            function()
-                self:_renderDebugPixels(screenPos, 1, 1, 0xFF00FFFF)
-            end
-        )
+        -- self.DEBUG_BLOCKING_GRID(
+        --     function()
+        --         self:_renderDebugPixels(screenPos, 1, 1, 0xFF00FFFF)
+        --     end
+        -- )
     end
 
     function RadarPanel:_emptyBlockingGridAtScreenPos(screenPos)
@@ -748,27 +765,29 @@ do
             maxX = math.max(maxX, gridPos[1])
             blockage = blockage + self:_getBlockValueFromGrid(gridPos)
 
-            self.DEBUG_BLOCKING_GRID(
-                function()
-                    self:_renderDebugPixels(currentCharacterPos, 1, 1, 0xFF00FFFF)
-                end
-            )
+            -- self.DEBUG_BLOCKING_GRID(
+            --     function()
+            --         self:_renderDebugPixels(currentCharacterPos, 1, 1, 0xFF00FFFF)
+            --     end
+            -- )
 
             currentCharacterPos = {actualScreenPos[1] + t * 7, actualScreenPos[2] + 9}
             gridPos = self:_mapToBlockingGrid(currentCharacterPos)
             maxY = math.max(maxY, gridPos[2])
             blockage = blockage + self:_getBlockValueFromGrid(gridPos)
 
-            self.DEBUG_BLOCKING_GRID(
-                function()
-                    self:_renderDebugPixels(currentCharacterPos, 1, 1, 0xFF00FFFF)
-                end
-            )
+            -- self.DEBUG_BLOCKING_GRID(
+            --     function()
+            --         self:_renderDebugPixels(currentCharacterPos, 1, 1, 0xFF00FFFF)
+            --     end
+            -- )
         end
 
-        for x = startX, maxX do
+        if (blockage == 0) then
             for y = startY, maxY do
-                self:_fillBlockingGrid({x, y})
+                for x = startX, maxX do
+                    self:_fillBlockingGrid({x, y})
+                end
             end
         end
 

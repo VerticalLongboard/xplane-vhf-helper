@@ -279,7 +279,7 @@ function TestHighLevelBehaviour:testSwitchingTransponderDoesSwitch()
 	self:_switchToOtherTransponder(TestDatarefs.Constants.transponderCode, "1000")
 end
 
-function TestHighLevelBehaviour:testInvalidTransonderCodeIsDisplayedCorrectly()
+function TestHighLevelBehaviour:testInvalidTransponderCodeIsDisplayedCorrectly()
 	flyWithLuaStub.datarefs[TestDatarefs.Constants.transponderCode].data = 9999
 	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
 
@@ -343,9 +343,25 @@ function TestHighLevelBehaviour:testTransmoderModeIsSwitched()
 	luaUnit.assertEquals(tm.data, newMode2)
 end
 
+function TestHighLevelBehaviour:_runForSomeTime(timeSec)
+	local startTime = LuaPlatform.Time.now()
+	local stepSize = 1.0 / 60.0
+	while (LuaPlatform.Time.now() - startTime < timeSec) do
+		flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
+		LuaPlatform.Time.advanceNow(stepSize)
+	end
+end
+
 function TestHighLevelBehaviour:testRadarPanelOpensCorrectly()
 	self:_pressButton(self.Constants.radarPanelButtonTitle)
 	flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
+end
+
+function TestHighLevelBehaviour:testRadarPanelShowsAtLeastOnePlane()
+	self:_pressButton(self.Constants.radarPanelButtonTitle)
+	vatsimbriefHelperStub:emitVatsimDataRefreshEvent()
+	self:_runForSomeTime(3.0)
+	self:_assertStringShowsUp("DLH57D")
 end
 
 function TestHighLevelBehaviour:testSideWindowOpensAndRendersCorrectly()
