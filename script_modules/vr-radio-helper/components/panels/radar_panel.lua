@@ -197,7 +197,7 @@ do
         return math.sqrt(v[1] * v[1] + v[2] * v[2])
     end
 
-    local function vector3Scale(v, scale)
+    local function vector2Scale(v, scale)
         return {v[1] * scale, v[2] * scale}
     end
 
@@ -390,6 +390,24 @@ do
         self.headingSpring:moveSpring(frameTime.cappedDt, frameTime.oneOverCappedDt)
         self.zoomSpring:moveSpring(frameTime.cappedDt, frameTime.oneOverCappedDt)
         self.worldViewPosSpring:moveSpring(frameTime.cappedDt, frameTime.oneOverCappedDt)
+
+        self:_extrapolatePlanes()
+    end
+
+    function RadarPanel:_extrapolatePlanes()
+        local now = LuaPlatform.Time.now()
+        for cid, client in pairs(self.renderClients) do
+            if (client.type == RadarPanel.Constants.ClientType.Plane) then
+                local lastKnownPos = client.worldPos
+                -- TODO: Move to conversion stage when refreshing
+                local headingRotation = Matrix2x2:newRotationMatrix(-client.worldHeading * Utilities.DegToRad)
+                local velocity = {0.0, client.speed * Utilities.KmhToMeterPerSecond}
+                velocity = headingRotation:multiplyVector2(velocity)
+                local extrapolatedWorldPos =
+                    vector2Add(client.worldPos, vector2Scale(velocity, math.min(70.0, now - client.dataTimestamp)))
+                client.worldPosSpring:setTarget({extrapolatedWorldPos[1], extrapolatedWorldPos[2], 0.0})
+            end
+        end
     end
 
     Globals.OVERRIDE(RadarPanel.renderToCanvas)
