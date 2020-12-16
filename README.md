@@ -54,7 +54,7 @@ For multicrew:
  * Check if multicrew support is available via clicking the `>` button
  * If something doesn't work yet, you'll get notified and will find more information in the options panel.
  * Connect via SmartCopilot
- * If SmartCopilot was installed and reconfigured correctly, entered freqencies, pressures and codes will be synchronized between two pilots
+ * If SmartCopilot is was installed and reconfigured correctly, entered freqencies, pressures and codes will be synchronized between two pilots
 
 ## Plane Compatibility
 VR Radio Helper uses the default X-Plane way of setting COM/NAV frequencies, barometer pressures and transponder codes. By default, all features are enabled. If you find that this does not work out-of-the-box in your plane, please use the integrated feedback collector (click the `>` button) to leave a description of the issues that you encountered. The plane compatibility reports automatically generate diagnostic information that is necessary to distinguish between different planes.
