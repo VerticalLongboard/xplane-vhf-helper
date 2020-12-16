@@ -78,9 +78,9 @@ do
     end
 
     function RadarPanel:_convertVatsimLocationToFlat3DKm(latitude, longitude, altitude)
+        local lonDiff = Datarefs.getCurrentLongitude() - longitude
         return {
-            -- 111.320 * longitude * math.cos(latitude * Utilities.DegToRad),
-            111.320 * longitude,
+            111.320 * longitude + lonDiff * math.cos(latitude * Utilities.DegToRad),
             110.574 * latitude,
             altitude * Utilities.FeetToM
         }
