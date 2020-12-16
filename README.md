@@ -15,6 +15,10 @@ VR Radio Helper:
 
 ![VR Radio Helper Screenshot](screenshots/VHFHelperScreenshot2.png "VR Radio Helper Screenshot")
 ![VR Radio Helper Radar Screenshot](screenshots/VRRadioHelper-Radar.png "VR Radio Helper Radar Screenshot")
+![VR Radio Helper COM Screenshot](screenshots/VRRadioHelper-COM.png "VR Radio Helper COM Screenshot")
+![VR Radio Helper Transponder Screenshot](screenshots/VRRadioHelper-TP.png "VR Radio Helper Transponder Screenshot")
+![VR Radio Helper Radar Screenshot](screenshots/VRRadioHelper-Radar2.png "VR Radio Helper Radar Screenshot")
+![VR Radio Helper Settings Screenshot](screenshots/VRRadioHelper-Settings.png "VR Radio Helper Settings Screenshot")
 
 ## Installation
 * Install FlyWithLua: https://forums.x-plane.org/index.php?/files/file/38445-flywithlua-ng-next-generation-edition-for-x-plane-11-win-lin-mac/
