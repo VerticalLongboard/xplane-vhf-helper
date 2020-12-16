@@ -79,7 +79,8 @@ do
 
     function RadarPanel:_convertVatsimLocationToFlat3DKm(latitude, longitude, altitude)
         return {
-            111.320 * longitude * math.cos(latitude * Utilities.DegToRad),
+            -- 111.320 * longitude * math.cos(latitude * Utilities.DegToRad),
+            111.320 * longitude,
             110.574 * latitude,
             altitude * Utilities.FeetToM
         }
@@ -284,8 +285,14 @@ do
                 if (oldClient ~= nil) then
                     updatedRenderClient.labelVisibility = oldClient.labelVisibility
                     updatedRenderClient.worldPosSpring = oldClient.worldPosSpring
+                    updatedRenderClient.firstSeenTimestamp = oldClient.firstSeenTimestamp
                 else
                     updatedRenderClient.worldPosSpring = FlexibleLength3DSpring:new(100.0, 0.3)
+                    if (self.dataTimestamp ~= nil) then
+                        updatedRenderClient.firstSeenTimestamp = LuaPlatform.Time.now()
+                    else
+                        updatedRenderClient.firstSeenTimestamp = 0.0
+                    end
                 end
 
                 updatedRenderClient.worldPosSpring:setTarget(updatedRenderClient.worldPos)
@@ -1007,6 +1014,10 @@ do
 
         if (client.dataTimestamp < self.dataTimestamp) then
             color = Globals.Colors.a320Red
+        end
+
+        if (LuaPlatform.Time.now() - client.firstSeenTimestamp < 60.0) then
+            color = Globals.Colors.a320Green
         end
 
         if (not isOwnClient) then
