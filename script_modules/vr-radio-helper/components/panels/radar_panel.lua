@@ -136,6 +136,7 @@ do
                     clients,
                     {
                         type = clientType,
+                        vatsimClientId = vatsimClient.vatsimClientId,
                         name = newName,
                         worldPos = newWorldPos,
                         worldHeading = newHeading,
@@ -276,9 +277,25 @@ do
         self.totalVatsimClients = #vatsimClients
         local newRenderClients = self:_convertVatsimClientsToRenderClients(vatsimClients)
         if (#newRenderClients > 0) then
-            self.renderClients = newRenderClients
+            for _, newRenderClient in ipairs(newRenderClients) do
+                local oldClient = self.renderClients[newRenderClient.vatsimClientId]
+                self.renderClients[newRenderClient.vatsimClientId] = newRenderClient
+                local updatedRenderClient = self.renderClients[newRenderClient.vatsimClientId]
+                if (oldClient ~= nil) then
+                    updatedRenderClient.labelVisibility = oldClient.labelVisibility
+                    updatedRenderClient.worldPosSpring = oldClient.worldPosSpring
+                else
+                    updatedRenderClient.worldPosSpring = FlexibleLength3DSpring:new(100.0, 0.4)
+                end
+
+                updatedRenderClient.worldPosSpring:setTarget(updatedRenderClient.worldPos)
+                updatedRenderClient.dataTimestamp = timeStamp
+            end
+
             self.dataTimestamp = timeStamp
         end
+
+        -- TODO: Maybe cleanup old render clients. It's a good feature having disconnected stations and/or planes still visible forever.
 
         TRACK_ISSUE(
             "Tech Debt / Optimization",
@@ -316,8 +333,8 @@ do
 
     function RadarPanel:_transformAndClipAllClients(viewHeading)
         local numVisible = 0
-        for _, client in ipairs(self.renderClients) do
-            client.cameraPos = self:_worldToCameraSpace(client.worldPos)
+        for cid, client in pairs(self.renderClients) do
+            client.cameraPos = self:_worldToCameraSpace(client.worldPosSpring:getCurrentPosition())
             client.cameraHeading = client.worldHeading - viewHeading
             client.clipPos = self:_cameraToClipSpace(client.cameraPos)
             if (self:_isVisible(client.clipPos)) then
@@ -335,7 +352,7 @@ do
 
     function RadarPanel:_renderAllClients()
         imgui.SetWindowFontScale(1.0)
-        for _, client in ipairs(self.renderClients) do
+        for cid, client in pairs(self.renderClients) do
             if (client.isVisible) then
                 self:_renderClient(client)
             end
@@ -344,7 +361,7 @@ do
 
     function RadarPanel:_renderAllClientsIconBlockingPass()
         imgui.SetWindowFontScale(1.0)
-        for _, client in ipairs(self.renderClients) do
+        for cid, client in pairs(self.renderClients) do
             if (client.isVisible) then
                 self:_renderClientIconBlockingPass(client)
             end
@@ -357,6 +374,10 @@ do
         SubPanel.loop(self, frameTime)
         if (self.newVatsimClientsUpdateAvailable) then
             self:_refreshVatsimClientsNow()
+        end
+
+        for cid, renderClient in pairs(self.renderClients) do
+            renderClient.worldPosSpring:moveSpring(frameTime.cappedDt, frameTime.oneOverCappedDt)
         end
 
         self.headingSpring:moveSpring(frameTime.cappedDt, frameTime.oneOverCappedDt)
@@ -984,9 +1005,11 @@ do
             self:_emptyIconInBlockingGrid(client.screenPos)
         end
 
-        if (isOwnClient) then
-            color = Globals.Colors.darkerOrange
-        else
+        if (client.dataTimestamp < self.dataTimestamp) then
+            color = Globals.Colors.a320Red
+        end
+
+        if (not isOwnClient) then
             local textScreenPos = {math.floor(client.screenPos[1] - client.name:len() * 2.7), client.screenPos[2] + 10}
             local textLen = client.name:len()
             local blockage = self:_renderTextToBlockingGrid(textScreenPos, textLen)
@@ -1004,6 +1027,10 @@ do
                 imgui.TextUnformatted(client.name)
                 imgui.PopStyleColor()
             end
+        end
+
+        if (isOwnClient and client.dataTimestamp == self.dataTimestamp) then
+            color = Globals.Colors.darkerOrange
         end
 
         if (not isOwnObserverClient) then
