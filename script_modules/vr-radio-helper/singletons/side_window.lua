@@ -228,7 +228,6 @@ do
 
         local buildTag = "UNKNOWN"
         local buildCommitHash = "UNKNOWN"
-        logMsg(SCRIPT_DIRECTORY)
         local buildInfoPath = SCRIPT_DIRECTORY .. "..\\modules\\vr-radio-helper\\"
         local buildTagPath = buildInfoPath .. "release_tag.txt"
         if (Utilities.fileExists(buildTagPath)) then

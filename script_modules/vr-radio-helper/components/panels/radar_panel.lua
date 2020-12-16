@@ -6,6 +6,7 @@ local FlexibleLength3DSpring = require("vr-radio-helper.shared_components.flexib
 local VatsimData = require("vr-radio-helper.state.vatsim_data")
 local Datarefs = require("vr-radio-helper.state.datarefs")
 local LuaPlatform = require("lua_platform")
+local BlockingGrid = require("vr-radio-helper.components.panels.blocking_grid")
 
 local RadarPanel
 do
@@ -69,6 +70,8 @@ do
         self.realScreenHeight = 308
         self.screenWidth = 254 - RadarPanel.Constants.ImguiTopLeftPadding
         self.screenHeight = 308 - RadarPanel.Constants.ImguiTopLeftPadding
+
+        self.blockingGrid = BlockingGrid:new(self.screenWidth, self.screenHeight)
 
         self.DEBUG_BLOCKING_GRID = function(f)
             f()
@@ -282,18 +285,25 @@ do
                 local oldClient = self.renderClients[newRenderClient.vatsimClientId]
                 self.renderClients[newRenderClient.vatsimClientId] = newRenderClient
                 local updatedRenderClient = self.renderClients[newRenderClient.vatsimClientId]
-                if (oldClient ~= nil) then
-                    updatedRenderClient.labelVisibility = oldClient.labelVisibility
-                    updatedRenderClient.worldPosSpring = oldClient.worldPosSpring
-                    updatedRenderClient.firstSeenTimestamp = oldClient.firstSeenTimestamp
-                else
+
+                if (oldClient == nil) then
+                    updatedRenderClient.isVisible = true
                     updatedRenderClient.worldPosSpring = FlexibleLength3DSpring:new(100.0, 0.3)
                     if (self.dataTimestamp ~= nil) then
                         updatedRenderClient.firstSeenTimestamp = LuaPlatform.Time.now()
                     else
-                        updatedRenderClient.firstSeenTimestamp = 0.0
+                        updatedRenderClient.firstSeenTimestamp = -60.0
                     end
+                else
+                    updatedRenderClient.labelVisibility = oldClient.labelVisibility
+                    updatedRenderClient.worldPosSpring = oldClient.worldPosSpring
+                    updatedRenderClient.firstSeenTimestamp = oldClient.firstSeenTimestamp
                 end
+
+                local headingRotation =
+                    Matrix2x2:newRotationMatrix(-updatedRenderClient.worldHeading * Utilities.DegToRad)
+                local velocity = {0.0, updatedRenderClient.speed * Utilities.KmhToMeterPerSecond}
+                updatedRenderClient.velocity = headingRotation:multiplyVector2(velocity)
 
                 updatedRenderClient.worldPosSpring:setTarget(updatedRenderClient.worldPos)
                 updatedRenderClient.dataTimestamp = timeStamp
@@ -398,13 +408,11 @@ do
         local now = LuaPlatform.Time.now()
         for cid, client in pairs(self.renderClients) do
             if (client.type == RadarPanel.Constants.ClientType.Plane) then
-                local lastKnownPos = client.worldPos
-                -- TODO: Move to conversion stage when refreshing
-                local headingRotation = Matrix2x2:newRotationMatrix(-client.worldHeading * Utilities.DegToRad)
-                local velocity = {0.0, client.speed * Utilities.KmhToMeterPerSecond}
-                velocity = headingRotation:multiplyVector2(velocity)
                 local extrapolatedWorldPos =
-                    vector2Add(client.worldPos, vector2Scale(velocity, math.min(70.0, now - client.dataTimestamp)))
+                    vector2Add(
+                    client.worldPos,
+                    vector2Scale(client.velocity, math.min(70.0, now - client.dataTimestamp))
+                )
                 client.worldPosSpring:setTarget({extrapolatedWorldPos[1], extrapolatedWorldPos[2], 0.0})
             end
         end
@@ -412,7 +420,7 @@ do
 
     Globals.OVERRIDE(RadarPanel.renderToCanvas)
     function RadarPanel:renderToCanvas()
-        self:_createBlockingGrid()
+        self.blockingGrid:reset()
 
         self.zoomSpring:setTarget(self.zoomRange)
 
@@ -478,7 +486,7 @@ do
             local now = LuaPlatform.Time.now()
             local diff = now - self.dataTimestamp
             local diffStr = nil
-            if (diff > 60.0) then
+            if (diff > 70.0) then
                 diffStr = ("%dm ago"):format(math.floor(diff / 60.0))
             elseif (diff > 10.0) then
                 local roundedDiff = math.floor(diff / 10.0) * 10.0
@@ -684,114 +692,53 @@ do
         imgui.PopStyleColor()
     end
 
-    function RadarPanel:_createBlockingGrid()
-        self.blockingGridLen = 20
-        if (self.blockingGrid == nil) then
-            self.blockingGrid = {}
-        end
-
-        for y = 1, self.blockingGridLen do
-            for x = 1, self.blockingGridLen do
-                self.blockingGrid[y * self.blockingGridLen + x] = 0
-            end
-        end
-    end
-
-    function RadarPanel:_fillBlockingGrid(gridPos)
-        local i = gridPos[2] * self.blockingGridLen + gridPos[1]
-        local v = self.blockingGrid[i]
-        self.blockingGrid[i] = v + 1
-    end
-
-    function RadarPanel:_emptyBlockingGrid(gridPos)
-        local i = gridPos[2] * self.blockingGridLen + gridPos[1]
-        local v = self.blockingGrid[i]
-        self.blockingGrid[i] = v - 1
-    end
-
-    function RadarPanel:_getBlockValueFromGrid(gridPos)
-        return self.blockingGrid[gridPos[2] * self.blockingGridLen + gridPos[1]]
-    end
-
-    function RadarPanel:_mapToBlockingGrid(screenPos)
-        return {
-            math.max(
-                1,
-                math.min(
-                    self.blockingGridLen,
-                    (math.floor((self.blockingGridLen * screenPos[1]) / self.screenWidth) + 1)
-                )
-            ),
-            math.max(
-                1,
-                math.min(
-                    self.blockingGridLen,
-                    (math.floor((self.blockingGridLen * screenPos[2]) / self.screenHeight) + 1)
-                )
-            )
-        }
-    end
-
     function RadarPanel:_emptyIconInBlockingGrid(screenPos)
-        self:_emptyBlockingGridAtScreenPos(
+        self.blockingGrid:emptyAtScreenPos(
             {
                 screenPos[1] - RadarPanel.Constants.HalfIconSize,
                 screenPos[2] - RadarPanel.Constants.HalfIconSize
             }
         )
-        self:_emptyBlockingGridAtScreenPos(
+        self.blockingGrid:emptyAtScreenPos(
             {
                 screenPos[1] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize,
                 screenPos[2] - RadarPanel.Constants.HalfIconSize
             }
         )
-        self:_emptyBlockingGridAtScreenPos(
+        self.blockingGrid:emptyAtScreenPos(
             {
                 screenPos[1] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize,
                 screenPos[2] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize
             }
         )
-        self:_emptyBlockingGridAtScreenPos(
+        self.blockingGrid:emptyAtScreenPos(
             {
                 screenPos[1] - RadarPanel.Constants.HalfIconSize,
                 screenPos[2] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize
             }
         )
-    end
-
-    function RadarPanel:_fillBlockingGridAtScreenPos(screenPos)
-        self:_fillBlockingGrid(self:_mapToBlockingGrid(screenPos))
-        -- self.DEBUG_BLOCKING_GRID(
-        --     function()
-        --         self:_renderDebugPixels(screenPos, 1, 1, 0xFF00FFFF)
-        --     end
-        -- )
-    end
-
-    function RadarPanel:_emptyBlockingGridAtScreenPos(screenPos)
-        self:_emptyBlockingGrid(self:_mapToBlockingGrid(screenPos))
     end
 
     function RadarPanel:_renderIconToBlockingGrid(screenPos)
-        self:_fillBlockingGridAtScreenPos(
+        self.blockingGrid:fillAtScreenPos(
             {
                 screenPos[1] - RadarPanel.Constants.HalfIconSize,
                 screenPos[2] - RadarPanel.Constants.HalfIconSize
             }
         )
-        self:_fillBlockingGridAtScreenPos(
+        self.blockingGrid:fillAtScreenPos(
             {
                 screenPos[1] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize,
                 screenPos[2] - RadarPanel.Constants.HalfIconSize
             }
         )
-        self:_fillBlockingGridAtScreenPos(
+        self.blockingGrid:fillAtScreenPos(
             {
                 screenPos[1] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize,
                 screenPos[2] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize
             }
         )
-        self:_fillBlockingGridAtScreenPos(
+        self.blockingGrid:fillAtScreenPos(
             {
                 screenPos[1] - RadarPanel.Constants.HalfIconSize,
                 screenPos[2] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize
@@ -802,7 +749,7 @@ do
     function RadarPanel:_renderTextToBlockingGrid(screenPos, textLen)
         local actualScreenPos = {screenPos[1] - 9, screenPos[2] - 3}
         local blockage = 0
-        local startPos = self:_mapToBlockingGrid(actualScreenPos)
+        local startPos = self.blockingGrid:map(actualScreenPos)
         local startX = startPos[1]
         local startY = startPos[2]
         local maxX = startX
@@ -812,9 +759,9 @@ do
             local gridPos = nil
 
             currentCharacterPos = {actualScreenPos[1] + t * 7, actualScreenPos[2]}
-            gridPos = self:_mapToBlockingGrid(currentCharacterPos)
+            gridPos = self.blockingGrid:map(currentCharacterPos)
             maxX = math.max(maxX, gridPos[1])
-            blockage = blockage + self:_getBlockValueFromGrid(gridPos)
+            blockage = blockage + self.blockingGrid:getValue(gridPos)
 
             -- self.DEBUG_BLOCKING_GRID(
             --     function()
@@ -823,9 +770,9 @@ do
             -- )
 
             currentCharacterPos = {actualScreenPos[1] + t * 7, actualScreenPos[2] + 9}
-            gridPos = self:_mapToBlockingGrid(currentCharacterPos)
+            gridPos = self.blockingGrid:map(currentCharacterPos)
             maxY = math.max(maxY, gridPos[2])
-            blockage = blockage + self:_getBlockValueFromGrid(gridPos)
+            blockage = blockage + self.blockingGrid:getValue(gridPos)
 
             -- self.DEBUG_BLOCKING_GRID(
             --     function()
@@ -837,7 +784,7 @@ do
         if (blockage == 0) then
             for y = startY, maxY do
                 for x = startX, maxX do
-                    self:_fillBlockingGrid({x, y})
+                    self.blockingGrid:fill({x, y})
                 end
             end
         end
@@ -1031,7 +978,8 @@ do
         end
 
         if (client.dataTimestamp < self.dataTimestamp) then
-            color = Globals.Colors.a320Red
+            local darkerA320Red = 0xFF222288
+            color = darkerA320Red
         end
 
         if (LuaPlatform.Time.now() - client.firstSeenTimestamp < 60.0) then
@@ -1043,15 +991,15 @@ do
             local textLen = client.name:len()
             local blockage = self:_renderTextToBlockingGrid(textScreenPos, textLen)
             if (blockage == 0) then
-                client.labelVisibility = math.min(1.0, client.labelVisibility + 1.0 * self.frameTime.cappedDt)
+                client.labelVisibility = math.min(1.0, client.labelVisibility + 0.5 * self.frameTime.cappedDt)
             else
-                client.labelVisibility = math.max(0.0, client.labelVisibility - 1.0 * self.frameTime.cappedDt)
+                client.labelVisibility = math.max(0.0, client.labelVisibility - 0.5 * self.frameTime.cappedDt)
             end
 
             if (client.labelVisibility > 0.25) then
                 imgui.SetCursorPos(math.floor(client.screenPos[1] - textLen * 2.7), client.screenPos[2] + 10)
                 local actualColor =
-                    Utilities.lerpColors(0x00000000, color, math.min(1.0, (client.labelVisibility - 0.25) * 2.0))
+                    Utilities.lerpColors(0x00AAAAAA, color, math.min(1.0, (client.labelVisibility - 0.25) * 2.0))
                 imgui.PushStyleColor(imgui.constant.Col.Text, actualColor)
                 imgui.TextUnformatted(client.name)
                 imgui.PopStyleColor()
