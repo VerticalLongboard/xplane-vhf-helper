@@ -285,7 +285,7 @@ do
                     updatedRenderClient.labelVisibility = oldClient.labelVisibility
                     updatedRenderClient.worldPosSpring = oldClient.worldPosSpring
                 else
-                    updatedRenderClient.worldPosSpring = FlexibleLength3DSpring:new(100.0, 0.4)
+                    updatedRenderClient.worldPosSpring = FlexibleLength3DSpring:new(100.0, 0.3)
                 end
 
                 updatedRenderClient.worldPosSpring:setTarget(updatedRenderClient.worldPos)
