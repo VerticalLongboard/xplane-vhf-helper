@@ -360,7 +360,7 @@ end
 function TestHighLevelBehaviour:testRadarPanelShowsAtLeastOnePlane()
 	self:_pressButton(self.Constants.radarPanelButtonTitle)
 	vatsimbriefHelperStub:emitVatsimDataRefreshEvent()
-	self:_runForSomeTime(3.0)
+	self:_runForSomeTime(10.0)
 	self:_assertStringShowsUp("DLH57D")
 end
 

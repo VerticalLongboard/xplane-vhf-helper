@@ -140,7 +140,8 @@ do
                         worldPos = newWorldPos,
                         worldHeading = newHeading,
                         speed = newSpeed,
-                        frequency = vatsimClient.frequency
+                        frequency = vatsimClient.frequency,
+                        labelVisibility = 0.0
                     }
                 )
             end
@@ -321,6 +322,9 @@ do
             client.clipPos = self:_cameraToClipSpace(client.cameraPos)
             if (self:_isVisible(client.clipPos)) then
                 numVisible = numVisible + 1
+                if (client.isVisible == false) then
+                    client.labelVisibility = 0.0
+                end
                 client.isVisible = true
                 client.screenPos = self:_clipToScreenSpace(client.clipPos)
             else
@@ -349,6 +353,7 @@ do
 
     Globals.OVERRIDE(RadarPanel.loop)
     function RadarPanel:loop(frameTime)
+        self.frameTime = frameTime
         SubPanel.loop(self, frameTime)
         if (self.newVatsimClientsUpdateAvailable) then
             self:_refreshVatsimClientsNow()
@@ -986,8 +991,16 @@ do
             local textLen = client.name:len()
             local blockage = self:_renderTextToBlockingGrid(textScreenPos, textLen)
             if (blockage == 0) then
+                client.labelVisibility = math.min(1.0, client.labelVisibility + 1.0 * self.frameTime.cappedDt)
+            else
+                client.labelVisibility = math.max(0.0, client.labelVisibility - 1.0 * self.frameTime.cappedDt)
+            end
+
+            if (client.labelVisibility > 0.25) then
                 imgui.SetCursorPos(math.floor(client.screenPos[1] - textLen * 2.7), client.screenPos[2] + 10)
-                imgui.PushStyleColor(imgui.constant.Col.Text, color)
+                local actualColor =
+                    Utilities.lerpColors(0x00000000, color, math.min(1.0, (client.labelVisibility - 0.25) * 2.0))
+                imgui.PushStyleColor(imgui.constant.Col.Text, actualColor)
                 imgui.TextUnformatted(client.name)
                 imgui.PopStyleColor()
             end
