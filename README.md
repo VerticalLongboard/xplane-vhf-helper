@@ -13,7 +13,8 @@ VR Radio Helper:
 * Works in VR (free positioning in 3D space)
 * Integrates well with ATC networks (e.g. VATSIM), showing **ATC station names** and a **Real-Time Radar**
 
-![VR Radio Helper Screenshot](screenshots/VHFHelperScreenshot2.png "VHF Helper Screenshot")
+![VR Radio Helper Screenshot](screenshots/VHFHelperScreenshot2.png "VR Radio Helper Screenshot")
+![VR Radio Helper Radar Screenshot](screenshots/VRRadioHelper-Radar.png "VR Radio Helper Radar Screenshot")
 
 ## Installation
 * Install FlyWithLua: https://forums.x-plane.org/index.php?/files/file/38445-flywithlua-ng-next-generation-edition-for-x-plane-11-win-lin-mac/
