@@ -144,7 +144,39 @@ Globals.linkedValuesChangeBlinkTime = 2.0
 
 local ImguiUtils
 do
-    ImguiUtils = {}
+    ImguiUtils = {
+        Constants = {
+            ImguiTopLeftPadding = 5
+        }
+    }
+
+    ImguiUtils.renderDebugPixels = function(whiteImage, screenPos, rectWidth, rectHeight, color)
+        local actualScreenPos = {
+            screenPos[1] + ImguiUtils.Constants.ImguiTopLeftPadding,
+            screenPos[2] + ImguiUtils.Constants.ImguiTopLeftPadding
+        }
+        imgui.DrawList_AddImageQuad(
+            whiteImage,
+            actualScreenPos[1],
+            actualScreenPos[2],
+            actualScreenPos[1] + rectWidth,
+            actualScreenPos[2],
+            actualScreenPos[1] + rectWidth,
+            actualScreenPos[2] + rectHeight,
+            actualScreenPos[1],
+            actualScreenPos[2] + rectHeight,
+            0,
+            0,
+            1,
+            0,
+            1,
+            1,
+            0,
+            1,
+            color
+        )
+    end
+
     ImguiUtils.renderActiveInactiveButton = function(buttonTitle, active, enabled, onPressFunction, colorOverride)
         if (enabled) then
             if (active) then

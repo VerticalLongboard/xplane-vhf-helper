@@ -292,7 +292,7 @@ do
                     if (self.dataTimestamp ~= nil) then
                         updatedRenderClient.firstSeenTimestamp = LuaPlatform.Time.now()
                     else
-                        updatedRenderClient.firstSeenTimestamp = -60.0
+                        updatedRenderClient.firstSeenTimestamp = LuaPlatform.Time.now() - 70.0
                     end
                 else
                     updatedRenderClient.labelVisibility = oldClient.labelVisibility
@@ -351,16 +351,16 @@ do
     function RadarPanel:_transformAndClipAllClients(viewHeading)
         local numVisible = 0
         for cid, client in pairs(self.renderClients) do
-            client.cameraPos = self:_worldToCameraSpace(client.worldPosSpring:getCurrentPosition())
+            local cameraPos = self:_worldToCameraSpace(client.worldPosSpring:getCurrentPosition())
             client.cameraHeading = client.worldHeading - viewHeading
-            client.clipPos = self:_cameraToClipSpace(client.cameraPos)
-            if (self:_isVisible(client.clipPos)) then
+            local clipPos = self:_cameraToClipSpace(cameraPos)
+            if (self:_isVisible(clipPos)) then
                 numVisible = numVisible + 1
                 if (client.isVisible == false) then
                     client.labelVisibility = 0.0
                 end
                 client.isVisible = true
-                client.screenPos = self:_clipToScreenSpace(client.clipPos)
+                client.screenPos = self:_clipToScreenSpace(clipPos)
             else
                 client.isVisible = false
             end
@@ -463,7 +463,7 @@ do
 
         -- self.DEBUG_BLOCKING_GRID(
         --     function()
-        --         self:_renderBlockingGrid()
+        --         self:_debugRenderBlockingGrid()
         --     end
         -- )
 
@@ -907,17 +907,18 @@ do
         self:_renderIconToBlockingGrid(client.screenPos)
     end
 
-    function RadarPanel:_renderBlockingGrid()
-        for y = 1, self.blockingGridLen do
-            for x = 1, self.blockingGridLen do
-                local v = self.blockingGrid[y * self.blockingGridLen + x]
-                self:_renderDebugPixels(
+    function RadarPanel:_debugRenderBlockingGrid()
+        for y = 1, self.blockingGrid.len do
+            for x = 1, self.blockingGrid.len do
+                local v = self.blockingGrid.grid[y * self.blockingGrid.len + x]
+                Globals.ImguiUtils.renderDebugPixels(
+                    self.whiteImage,
                     {
-                        ((x - 1) * self.screenWidth) / self.blockingGridLen,
-                        ((y - 1) * self.screenHeight) / self.blockingGridLen
+                        ((x - 1) * self.screenWidth) / self.blockingGrid.len,
+                        ((y - 1) * self.screenHeight) / self.blockingGrid.len
                     },
-                    self.screenWidth / self.blockingGridLen,
-                    self.screenHeight / self.blockingGridLen,
+                    self.screenWidth / self.blockingGrid.len,
+                    self.screenHeight / self.blockingGrid.len,
                     Utilities.lerpColors(0x2200FF00, 0x220000FF, Utilities.Math.lerp(0.0, 1.0, math.min(1.0, v)))
                 )
             end

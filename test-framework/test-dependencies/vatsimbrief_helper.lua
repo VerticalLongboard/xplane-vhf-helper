@@ -12,7 +12,7 @@ vatsimbriefHelperStub.frequencyToAtcInfosMap["129.200"] = {
 
 vatsimbriefHelperStub.ownCallSign = "THATSME"
 
-vatsimbriefHelperStub.testVatsimClients = {
+vatsimbriefHelperStub.defaultTestVatsimClients = {
     {
         type = "Plane",
         callSign = vatsimbriefHelperStub.ownCallSign,
@@ -68,6 +68,8 @@ vatsimbriefHelperStub.testVatsimClients = {
     }
 }
 
+vatsimbriefHelperStub.testVatsimClients = defaultTestVatsimClients
+
 local hiddenInterface = {
     getInterfaceVersion = function()
         return 2
@@ -97,6 +99,14 @@ end
 
 function vatsimbriefHelperStub:emitVatsimDataRefreshEvent()
     VatsimbriefHelperEventBus.emit(VatsimbriefHelperEventOnVatsimDataRefreshed)
+end
+
+function vatsimbriefHelperStub:overrideTestVatsimClients(newClients)
+    self.testVatsimClients = newClients
+end
+
+function vatsimbriefHelperStub:reset()
+    self.testVatsimClients = self.defaultTestVatsimClients
 end
 
 return vatsimbriefHelperStub

@@ -9,6 +9,7 @@ do
 
         self.screenWidth = screenWidth
         self.screenHeight = screenHeight
+        self:reset()
         return newInstanceWithState
     end
 
@@ -54,11 +55,6 @@ do
 
     function BlockingGrid:fillAtScreenPos(screenPos)
         self:fill(self:map(screenPos))
-        -- self.DEBUG_BLOCKING_GRID(
-        --     function()
-        --         self:_renderDebugPixels(screenPos, 1, 1, 0xFF00FFFF)
-        --     end
-        -- )
     end
 end
 return BlockingGrid

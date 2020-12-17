@@ -159,6 +159,7 @@ end
 function TestHighLevelBehaviour:bootstrapVhfHelperWithConfiguration(iniConfigurationContent)
 	luaUnit.assertNotNil(iniConfigurationContent)
 	flyWithLuaStub:reset()
+	vatsimbriefHelperStub:reset()
 	self:_createInternalDatarefs()
 	LuaIniParserStub.reset()
 	LuaIniParserStub.setFileContentBeforeLoad(iniConfigurationContent)
@@ -361,7 +362,71 @@ function TestHighLevelBehaviour:testRadarPanelShowsAtLeastOnePlane()
 	self:_pressButton(self.Constants.radarPanelButtonTitle)
 	vatsimbriefHelperStub:emitVatsimDataRefreshEvent()
 	self:_runForSomeTime(3.0)
-	-- self:_assertStringShowsUp("DLH57D")
+	self:_assertStringShowsUp("DLH57D")
+end
+
+function TestHighLevelBehaviour:_runAndGetFps(totalFrames)
+	local framesRendered = 0
+	local totalTime = 0.0
+	local simulatedFrameTime = 1.0 / 60.0
+	local totalSimulatedTime = 0.0
+	for f = 1, totalFrames do
+		totalSimulatedTime = totalSimulatedTime + simulatedFrameTime
+		local beforeTime = os.clock()
+		flyWithLuaStub:runNextCompleteFrameAfterExternalWritesToDatarefs()
+		local afterTime = os.clock()
+		local tDiff = afterTime - beforeTime
+		framesRendered = framesRendered + 1
+		totalTime = totalTime + tDiff
+		LuaPlatform.Time.advanceNow(simulatedFrameTime)
+	end
+
+	local frameTime = totalTime / framesRendered
+	local fps = framesRendered / totalTime
+
+	logMsg(
+		("totalTime=%f simulated=%f frames=%d frameTime=%f FPS=%f"):format(
+			totalTime,
+			totalSimulatedTime,
+			framesRendered,
+			frameTime,
+			fps
+		)
+	)
+	return fps
+end
+
+function TestHighLevelBehaviour:testCOMPanelRunsFastEnoughWithoutCallingImguiMethods()
+	self:_runForSomeTime(3.0)
+	local fps = self:_runAndGetFps(100)
+	luaUnit.assertTrue(fps > 1000.0)
+end
+
+function TestHighLevelBehaviour:testCOMAndSidePanelRunsFastEnoughWithoutCallingImguiMethods()
+	self:_openSidePanel()
+	self:_runForSomeTime(3.0)
+	local fps = self:_runAndGetFps(100)
+	luaUnit.assertTrue(fps > 1000.0)
+end
+
+local allVatsimClientsWhenEuropeIsCrowded = require("allVatsimClientsWhenEuropeIsCrowded")
+
+function TestHighLevelBehaviour:testRadarPanelRunsFastEnoughWithoutCallingImguiMethods()
+	self:_pressButton(self.Constants.radarPanelButtonTitle)
+	vatsimbriefHelperStub:overrideTestVatsimClients(allVatsimClientsWhenEuropeIsCrowded)
+	local latDataref = flyWithLuaStub.datarefs[TestDatarefs.Constants.currentLatitude]
+	local lonDataref = flyWithLuaStub.datarefs[TestDatarefs.Constants.currentLongitude]
+	local eddmPos = {48.3537, 11.7751}
+
+	latDataref.data = eddmPos[1]
+	lonDataref.data = eddmPos[2]
+
+	flyWithLuaStub:writeAllDatarefValuesToLocalVariables()
+	vatsimbriefHelperStub:emitVatsimDataRefreshEvent()
+	self:_runForSomeTime(3.0)
+
+	local fps = self:_runAndGetFps(10)
+	luaUnit.assertTrue(fps > 60.0)
 end
 
 function TestHighLevelBehaviour:testSideWindowOpensAndRendersCorrectly()

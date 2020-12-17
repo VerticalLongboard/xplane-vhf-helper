@@ -72,8 +72,8 @@ do
 
     function FlexibleLength3DSpring:_restOrDont()
         local netEntropyShortage =
-            math.abs(self.lastDistance) + Vector3.length(self.currentVelocity) +
-            Vector3.length(self.currentAcceleration)
+            math.abs(self.lastDistance) + Vector3.squaredLength(self.currentVelocity) +
+            Vector3.squaredLength(self.currentAcceleration)
         if (netEntropyShortage < self.Constants.Epsilon) then
             self.lastDistance = 0.0
             self.currentPosition = self.currentTargetPosition
@@ -86,29 +86,25 @@ do
 
     function FlexibleLength3DSpring:_moveDampenedSpring(dt, oneOverDt)
         local direction = Vector3.substract(self.currentPosition, self.currentTargetPosition)
-        local distance = Vector3.length(direction)
+        local distance = Vector3.squaredLength(direction)
         self.lastDistance = distance
 
         local force = {0.0, 0.0, 0.0}
 
         if (distance > FlexibleLength3DSpring.Constants.Epsilon) then
             local oneOverDistance = 1.0 / distance
-            local normalizedDirection = Vector3.scale(direction, {oneOverDistance, oneOverDistance, oneOverDistance})
+            local normalizedDirection = Vector3.scaleScalar(direction, oneOverDistance)
             local springScale = distance * self.springDirection
-            local springForce = Vector3.scale(normalizedDirection, {springScale, springScale, springScale})
+            local springForce = Vector3.scaleScalar(normalizedDirection, springScale)
 
-            local dampForce =
-                Vector3.scale(
-                self.currentVelocity,
-                {self.dampeningDirection, self.dampeningDirection, self.dampeningDirection}
-            )
+            local dampForce = Vector3.scaleScalar(self.currentVelocity, self.dampeningDirection)
 
             force = Vector3.add(springForce, dampForce)
         end
 
         self.currentAcceleration = force
-        self.currentVelocity = Vector3.add(self.currentVelocity, Vector3.scale(self.currentAcceleration, {dt, dt, dt}))
-        self.currentPosition = Vector3.add(self.currentPosition, Vector3.scale(self.currentVelocity, {dt, dt, dt}))
+        self.currentVelocity = Vector3.add(self.currentVelocity, Vector3.scaleScalar(self.currentAcceleration, dt))
+        self.currentPosition = Vector3.add(self.currentPosition, Vector3.scaleScalar(self.currentVelocity, dt))
     end
 end
 
