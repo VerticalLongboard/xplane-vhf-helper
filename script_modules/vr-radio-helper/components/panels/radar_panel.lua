@@ -58,8 +58,8 @@ do
 
         self.headingSpring = FlexibleLength1DSpring:new(100, 0.2)
         self.zoomSpring = FlexibleLength1DSpring:new(100, 0.2)
-        self.zoomSpring:setTarget(1.0)
-        self.zoomSpring:overrideCurrentPosition(1.0)
+        self.zoomSpring:setTarget(40000.0)
+        self.zoomSpring:overrideCurrentPosition(40000.0)
         self.zoomRange = RadarPanel.Constants.MaxZoomRange
         self.zoomSpring:setTarget(self.zoomRange)
         self.worldViewPosSpring = FlexibleLength3DSpring:new(100, 0.2)
@@ -77,6 +77,8 @@ do
         self.currentBlockingClientOffset = 0
         self.blockingGrid =
             BlockingGrid:new(self.screenWidth, self.screenHeight, RadarPanel.Constants.BlockingGridAggregationFrames)
+
+        self.rotationMatrixCache = {}
 
         return newInstanceWithState
     end
@@ -205,6 +207,15 @@ do
         return {v[1] * scale, v[2] * scale}
     end
 
+    function RadarPanel:_getRotationMatrixFromCache(rotationAngleRad)
+        local degFloored = math.floor(rotationAngleRad * Utilities.RadToDeg)
+        if (self.rotationMatrixCache[degFloored] == nil) then
+            self.rotationMatrixCache[degFloored] = Matrix2x2:newRotationMatrix(rotationAngleRad)
+        end
+
+        return self.rotationMatrixCache[degFloored]
+    end
+
     function RadarPanel:_worldToCameraSpace(worldPos)
         local translated = vector2Substract(worldPos, self.worldViewPosition)
         local rotated = self.rotationMatrix:multiplyVector2(translated)
@@ -288,6 +299,7 @@ do
                 local updatedRenderClient = self.renderClients[newRenderClient.vatsimClientId]
 
                 if (oldClient == nil) then
+                    updatedRenderClient.lastLabelBlockingValue = 1
                     updatedRenderClient.isVisible = true
                     updatedRenderClient.worldPosSpring = FlexibleLength3DSpring:new(100.0, 0.3)
                     if (self.dataTimestamp ~= nil) then
@@ -296,13 +308,15 @@ do
                         updatedRenderClient.firstSeenTimestamp = LuaPlatform.Time.now() - 70.0
                     end
                 else
+                    updatedRenderClient.lastUnblockedLabelOffset = oldClient.lastUnblockedLabelOffset
+                    updatedRenderClient.lastLabelBlockingValue = oldClient.lastLabelBlockingValue
                     updatedRenderClient.labelVisibility = oldClient.labelVisibility
                     updatedRenderClient.worldPosSpring = oldClient.worldPosSpring
                     updatedRenderClient.firstSeenTimestamp = oldClient.firstSeenTimestamp
                 end
 
                 local headingRotation =
-                    Matrix2x2:newRotationMatrix(-updatedRenderClient.worldHeading * Utilities.DegToRad)
+                    self:_getRotationMatrixFromCache(-updatedRenderClient.worldHeading * Utilities.DegToRad)
                 local velocity = {0.0, updatedRenderClient.speed * Utilities.KmhToMeterPerSecond}
                 updatedRenderClient.velocity = headingRotation:multiplyVector2(velocity)
 
@@ -318,7 +332,7 @@ do
         TRACK_ISSUE(
             "Tech Debt / Optimization",
             MULTILINE_TEXT(
-                "There are not too many airplanes within the maximum radar range usually (up to 120 at most),",
+                "There are not too many airplanes within the maximum radar range usually (up to 400 at most),",
                 "but finding your own callsign in this table can be made faster, i.e. O(1), maybe on Vatsimbrief Helper side."
             ),
             "Your own airplane is usually the first or one of the first in this list (because it's sorted by distance). Leave it for now."
@@ -355,15 +369,7 @@ do
             local cameraPos = self:_worldToCameraSpace(client.worldPosSpring:getCurrentPosition())
             client.cameraHeading = client.worldHeading - viewHeading
             local clipPos = self:_cameraToClipSpace(cameraPos)
-            -- logMsg(client.name)
-            -- logMsg(client.worldPosSpring:getCurrentPosition()[1])
-            -- logMsg(client.worldPosSpring:getCurrentPosition()[2])
-            -- logMsg(client.worldPos[1])
-            -- logMsg(client.worldPos[2])
-            -- logMsg(cameraPos[1])
-            -- logMsg(cameraPos[2])
-            -- logMsg(clipPos[1])
-            -- logMsg(clipPos[2])
+
             if (self:_isVisible(clipPos)) then
                 numVisible = numVisible + 1
                 if (client.isVisible == false) then
@@ -527,7 +533,7 @@ do
 
     function RadarPanel:_renderHeadingLine(ownScreenPos, ownWorldPos, ownWorldHeading)
         local upAheadPoint = {0.0, self.zoomSpring:getCurrentPosition() * 0.5}
-        local headingRotation = Matrix2x2:newRotationMatrix(-ownWorldHeading * Utilities.DegToRad)
+        local headingRotation = self:_getRotationMatrixFromCache(-ownWorldHeading * Utilities.DegToRad)
         local headingPoint = headingRotation:multiplyVector2(upAheadPoint)
         headingPoint = vector2Add(ownWorldPos, headingPoint)
 
@@ -694,7 +700,7 @@ do
         if (vector2Length(panVector) > 0.0) then
             self.currentFollowMode = RadarPanel.Constants.FollowMode.Free
 
-            local panRotation = Matrix2x2:newRotationMatrix((360.0 - viewHeading) * Utilities.DegToRad)
+            local panRotation = self:_getRotationMatrixFromCache((360.0 - viewHeading) * Utilities.DegToRad)
             panVector = panRotation:multiplyVector2(panVector)
 
             local currentWorldViewTarget = Vector3:newFromVector3(self.worldViewPosSpring:getCurrentTargetPosition())
@@ -770,17 +776,9 @@ do
         )
     end
 
-    function RadarPanel:_renderTextToBlockingGrid(client, screenPos, textLen, clientIndex)
-        if ((self.currentBlockingClientOffset + clientIndex) % self.blockingGrid.heatUpFrames ~= 0) then
-            if (client.lastLabelBlockingValue == nil) then
-                client.lastLabelBlockingValue = 1
-            end
-            return client.lastLabelBlockingValue
-        end
-
-        local actualScreenPos = {screenPos[1] - 9, screenPos[2] - 3}
+    function RadarPanel:_tryRenderingTextToBlockingGrid(screenPos, textLen)
+        local startPos = self.blockingGrid:map(screenPos)
         local blockage = 0
-        local startPos = self.blockingGrid:map(actualScreenPos)
         local startX = startPos[1]
         local startY = startPos[2]
         local maxX = startX
@@ -789,27 +787,19 @@ do
             local currentCharacterPos = nil
             local gridPos = nil
 
-            currentCharacterPos = {actualScreenPos[1] + t * 7, actualScreenPos[2]}
+            currentCharacterPos = {screenPos[1] + t * 7, screenPos[2]}
             gridPos = self.blockingGrid:map(currentCharacterPos)
             maxX = math.max(maxX, gridPos[1])
             blockage = blockage + self.blockingGrid:getValue(gridPos)
 
-            -- self.DEBUG_BLOCKING_GRID(
-            --     function()
-            --         self:_renderDebugPixels(currentCharacterPos, 1, 1, 0xFF00FFFF)
-            --     end
-            -- )
+            -- self:_renderDebugPixels(currentCharacterPos, 1, 1, 0xFF00FFFF)
 
-            currentCharacterPos = {actualScreenPos[1] + t * 7, actualScreenPos[2] + 9}
+            currentCharacterPos = {screenPos[1] + t * 7, screenPos[2] + 9}
             gridPos = self.blockingGrid:map(currentCharacterPos)
             maxY = math.max(maxY, gridPos[2])
             blockage = blockage + self.blockingGrid:getValue(gridPos)
 
-            -- self.DEBUG_BLOCKING_GRID(
-            --     function()
-            --         self:_renderDebugPixels(currentCharacterPos, 1, 1, 0xFF00FFFF)
-            --     end
-            -- )
+            -- self:_renderDebugPixels(currentCharacterPos, 1, 1, 0xFF00FFFF)
         end
 
         if (blockage == 0) then
@@ -820,7 +810,29 @@ do
             end
         end
 
+        return blockage
+    end
+
+    function RadarPanel:_renderLabelToBlockingGrid(client, textLen, clientIndex)
+        if ((self.currentBlockingClientOffset + clientIndex) % self.blockingGrid.heatUpFrames ~= 0) then
+            return client.lastLabelBlockingValue
+        end
+
+        local xTextOffset = math.floor(-textLen * 3.5 + RadarPanel.Constants.HalfIconSize)
+        local labelBelowOffset = {xTextOffset - 9, 7}
+
+        local blockage = nil
+        local unblockedOffset = nil
+
+        blockage = self:_tryRenderingTextToBlockingGrid(vector2Add(client.screenPos, labelBelowOffset), textLen)
+        if (blockage <= 0) then
+            unblockedOffset = labelBelowOffset
+        end
+
         client.lastLabelBlockingValue = blockage
+        if (unblockedOffset ~= nil) then
+            client.lastUnblockedLabelOffset = unblockedOffset
+        end
 
         return blockage
     end
@@ -899,40 +911,39 @@ do
 
     function RadarPanel:_renderCompass()
         local northPoint = {0.0, self.zoomSpring:getCurrentPosition() * 0.75}
-        for n = 0, 359 do
-            if (n % 30 == 0) then
-                local compassRotation = Matrix2x2:newRotationMatrix(-n * Utilities.DegToRad)
-                local compassPoint = compassRotation:multiplyVector2(northPoint)
-                compassPoint = vector2Add(self.worldViewPosition, compassPoint)
+        local a = 0
+        while a < 12 do
+            local n = a * 30
+            local compassRotation = self:_getRotationMatrixFromCache(-n * Utilities.DegToRad)
+            local compassPoint = compassRotation:multiplyVector2(northPoint)
+            compassPoint = vector2Add(self.worldViewPosition, compassPoint)
 
-                compassPoint = self:_worldToCameraSpace(compassPoint)
-                compassPoint = self:_cameraToClipSpace(compassPoint)
-                compassPoint = self:_clipToScreenSpace(compassPoint)
+            compassPoint = self:_worldToCameraSpace(compassPoint)
+            compassPoint = self:_cameraToClipSpace(compassPoint)
+            compassPoint = self:_clipToScreenSpace(compassPoint)
 
-                compassPoint =
-                    vector2Add(
-                    compassPoint,
-                    {RadarPanel.Constants.ImguiTopLeftPadding, RadarPanel.Constants.ImguiTopLeftPadding}
-                )
+            compassPoint =
+                vector2Add(
+                compassPoint,
+                {RadarPanel.Constants.ImguiTopLeftPadding, RadarPanel.Constants.ImguiTopLeftPadding}
+            )
 
-                local compassStr = tostring(math.floor(n * 0.1))
-                imgui.SetCursorPos(
-                    math.floor(compassPoint[1]) - (compassStr:len() * 2.7),
-                    math.floor(compassPoint[2] - 8)
-                )
-                local compassColor = Globals.Colors.darkerBlue
-                if (n % 90 == 0) then
-                    compassColor = Globals.Colors.a320Blue
-                end
-                if (n == 0) then
-                    imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.darkerOrange)
-                    imgui.TextUnformatted("N")
-                else
-                    imgui.PushStyleColor(imgui.constant.Col.Text, compassColor)
-                    imgui.TextUnformatted(("%s"):format(compassStr))
-                end
-                imgui.PopStyleColor()
+            local compassStr = tostring(math.floor(n * 0.1))
+            imgui.SetCursorPos(math.floor(compassPoint[1]) - (compassStr:len() * 2.7), math.floor(compassPoint[2] - 8))
+            local compassColor = Globals.Colors.darkerBlue
+            if (n % 90 == 0) then
+                compassColor = Globals.Colors.a320Blue
             end
+            if (n == 0) then
+                imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.darkerOrange)
+                imgui.TextUnformatted("N")
+            else
+                imgui.PushStyleColor(imgui.constant.Col.Text, compassColor)
+                imgui.TextUnformatted(("%s"):format(compassStr))
+            end
+            imgui.PopStyleColor()
+
+            a = a + 1
         end
     end
 
@@ -1031,24 +1042,25 @@ do
         end
 
         if (not isOwnClient) then
-            local textScreenPos = {math.floor(client.screenPos[1] - client.name:len() * 2.7), client.screenPos[2] + 10}
             local textLen = client.name:len()
-            local blockage = self:_renderTextToBlockingGrid(client, textScreenPos, textLen, clientIndex)
+            local blockage = self:_renderLabelToBlockingGrid(client, textLen, clientIndex)
+
+            local visibilityChangeSpeed = 0.5
             if (blockage <= 0) then
-                client.labelVisibility = math.min(1.0, client.labelVisibility + 0.5 * self.frameTime.cappedDt)
+                client.labelVisibility =
+                    math.min(1.0, client.labelVisibility + visibilityChangeSpeed * self.frameTime.cappedDt)
             else
-                client.labelVisibility = math.max(0.0, client.labelVisibility - 0.5 * self.frameTime.cappedDt)
+                client.labelVisibility =
+                    math.max(0.0, client.labelVisibility - visibilityChangeSpeed * self.frameTime.cappedDt)
             end
 
-            -- if (blockage <= 0) then
-            --     imgui.SetCursorPos(math.floor(client.screenPos[1] - textLen * 2.7), client.screenPos[2] + 10)
-            --     imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.white)
-            --     imgui.TextUnformatted(client.name)
-            --     imgui.PopStyleColor()
-            -- end
+            if (client.labelVisibility > 0.25 and client.lastUnblockedLabelOffset ~= nil) then
+                local textPosOffset = {9, 3}
+                imgui.SetCursorPos(
+                    client.screenPos[1] + client.lastUnblockedLabelOffset[1] + 9,
+                    client.screenPos[2] + client.lastUnblockedLabelOffset[2] + 3
+                )
 
-            if (client.labelVisibility > 0.25) then
-                imgui.SetCursorPos(math.floor(client.screenPos[1] - textLen * 2.7), client.screenPos[2] + 10)
                 local actualColor =
                     Utilities.lerpColors(0x00AAAAAA, color, math.min(1.0, (client.labelVisibility - 0.25) * 2.0))
                 imgui.PushStyleColor(imgui.constant.Col.Text, actualColor)
@@ -1081,7 +1093,7 @@ do
         local leftBottomPos = {-imageHalfSize, imageHalfSize}
 
         local rotationAngle = (rotation * Utilities.DegToRad) % Utilities.FullCircleRadians
-        local rotationMatrix = Matrix2x2:newRotationMatrix(rotationAngle)
+        local rotationMatrix = self:_getRotationMatrixFromCache(rotationAngle)
 
         leftTopPos = rotationMatrix:multiplyVector2(leftTopPos)
         rightTopPos = rotationMatrix:multiplyVector2(rightTopPos)
