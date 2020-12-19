@@ -2,7 +2,8 @@ local FlexibleLength1DSpring
 do
     FlexibleLength1DSpring = {
         Constants = {
-            Epsilon = 0.0001
+            Epsilon = 0.0001,
+            RestEpsilon = 0.001
         }
     }
 
@@ -70,7 +71,7 @@ do
     function FlexibleLength1DSpring:_restOrDont()
         local netEntropyShortage =
             math.abs(self.lastDistance) + math.abs(self.currentSpeed) + math.abs(self.currentAcceleration)
-        if (netEntropyShortage < self.Constants.Epsilon) then
+        if (netEntropyShortage < self.Constants.RestEpsilon) then
             self.lastDistance = 0.0
             self.currentPosition = self.currentTargetPosition
             self.currentSpeed = 0.0

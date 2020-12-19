@@ -255,11 +255,17 @@ do
         self.FeedbackLinkBlob = InlineButtonBlob:new()
         self.FeedbackLinkBlob:addTextWithoutNewline("How does VR Radio Helper work for you?")
         self.FeedbackLinkBlob:addNewline()
-        self.FeedbackLinkBlob:addTextWithoutNewline("Please leave your feedback at Github (click link):")
+        self.FeedbackLinkBlob:addTextWithoutNewline("Please leave your feedback at: (click links):")
         self.FeedbackLinkBlob:addNewline()
         ClickableFeedbackBrowserLink:new():addLinkToBlob(
             self.FeedbackLinkBlob,
-            "Feedback: https://github.com/VerticalLongboard/xplane-vhf-helper/...",
+            "X-Plane Forum: https://forums.x-plane.org/...",
+            "https://forums.x-plane.org/index.php?/files/file/67072-vr-radio-helper-multicrew-realtime-vatsim-radar-station-information-atc-air-traffic-control-com-panel-nav-baro-transponder/"
+        )
+        self.FeedbackLinkBlob:addNewline()
+        ClickableFeedbackBrowserLink:new():addLinkToBlob(
+            self.FeedbackLinkBlob,
+            "Github: https://github.com/VerticalLongboard/xplane-vhf-helper/...",
             self:_getUrlWithDiagnosticParams(
                 "https://github.com/VerticalLongboard/xplane-vhf-helper/issues/new?labels=Feedback&title=New VR Radio Helper Feedback&body=Please leave your feedback here.\nThanks for taking your time!\n\n**---YOUR FEEDBACK HERE---**"
             )

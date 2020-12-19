@@ -5,7 +5,8 @@ local FlexibleLength3DSpring
 do
     FlexibleLength3DSpring = {
         Constants = {
-            Epsilon = 0.0001
+            Epsilon = 0.0001,
+            RestEpsilon = 0.001
         }
     }
 
@@ -74,7 +75,7 @@ do
         local netEntropyShortage =
             math.abs(self.lastDistance) + Vector3.squaredLength(self.currentVelocity) +
             Vector3.squaredLength(self.currentAcceleration)
-        if (netEntropyShortage < self.Constants.Epsilon) then
+        if (netEntropyShortage < self.Constants.RestEpsilon) then
             self.lastDistance = 0.0
             self.currentPosition = self.currentTargetPosition
             self.currentVelocity = Vector3:newZero()

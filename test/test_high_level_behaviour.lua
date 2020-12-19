@@ -365,7 +365,7 @@ function TestHighLevelBehaviour:testRadarPanelShowsAtLeastOnePlane()
 	self:_assertStringShowsUp("DLH57D")
 end
 
-function TestHighLevelBehaviour:_runAndGetFps(totalFrames)
+function TestHighLevelBehaviour:_runNFramesAndGetFps(totalFrames)
 	local framesRendered = 0
 	local totalTime = 0.0
 	local simulatedFrameTime = 1.0 / 60.0
@@ -398,14 +398,35 @@ end
 
 function TestHighLevelBehaviour:testCOMPanelRunsFastEnoughWithoutCallingImguiMethods()
 	self:_runForSomeTime(3.0)
-	local fps = self:_runAndGetFps(100)
+	local fps = self:_runNFramesAndGetFps(100)
 	luaUnit.assertTrue(fps > 1000.0)
 end
 
 function TestHighLevelBehaviour:testCOMAndSidePanelRunsFastEnoughWithoutCallingImguiMethods()
 	self:_openSidePanel()
 	self:_runForSomeTime(3.0)
-	local fps = self:_runAndGetFps(100)
+	local fps = self:_runNFramesAndGetFps(100)
+	luaUnit.assertTrue(fps > 1000.0)
+end
+
+function TestHighLevelBehaviour:testNAVPanelRunsFastEnoughWithoutCallingImguiMethods()
+	self:_pressButton(self.Constants.navPanelButtonTitle)
+	self:_runForSomeTime(3.0)
+	local fps = self:_runNFramesAndGetFps(100)
+	luaUnit.assertTrue(fps > 1000.0)
+end
+
+function TestHighLevelBehaviour:testTPPanelRunsFastEnoughWithoutCallingImguiMethods()
+	self:_pressButton(self.Constants.transponderPanelButtonTitle)
+	self:_runForSomeTime(3.0)
+	local fps = self:_runNFramesAndGetFps(100)
+	luaUnit.assertTrue(fps > 1000.0)
+end
+
+function TestHighLevelBehaviour:testBaroPanelRunsFastEnoughWithoutCallingImguiMethods()
+	self:_pressButton(self.Constants.baroPanelButtonTitle)
+	self:_runForSomeTime(3.0)
+	local fps = self:_runNFramesAndGetFps(100)
 	luaUnit.assertTrue(fps > 1000.0)
 end
 
@@ -425,8 +446,8 @@ function TestHighLevelBehaviour:testRadarPanelRunsFastEnoughWithoutCallingImguiM
 	vatsimbriefHelperStub:emitVatsimDataRefreshEvent()
 	self:_runForSomeTime(3.0)
 
-	local fps = self:_runAndGetFps(10)
-	luaUnit.assertTrue(fps > 60.0)
+	local fps = self:_runNFramesAndGetFps(10)
+	luaUnit.assertTrue(fps > 120.0)
 end
 
 function TestHighLevelBehaviour:testSideWindowOpensAndRendersCorrectly()

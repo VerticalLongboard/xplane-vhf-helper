@@ -2,23 +2,33 @@ local BlockingGrid
 do
     BlockingGrid = {}
 
-    function BlockingGrid:new(screenWidth, screenHeight)
+    function BlockingGrid:new(screenWidth, screenHeight, heatUpFrames)
         local newInstanceWithState = {}
         setmetatable(newInstanceWithState, self)
         self.__index = self
 
         self.screenWidth = screenWidth
         self.screenHeight = screenHeight
+        self.heatUpFrames = heatUpFrames
+
+        self.len = 20
+        self.grid = {}
+
         self:reset()
+
         return newInstanceWithState
     end
 
-    function BlockingGrid:reset()
-        self.len = 20
-        if (self.grid == nil) then
-            self.grid = {}
+    function BlockingGrid:coolDown()
+        for y = 1, self.len do
+            for x = 1, self.len do
+                local v = self.grid[y * self.len + x]
+                self.grid[y * self.len + x] = math.min(self.heatUpFrames - 1, math.max(0, v - 1))
+            end
         end
+    end
 
+    function BlockingGrid:reset()
         for y = 1, self.len do
             for x = 1, self.len do
                 self.grid[y * self.len + x] = 0
@@ -29,13 +39,13 @@ do
     function BlockingGrid:fill(gridPos)
         local i = gridPos[2] * self.len + gridPos[1]
         local v = self.grid[i]
-        self.grid[i] = v + 1
+        self.grid[i] = v + self.heatUpFrames - 1
     end
 
     function BlockingGrid:empty(gridPos)
         local i = gridPos[2] * self.len + gridPos[1]
         local v = self.grid[i]
-        self.grid[i] = v - 1
+        self.grid[i] = v - (self.heatUpFrames - 1)
     end
 
     function BlockingGrid:getValue(gridPos)

@@ -28,7 +28,8 @@ do
         ImguiTopLeftPadding = 5,
         MaxZoomRange = 600.0,
         IconSize = 10,
-        HalfIconSize = 5
+        HalfIconSize = 5,
+        BlockingGridAggregationFrames = 30
     }
     TRACK_ISSUE(
         "Imgui",
@@ -57,6 +58,8 @@ do
 
         self.headingSpring = FlexibleLength1DSpring:new(100, 0.2)
         self.zoomSpring = FlexibleLength1DSpring:new(100, 0.2)
+        self.zoomSpring:setTarget(1.0)
+        self.zoomSpring:overrideCurrentPosition(1.0)
         self.zoomRange = RadarPanel.Constants.MaxZoomRange
         self.zoomSpring:setTarget(self.zoomRange)
         self.worldViewPosSpring = FlexibleLength3DSpring:new(100, 0.2)
@@ -71,11 +74,9 @@ do
         self.screenWidth = 254 - RadarPanel.Constants.ImguiTopLeftPadding
         self.screenHeight = 308 - RadarPanel.Constants.ImguiTopLeftPadding
 
-        self.blockingGrid = BlockingGrid:new(self.screenWidth, self.screenHeight)
-
-        self.DEBUG_BLOCKING_GRID = function(f)
-            f()
-        end
+        self.currentBlockingClientOffset = 0
+        self.blockingGrid =
+            BlockingGrid:new(self.screenWidth, self.screenHeight, RadarPanel.Constants.BlockingGridAggregationFrames)
 
         return newInstanceWithState
     end
@@ -354,6 +355,15 @@ do
             local cameraPos = self:_worldToCameraSpace(client.worldPosSpring:getCurrentPosition())
             client.cameraHeading = client.worldHeading - viewHeading
             local clipPos = self:_cameraToClipSpace(cameraPos)
+            -- logMsg(client.name)
+            -- logMsg(client.worldPosSpring:getCurrentPosition()[1])
+            -- logMsg(client.worldPosSpring:getCurrentPosition()[2])
+            -- logMsg(client.worldPos[1])
+            -- logMsg(client.worldPos[2])
+            -- logMsg(cameraPos[1])
+            -- logMsg(cameraPos[2])
+            -- logMsg(clipPos[1])
+            -- logMsg(clipPos[2])
             if (self:_isVisible(clipPos)) then
                 numVisible = numVisible + 1
                 if (client.isVisible == false) then
@@ -368,20 +378,24 @@ do
     end
 
     function RadarPanel:_renderAllClients()
+        local i = 0
         imgui.SetWindowFontScale(1.0)
         for cid, client in pairs(self.renderClients) do
             if (client.isVisible) then
-                self:_renderClient(client)
+                self:_renderClient(client, i)
             end
+            i = i + 1
         end
     end
 
     function RadarPanel:_renderAllClientsIconBlockingPass()
+        local i = 0
         imgui.SetWindowFontScale(1.0)
         for cid, client in pairs(self.renderClients) do
             if (client.isVisible) then
-                self:_renderClientIconBlockingPass(client)
+                self:_renderClientIconBlockingPass(client, i)
             end
+            i = i + 1
         end
     end
 
@@ -420,7 +434,7 @@ do
 
     Globals.OVERRIDE(RadarPanel.renderToCanvas)
     function RadarPanel:renderToCanvas()
-        self.blockingGrid:reset()
+        self.blockingGrid:coolDown()
 
         self.zoomSpring:setTarget(self.zoomRange)
 
@@ -461,11 +475,7 @@ do
         self:_renderAllClients()
         self:_renderOwnMarker(ownScreenPos, Datarefs.getCurrentHeading(), viewHeading)
 
-        -- self.DEBUG_BLOCKING_GRID(
-        --     function()
-        --         self:_debugRenderBlockingGrid()
-        --     end
-        -- )
+        -- self:_debugRenderBlockingGrid()
 
         imgui.PopClipRect()
 
@@ -473,6 +483,11 @@ do
         self:_renderTimestamp()
 
         imgui.SetCursorPos(0.0, 309.0)
+
+        self.currentBlockingClientOffset = self.currentBlockingClientOffset + 1
+        if (self.currentBlockingClientOffset >= self.blockingGrid.heatUpFrames) then
+            self.currentBlockingClientOffset = 0
+        end
     end
 
     function RadarPanel:_renderTimestamp()
@@ -537,6 +552,7 @@ do
     end
 
     function RadarPanel:_renderOwnMarker(ownScreenPos, ownWorldHeading, viewHeading)
+        self:_renderIconToBlockingGrid(ownScreenPos, 0)
         self:_renderImageQuad(
             self.planeIcon,
             RadarPanel.Constants.HalfIconSize,
@@ -692,7 +708,11 @@ do
         imgui.PopStyleColor()
     end
 
-    function RadarPanel:_emptyIconInBlockingGrid(screenPos)
+    function RadarPanel:_emptyIconInBlockingGrid(screenPos, clientIndex)
+        if ((self.currentBlockingClientOffset + clientIndex) % self.blockingGrid.heatUpFrames ~= 0) then
+            return
+        end
+
         self.blockingGrid:emptyAtScreenPos(
             {
                 screenPos[1] - RadarPanel.Constants.HalfIconSize,
@@ -719,7 +739,11 @@ do
         )
     end
 
-    function RadarPanel:_renderIconToBlockingGrid(screenPos)
+    function RadarPanel:_renderIconToBlockingGrid(screenPos, clientIndex)
+        if ((self.currentBlockingClientOffset + clientIndex) % self.blockingGrid.heatUpFrames ~= 0) then
+            return
+        end
+
         self.blockingGrid:fillAtScreenPos(
             {
                 screenPos[1] - RadarPanel.Constants.HalfIconSize,
@@ -746,7 +770,14 @@ do
         )
     end
 
-    function RadarPanel:_renderTextToBlockingGrid(screenPos, textLen)
+    function RadarPanel:_renderTextToBlockingGrid(client, screenPos, textLen, clientIndex)
+        if ((self.currentBlockingClientOffset + clientIndex) % self.blockingGrid.heatUpFrames ~= 0) then
+            if (client.lastLabelBlockingValue == nil) then
+                client.lastLabelBlockingValue = 1
+            end
+            return client.lastLabelBlockingValue
+        end
+
         local actualScreenPos = {screenPos[1] - 9, screenPos[2] - 3}
         local blockage = 0
         local startPos = self.blockingGrid:map(actualScreenPos)
@@ -788,6 +819,8 @@ do
                 end
             end
         end
+
+        client.lastLabelBlockingValue = blockage
 
         return blockage
     end
@@ -903,14 +936,24 @@ do
         end
     end
 
-    function RadarPanel:_renderClientIconBlockingPass(client)
-        self:_renderIconToBlockingGrid(client.screenPos)
+    function RadarPanel:_renderClientIconBlockingPass(client, clientIndex)
+        self:_renderIconToBlockingGrid(client.screenPos, clientIndex)
     end
 
     function RadarPanel:_debugRenderBlockingGrid()
         for y = 1, self.blockingGrid.len do
             for x = 1, self.blockingGrid.len do
                 local v = self.blockingGrid.grid[y * self.blockingGrid.len + x]
+                local color =
+                    Utilities.lerpColors(
+                    0x2200FF00,
+                    0x220000FF,
+                    Utilities.Math.lerp(0.0, 1.0, math.min(1.0, v / self.blockingGrid.heatUpFrames))
+                )
+
+                if (v <= 0) then
+                    color = 0x22FF0000
+                end
                 Globals.ImguiUtils.renderDebugPixels(
                     self.whiteImage,
                     {
@@ -919,7 +962,7 @@ do
                     },
                     self.screenWidth / self.blockingGrid.len,
                     self.screenHeight / self.blockingGrid.len,
-                    Utilities.lerpColors(0x2200FF00, 0x220000FF, Utilities.Math.lerp(0.0, 1.0, math.min(1.0, v)))
+                    color
                 )
             end
         end
@@ -952,7 +995,7 @@ do
         )
     end
 
-    function RadarPanel:_renderClient(client)
+    function RadarPanel:_renderClient(client, clientIndex)
         local icon = nil
         local color = Globals.Colors.white
         local isOwnClient = false
@@ -975,7 +1018,7 @@ do
         end
 
         if (not isOwnObserverClient) then
-            self:_emptyIconInBlockingGrid(client.screenPos)
+            self:_emptyIconInBlockingGrid(client.screenPos, clientIndex)
         end
 
         if (client.dataTimestamp < self.dataTimestamp) then
@@ -990,12 +1033,19 @@ do
         if (not isOwnClient) then
             local textScreenPos = {math.floor(client.screenPos[1] - client.name:len() * 2.7), client.screenPos[2] + 10}
             local textLen = client.name:len()
-            local blockage = self:_renderTextToBlockingGrid(textScreenPos, textLen)
-            if (blockage == 0) then
+            local blockage = self:_renderTextToBlockingGrid(client, textScreenPos, textLen, clientIndex)
+            if (blockage <= 0) then
                 client.labelVisibility = math.min(1.0, client.labelVisibility + 0.5 * self.frameTime.cappedDt)
             else
                 client.labelVisibility = math.max(0.0, client.labelVisibility - 0.5 * self.frameTime.cappedDt)
             end
+
+            -- if (blockage <= 0) then
+            --     imgui.SetCursorPos(math.floor(client.screenPos[1] - textLen * 2.7), client.screenPos[2] + 10)
+            --     imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.white)
+            --     imgui.TextUnformatted(client.name)
+            --     imgui.PopStyleColor()
+            -- end
 
             if (client.labelVisibility > 0.25) then
                 imgui.SetCursorPos(math.floor(client.screenPos[1] - textLen * 2.7), client.screenPos[2] + 10)
@@ -1020,7 +1070,7 @@ do
                 color
             )
 
-            self:_renderIconToBlockingGrid(client.screenPos)
+            self:_renderIconToBlockingGrid(client.screenPos, clientIndex)
         end
     end
 
