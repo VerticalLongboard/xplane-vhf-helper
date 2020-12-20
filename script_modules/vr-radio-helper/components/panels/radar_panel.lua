@@ -14,8 +14,8 @@ do
 
     RadarPanel.Constants = {
         ClientType = {
-            Plane = "client",
-            Station = "Station"
+            Plane = 0,
+            Station = 1
         },
         HeadingMode = {
             North = "North",
@@ -27,8 +27,8 @@ do
         },
         ImguiTopLeftPadding = 5,
         MaxZoomRange = 600.0,
-        IconSize = 10,
-        HalfIconSize = 5,
+        IconSize = 16,
+        HalfIconSize = 8,
         BlockingGridAggregationFrames = 30
     }
     TRACK_ISSUE(
@@ -58,15 +58,14 @@ do
 
         self.headingSpring = FlexibleLength1DSpring:new(100, 0.2)
         self.zoomSpring = FlexibleLength1DSpring:new(100, 0.2)
-        self.zoomSpring:setTarget(40000.0)
-        self.zoomSpring:overrideCurrentPosition(40000.0)
         self.zoomRange = RadarPanel.Constants.MaxZoomRange
-        self.zoomSpring:setTarget(self.zoomRange)
+        self.zoomSpring:setTarget(self.zoomRange * 100.0)
+        self.zoomSpring:overrideCurrentPosition(self.zoomRange * 100.0)
+
         self.worldViewPosSpring = FlexibleLength3DSpring:new(100, 0.2)
 
         self.vatsimClients = nil
         self.renderClients = {}
-        self.totalVatsimClients = 0
         self.newVatsimClientsUpdateAvailable = false
 
         self.realScreenWidth = 254
@@ -82,81 +81,6 @@ do
         self.rotatedQuadCache = {}
 
         return newInstanceWithState
-    end
-
-    function RadarPanel:_convertVatsimLocationToFlat3DKm(latitude, longitude, altitude)
-        local lonDiff = Datarefs.getCurrentLongitude() - longitude
-        return {
-            111.320 * longitude + lonDiff * math.cos(latitude * Utilities.DegToRad),
-            110.574 * latitude,
-            altitude * Utilities.FeetToM
-        }
-    end
-
-    function RadarPanel:_convertVatsimClientsToRenderClients(vatsimclientTable)
-        local clients = {}
-        if (vatsimclientTable == nil) then
-            return clients
-        end
-
-        local num = 0
-        for _, vatsimClient in ipairs(vatsimclientTable) do
-            if (vatsimClient.currentDistance > RadarPanel.Constants.MaxZoomRange) then
-                logMsg(
-                    ("VR Radio Helper Radar: Stopping Vatsim data processing at client=%s distance=%.1fkm/%.1fnm num=%d/%d"):format(
-                        vatsimClient.callSign or vatsimClient.id,
-                        vatsimClient.currentDistance,
-                        vatsimClient.currentDistance * Utilities.KmToNm,
-                        num,
-                        #vatsimclientTable
-                    )
-                )
-
-                break
-            end
-            num = num + 1
-            local clientType = nil
-            if (vatsimClient.type == "Plane") then
-                clientType = RadarPanel.Constants.ClientType.Plane
-            elseif (vatsimClient.type == "Station") then
-                clientType = RadarPanel.Constants.ClientType.Station
-            end
-
-            if (clientType ~= nil) then
-                local newWorldPos =
-                    self:_convertVatsimLocationToFlat3DKm(
-                    tonumber(vatsimClient.latitude),
-                    tonumber(vatsimClient.longitude),
-                    tonumber(vatsimClient.altitude) or 0.0
-                )
-
-                local newName = vatsimClient.callSign or vatsimClient.id
-                local newHeading = 0.0
-                if (vatsimClient.heading ~= nil) then
-                    newHeading = tonumber(vatsimClient.heading)
-                end
-                local newSpeed = 0.0
-                if (vatsimClient.groundSpeed ~= nil) then
-                    newSpeed = tonumber(vatsimClient.groundSpeed) * Utilities.KnotsToKmh
-                end
-
-                table.insert(
-                    clients,
-                    {
-                        type = clientType,
-                        vatsimClientId = vatsimClient.vatsimClientId,
-                        name = newName,
-                        worldPos = newWorldPos,
-                        worldHeading = newHeading,
-                        speed = newSpeed,
-                        frequency = vatsimClient.frequency,
-                        labelVisibility = 0.0
-                    }
-                )
-            end
-        end
-
-        return clients
     end
 
     local Matrix2x2
@@ -282,50 +206,131 @@ do
         self.headingSpring:setTarget(newTarget)
     end
 
-    function RadarPanel:_refreshVatsimClientsNow()
-        if (not self.newVatsimClientsUpdateAvailable) then
-            return
+    function RadarPanel:_convertVatsimLocationToFlat3DKm(latitude, longitude, altitude)
+        local lonDiff = Datarefs.getCurrentLongitude() - longitude
+        return {
+            111.320 * longitude + lonDiff * math.cos(latitude * Utilities.DegToRad),
+            110.574 * latitude,
+            altitude * Utilities.FeetToM
+        }
+    end
+
+    function RadarPanel:_getRenderClientForVatsimClient(vatsimClient)
+        local clientType = nil
+        if (vatsimClient.type == "Plane") then
+            clientType = RadarPanel.Constants.ClientType.Plane
+        elseif (vatsimClient.type == "Station") then
+            clientType = RadarPanel.Constants.ClientType.Station
         end
 
+        if
+            (clientType ~= nil and vatsimClient.vatsimClientId ~= nil and vatsimClient.latitude ~= nil and
+                vatsimClient.longitude ~= nil and
+                (vatsimClient.callSign ~= nil or vatsimClient.id ~= nil))
+         then
+            local newWorldPos =
+                self:_convertVatsimLocationToFlat3DKm(
+                tonumber(vatsimClient.latitude),
+                tonumber(vatsimClient.longitude),
+                tonumber(vatsimClient.altitude) or 0.0
+            )
+
+            local newName = vatsimClient.callSign or vatsimClient.id
+            local newHeading = 0.0
+            if (vatsimClient.heading ~= nil) then
+                newHeading = tonumber(vatsimClient.heading)
+            end
+            local newSpeed = 0.0
+            if (vatsimClient.groundSpeed ~= nil) then
+                newSpeed = tonumber(vatsimClient.groundSpeed) * Utilities.KnotsToKmh
+            end
+
+            return {
+                type = clientType,
+                vatsimClientId = vatsimClient.vatsimClientId,
+                name = newName,
+                worldPos = newWorldPos,
+                worldHeading = newHeading,
+                speed = newSpeed,
+                frequency = vatsimClient.frequency
+            }
+        end
+
+        return nil
+    end
+
+    function RadarPanel:_updateRenderClient(newRenderClient, freshTimestamp)
+        local oldClient = self.renderClients[newRenderClient.vatsimClientId]
+        self.renderClients[newRenderClient.vatsimClientId] = newRenderClient
+        local updatedRenderClient = self.renderClients[newRenderClient.vatsimClientId]
+
+        if (oldClient == nil) then
+            updatedRenderClient.labelVisibility = 0.0
+            updatedRenderClient.lastLabelBlockingValue = 1
+            updatedRenderClient.isVisible = true
+            updatedRenderClient.worldPosSpring = FlexibleLength3DSpring:new(100.0, 0.3)
+            if (self.dataTimestamp ~= nil) then
+                updatedRenderClient.firstSeenTimestamp = LuaPlatform.Time.now()
+            else
+                updatedRenderClient.firstSeenTimestamp = LuaPlatform.Time.now() - 70.0
+            end
+        else
+            updatedRenderClient.lastUnblockedLabelOffset = oldClient.lastUnblockedLabelOffset
+            updatedRenderClient.lastLabelBlockingValue = oldClient.lastLabelBlockingValue
+            updatedRenderClient.labelVisibility = oldClient.labelVisibility
+            updatedRenderClient.worldPosSpring = oldClient.worldPosSpring
+            updatedRenderClient.firstSeenTimestamp = oldClient.firstSeenTimestamp
+        end
+
+        local headingRotation = self:_getRotationMatrixFromCache(-updatedRenderClient.worldHeading * Utilities.DegToRad)
+        local velocity = {0.0, updatedRenderClient.speed * Utilities.KmhToMeterPerSecond}
+        updatedRenderClient.velocity = headingRotation:multiplyVector2(velocity)
+
+        updatedRenderClient.worldPosSpring:setTarget(updatedRenderClient.worldPos)
+        updatedRenderClient.dataTimestamp = freshTimestamp
+    end
+
+    function RadarPanel:_refreshVatsimClientsNow()
         self.newVatsimClientsUpdateAvailable = false
 
         local vatsimClients, ownCallSign, timeStamp = VatsimData.getAllVatsimClientsWithOwnCallsignAndTimestamp()
 
-        self.totalVatsimClients = #vatsimClients
-        local newRenderClients = self:_convertVatsimClientsToRenderClients(vatsimClients)
-        if (#newRenderClients > 0) then
-            for _, newRenderClient in ipairs(newRenderClients) do
-                local oldClient = self.renderClients[newRenderClient.vatsimClientId]
-                self.renderClients[newRenderClient.vatsimClientId] = newRenderClient
-                local updatedRenderClient = self.renderClients[newRenderClient.vatsimClientId]
+        if (#vatsimClients > 0) then
+            local num = 0
+            local numValid = 0
+            for _, vatsimClient in ipairs(vatsimClients) do
+                if (vatsimClient.currentDistance > RadarPanel.Constants.MaxZoomRange) then
+                    logMsg(
+                        ("VR Radio Helper Radar: Stopping Vatsim data processing at client=%s distance=%.1fkm/%.1fnm num=%d/%d"):format(
+                            vatsimClient.callSign or vatsimClient.id,
+                            vatsimClient.currentDistance,
+                            vatsimClient.currentDistance * Utilities.KmToNm,
+                            num,
+                            #vatsimClients
+                        )
+                    )
 
-                if (oldClient == nil) then
-                    updatedRenderClient.lastLabelBlockingValue = 1
-                    updatedRenderClient.isVisible = true
-                    updatedRenderClient.worldPosSpring = FlexibleLength3DSpring:new(100.0, 0.3)
-                    if (self.dataTimestamp ~= nil) then
-                        updatedRenderClient.firstSeenTimestamp = LuaPlatform.Time.now()
-                    else
-                        updatedRenderClient.firstSeenTimestamp = LuaPlatform.Time.now() - 70.0
-                    end
-                else
-                    updatedRenderClient.lastUnblockedLabelOffset = oldClient.lastUnblockedLabelOffset
-                    updatedRenderClient.lastLabelBlockingValue = oldClient.lastLabelBlockingValue
-                    updatedRenderClient.labelVisibility = oldClient.labelVisibility
-                    updatedRenderClient.worldPosSpring = oldClient.worldPosSpring
-                    updatedRenderClient.firstSeenTimestamp = oldClient.firstSeenTimestamp
+                    break
                 end
+                num = num + 1
+                local newRenderClient = self:_getRenderClientForVatsimClient(vatsimClient)
 
-                local headingRotation =
-                    self:_getRotationMatrixFromCache(-updatedRenderClient.worldHeading * Utilities.DegToRad)
-                local velocity = {0.0, updatedRenderClient.speed * Utilities.KmhToMeterPerSecond}
-                updatedRenderClient.velocity = headingRotation:multiplyVector2(velocity)
-
-                updatedRenderClient.worldPosSpring:setTarget(updatedRenderClient.worldPos)
-                updatedRenderClient.dataTimestamp = timeStamp
+                if (newRenderClient ~= nil) then
+                    numValid = numValid + 1
+                    self:_updateRenderClient(newRenderClient, timeStamp)
+                end
             end
 
             self.dataTimestamp = timeStamp
+
+            if (numValid ~= num) then
+                logMsg(
+                    ("VR Radio Helper Radar: Warning: Found invalid Vatsim clients (valid=%d/%d) in data, ignoring."):format(
+                        numValid,
+                        num
+                    )
+                )
+            end
         end
 
         -- TODO: Maybe cleanup old render clients. It's a good feature having disconnected stations and/or planes still visible forever.
@@ -385,11 +390,38 @@ do
     end
 
     function RadarPanel:_renderAllClients()
+        self.tunedInStationClients = {}
+        self:_renderAllPlanes()
+        self:_renderAllStations()
+        self:_renderAllTunedInStationClients()
+    end
+
+    function RadarPanel:_renderAllPlanes()
         local i = 0
-        imgui.SetWindowFontScale(1.0)
+
         for cid, client in pairs(self.renderClients) do
-            if (client.isVisible) then
+            if (client.isVisible and client.type == RadarPanel.Constants.ClientType.Plane) then
                 self:_renderClient(client, i)
+            end
+            i = i + 1
+        end
+    end
+
+    function RadarPanel:_renderAllTunedInStationClients()
+        local i = 0
+        for _, client in ipairs(self.tunedInStationClients) do
+            if (client.isVisible and client.type == RadarPanel.Constants.ClientType.Station) then
+                self:_renderClient(client, i)
+            end
+            i = i + 1
+        end
+    end
+
+    function RadarPanel:_renderAllStations()
+        local i = 0
+        for cid, client in pairs(self.renderClients) do
+            if (client.isVisible and client.type == RadarPanel.Constants.ClientType.Station) then
+                self:_renderClient(client, i, true)
             end
             i = i + 1
         end
@@ -397,7 +429,6 @@ do
 
     function RadarPanel:_renderAllClientsIconBlockingPass()
         local i = 0
-        imgui.SetWindowFontScale(1.0)
         for cid, client in pairs(self.renderClients) do
             if (client.isVisible) then
                 self:_renderClientIconBlockingPass(client, i)
@@ -441,6 +472,7 @@ do
 
     Globals.OVERRIDE(RadarPanel.renderToCanvas)
     function RadarPanel:renderToCanvas()
+        imgui.SetWindowFontScale(1.0)
         self.blockingGrid:coolDown()
 
         self.zoomSpring:setTarget(self.zoomRange)
@@ -616,7 +648,6 @@ do
         end
 
         local diffVec = vector2Substract(self.worldViewPosSpring:getCurrentTargetPosition(), ownWorldPos)
-        local d = vector2Length(diffVec)
 
         imgui.SameLine()
         Globals.ImguiUtils.renderActiveInactiveButton(
@@ -698,7 +729,7 @@ do
         imgui.PopStyleColor()
         imgui.PopStyleColor()
 
-        if (vector2Length(panVector) > 0.0) then
+        if (panVector[1] ~= 0.0 or panVector[2] ~= 0.0) then
             self.currentFollowMode = RadarPanel.Constants.FollowMode.Free
 
             local panRotation = self:_getRotationMatrixFromCache((360.0 - viewHeading) * Utilities.DegToRad)
@@ -820,7 +851,7 @@ do
         end
 
         local xTextOffset = math.floor(-textLen * 3.5 + RadarPanel.Constants.HalfIconSize)
-        local labelBelowOffset = {xTextOffset - 9, 7}
+        local labelBelowOffset = {xTextOffset - 12, 7}
 
         local blockage = nil
         local unblockedOffset = nil
@@ -1007,7 +1038,7 @@ do
         )
     end
 
-    function RadarPanel:_renderClient(client, clientIndex)
+    function RadarPanel:_renderClient(client, clientIndex, collectTunedInStations)
         local icon = nil
         local color = Globals.Colors.white
         local isOwnClient = false
@@ -1022,6 +1053,10 @@ do
         else
             if (VHFHelperPublicInterface.isCurrentlyTunedIn(client.frequency)) then
                 color = Globals.Colors.a320Orange
+                if (collectTunedInStations == true) then
+                    table.insert(self.tunedInStationClients, client)
+                    return
+                end
             end
             if (isOwnClient) then
                 isOwnObserverClient = true
@@ -1058,8 +1093,8 @@ do
             if (client.labelVisibility > 0.25 and client.lastUnblockedLabelOffset ~= nil) then
                 local textPosOffset = {9, 3}
                 imgui.SetCursorPos(
-                    client.screenPos[1] + client.lastUnblockedLabelOffset[1] + 9,
-                    client.screenPos[2] + client.lastUnblockedLabelOffset[2] + 3
+                    client.screenPos[1] + client.lastUnblockedLabelOffset[1] + textPosOffset[1],
+                    client.screenPos[2] + client.lastUnblockedLabelOffset[2] + textPosOffset[2]
                 )
 
                 local actualColor =

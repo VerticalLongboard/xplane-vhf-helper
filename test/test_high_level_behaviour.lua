@@ -361,7 +361,7 @@ end
 function TestHighLevelBehaviour:testRadarPanelShowsAtLeastOnePlane()
 	self:_pressButton(self.Constants.radarPanelButtonTitle)
 	vatsimbriefHelperStub:emitVatsimDataRefreshEvent()
-	self:_runForSomeTime(3.0)
+	self:_runForSomeTime(0.5)
 	self:_assertStringShowsUp("DLH57D")
 end
 
@@ -444,7 +444,7 @@ function TestHighLevelBehaviour:testRadarPanelRunsFastEnoughWithoutCallingImguiM
 
 	flyWithLuaStub:writeAllDatarefValuesToLocalVariables()
 	vatsimbriefHelperStub:emitVatsimDataRefreshEvent()
-	self:_runForSomeTime(3.0)
+	self:_runForSomeTime(1.0)
 
 	local fps = self:_runNFramesAndGetFps(10)
 	luaUnit.assertTrue(fps > 120.0)
