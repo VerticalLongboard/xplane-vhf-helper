@@ -79,6 +79,7 @@ do
             BlockingGrid:new(self.screenWidth, self.screenHeight, RadarPanel.Constants.BlockingGridAggregationFrames)
 
         self.rotationMatrixCache = {}
+        self.rotatedQuadCache = {}
 
         return newInstanceWithState
     end
@@ -1086,13 +1087,19 @@ do
         end
     end
 
-    function RadarPanel:_renderImageQuad(imageId, imageHalfSize, screenPos, rotation, color)
-        local leftTopPos = {-imageHalfSize, -imageHalfSize}
-        local rightTopPos = {imageHalfSize, -imageHalfSize}
-        local rightBottomPos = {imageHalfSize, imageHalfSize}
-        local leftBottomPos = {-imageHalfSize, imageHalfSize}
+    function RadarPanel:_getRotatedQuadFromCache(rotationAngleDeg)
+        local cachedRotationAngle = math.floor(rotationAngleDeg)
 
-        local rotationAngle = (rotation * Utilities.DegToRad) % Utilities.FullCircleRadians
+        if (self.rotatedQuadCache[cachedRotationAngle] ~= nil) then
+            return self.rotatedQuadCache[cachedRotationAngle]
+        end
+
+        local leftTopPos = {-RadarPanel.Constants.HalfIconSize, -RadarPanel.Constants.HalfIconSize}
+        local rightTopPos = {RadarPanel.Constants.HalfIconSize, -RadarPanel.Constants.HalfIconSize}
+        local rightBottomPos = {RadarPanel.Constants.HalfIconSize, RadarPanel.Constants.HalfIconSize}
+        local leftBottomPos = {-RadarPanel.Constants.HalfIconSize, RadarPanel.Constants.HalfIconSize}
+
+        local rotationAngle = (rotationAngleDeg * Utilities.DegToRad) % Utilities.FullCircleRadians
         local rotationMatrix = self:_getRotationMatrixFromCache(rotationAngle)
 
         leftTopPos = rotationMatrix:multiplyVector2(leftTopPos)
@@ -1100,12 +1107,19 @@ do
         rightBottomPos = rotationMatrix:multiplyVector2(rightBottomPos)
         leftBottomPos = rotationMatrix:multiplyVector2(leftBottomPos)
 
+        self.rotatedQuadCache[cachedRotationAngle] = {leftTopPos, rightTopPos, rightBottomPos, leftBottomPos}
+
+        return self.rotatedQuadCache[cachedRotationAngle]
+    end
+
+    function RadarPanel:_renderImageQuad(imageId, imageHalfSize, screenPos, rotation, color)
+        local positions = self:_getRotatedQuadFromCache(rotation)
         local paddingVec =
             vector2Add(screenPos, {RadarPanel.Constants.ImguiTopLeftPadding, RadarPanel.Constants.ImguiTopLeftPadding})
-        leftTopPos = vector2Add(leftTopPos, paddingVec)
-        rightTopPos = vector2Add(rightTopPos, paddingVec)
-        rightBottomPos = vector2Add(rightBottomPos, paddingVec)
-        leftBottomPos = vector2Add(leftBottomPos, paddingVec)
+        leftTopPos = vector2Add(positions[1], paddingVec)
+        rightTopPos = vector2Add(positions[2], paddingVec)
+        rightBottomPos = vector2Add(positions[3], paddingVec)
+        leftBottomPos = vector2Add(positions[4], paddingVec)
 
         imgui.DrawList_AddImageQuad(
             imageId,
