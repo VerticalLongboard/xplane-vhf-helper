@@ -139,6 +139,7 @@ end
 
 VrRadioHelperCurrentLatitudeRead = 0
 VrRadioHelperCurrentLongitudeRead = 0
+VrRadioHelperCurrentAltitudeRead = 0
 VrRadioHelperCurrentTruePsiRead = 0
 
 local M = {}
@@ -148,6 +149,9 @@ end
 M.getCurrentLongitude = function()
     return VrRadioHelperCurrentLongitudeRead
 end
+M.getCurrentAltitude = function()
+    return VrRadioHelperCurrentAltitudeRead
+end
 M.getCurrentHeading = function()
     return VrRadioHelperCurrentTruePsiRead
 end
@@ -156,6 +160,7 @@ M.transponderModeToDescriptor = transponderModeToDescriptor
 M.initializeReadDatarefs = function()
     dataref("VrRadioHelperCurrentLatitudeRead", "sim/flightmodel/position/latitude", "readable")
     dataref("VrRadioHelperCurrentLongitudeRead", "sim/flightmodel/position/longitude", "readable")
+    dataref("VrRadioHelperCurrentAltitudeRead", "sim/flightmodel/position/elevation", "readable")
     dataref("VrRadioHelperCurrentTruePsiRead", "sim/flightmodel/position/true_psi", "readable")
 end
 M.bootstrap = function()

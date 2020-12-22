@@ -6,7 +6,7 @@ do
     FlexibleLength3DSpring = {
         Constants = {
             Epsilon = 0.0001,
-            RestEpsilon = 0.0001
+            RestEpsilon = 0.001
         }
     }
 

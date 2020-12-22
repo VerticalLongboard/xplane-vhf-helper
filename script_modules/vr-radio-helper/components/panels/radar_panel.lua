@@ -29,6 +29,8 @@ do
         MaxZoomRange = 600.0,
         IconSize = 16,
         HalfIconSize = 8,
+        VisibleIconSize = 10,
+        VisibleHalfIconSize = 5,
         BlockingGridAggregationFrames = 30
     }
     TRACK_ISSUE(
@@ -66,6 +68,7 @@ do
 
         self.vatsimClients = nil
         self.renderClients = {}
+        self.indexedRenderClients = {}
         self.newVatsimClientsUpdateAvailable = false
 
         self.realScreenWidth = 254
@@ -79,6 +82,8 @@ do
 
         self.rotationMatrixCache = {}
         self.rotatedQuadCache = {}
+
+        self.bubbleSortIndex = 1
 
         return newInstanceWithState
     end
@@ -211,7 +216,7 @@ do
         return {
             111.320 * longitude + lonDiff * math.cos(latitude * Utilities.DegToRad),
             110.574 * latitude,
-            altitude * Utilities.FeetToM
+            altitude * Utilities.FeetToMeter
         }
     end
 
@@ -363,6 +368,11 @@ do
                 break
             end
         end
+
+        self.indexedRenderClients = {}
+        for cid, client in pairs(self.renderClients) do
+            table.insert(self.indexedRenderClients, client)
+        end
     end
 
     function RadarPanel:refreshVatsimClients()
@@ -391,49 +401,41 @@ do
 
     function RadarPanel:_renderAllClients()
         self.tunedInStationClients = {}
+        self:_renderAllClientsIconBlockingPass()
         self:_renderAllPlanes()
         self:_renderAllStations()
         self:_renderAllTunedInStationClients()
     end
 
     function RadarPanel:_renderAllPlanes()
-        local i = 0
-
-        for cid, client in pairs(self.renderClients) do
+        for index, client in ipairs(self.indexedRenderClients) do
             if (client.isVisible and client.type == RadarPanel.Constants.ClientType.Plane) then
-                self:_renderClient(client, i)
+                self:_renderClient(client, index - 1)
             end
-            i = i + 1
-        end
-    end
-
-    function RadarPanel:_renderAllTunedInStationClients()
-        local i = 0
-        for _, client in ipairs(self.tunedInStationClients) do
-            if (client.isVisible and client.type == RadarPanel.Constants.ClientType.Station) then
-                self:_renderClient(client, i)
-            end
-            i = i + 1
         end
     end
 
     function RadarPanel:_renderAllStations()
-        local i = 0
-        for cid, client in pairs(self.renderClients) do
+        for index, client in ipairs(self.indexedRenderClients) do
             if (client.isVisible and client.type == RadarPanel.Constants.ClientType.Station) then
-                self:_renderClient(client, i, true)
+                self:_renderClient(client, index - 1, true)
             end
-            i = i + 1
+        end
+    end
+
+    function RadarPanel:_renderAllTunedInStationClients()
+        for manualIndex, client in pairs(self.tunedInStationClients) do
+            if (client.isVisible) then
+                self:_renderClient(client, manualIndex)
+            end
         end
     end
 
     function RadarPanel:_renderAllClientsIconBlockingPass()
-        local i = 0
-        for cid, client in pairs(self.renderClients) do
+        for index, client in ipairs(self.indexedRenderClients) do
             if (client.isVisible) then
-                self:_renderClientIconBlockingPass(client, i)
+                self:_renderClientIconBlockingPass(client, index - 1)
             end
-            i = i + 1
         end
     end
 
@@ -470,6 +472,30 @@ do
         end
     end
 
+    function RadarPanel:_bubbleSortClientsByAltitude()
+        if (self.bubbleSortIndex >= #self.indexedRenderClients) then
+            self.bubbleSortIndex = 1
+        end
+
+        if (#self.indexedRenderClients < 2) then
+            return
+        end
+
+        local swapped = false
+        if
+            (self.indexedRenderClients[self.bubbleSortIndex + 1].worldPos[3] <
+                self.indexedRenderClients[self.bubbleSortIndex].worldPos[3])
+         then
+            swapped = true
+            local swapClient = self.indexedRenderClients[self.bubbleSortIndex]
+            self.indexedRenderClients[self.bubbleSortIndex] = self.indexedRenderClients[self.bubbleSortIndex + 1]
+            self.indexedRenderClients[self.bubbleSortIndex + 1] = swapClient
+        end
+
+        self.bubbleSortIndex = self.bubbleSortIndex + 1
+        return swapped
+    end
+
     Globals.OVERRIDE(RadarPanel.renderToCanvas)
     function RadarPanel:renderToCanvas()
         imgui.SetWindowFontScale(1.0)
@@ -487,18 +513,22 @@ do
 
         local viewHeading = self.headingSpring:getCurrentPosition() % 360.0
 
-        local ownWorldPos =
-            self:_convertVatsimLocationToFlat3DKm(Datarefs.getCurrentLatitude(), Datarefs.getCurrentLongitude(), 0.0)
+        self.ownWorldPos =
+            self:_convertVatsimLocationToFlat3DKm(
+            Datarefs.getCurrentLatitude(),
+            Datarefs.getCurrentLongitude(),
+            Datarefs.getCurrentAltitude() * Utilities.MeterToFeet
+        )
 
         if (self.currentFollowMode == RadarPanel.Constants.FollowMode.Follow) then
-            self.worldViewPosSpring:setTarget(ownWorldPos)
+            self.worldViewPosSpring:setTarget(self.ownWorldPos)
         end
 
         local worldViewPos = self.worldViewPosSpring:getCurrentPosition()
 
         self:_precomputeFrameConstants(viewHeading, {worldViewPos[1], worldViewPos[2]})
 
-        local ownScreenPos = self:_worldToCameraSpace(ownWorldPos)
+        local ownScreenPos = self:_worldToCameraSpace(self.ownWorldPos)
         ownScreenPos = self:_cameraToClipSpace(ownScreenPos)
         ownScreenPos = self:_clipToScreenSpace(ownScreenPos)
 
@@ -506,11 +536,10 @@ do
 
         imgui.PushClipRect(0, 0, self.realScreenWidth, self.realScreenHeight, true)
 
-        self:_renderDistanceCircles(ownWorldPos, ownScreenPos, worldViewPos, viewHeading)
+        self:_renderDistanceCircles(self.ownWorldPos, ownScreenPos, worldViewPos, viewHeading)
         self:_renderCompass()
-        self:_renderHeadingLine(ownScreenPos, ownWorldPos, Datarefs.getCurrentHeading())
+        self:_renderHeadingLine(ownScreenPos, self.ownWorldPos, Datarefs.getCurrentHeading())
 
-        self:_renderAllClientsIconBlockingPass()
         self:_renderAllClients()
         self:_renderOwnMarker(ownScreenPos, Datarefs.getCurrentHeading(), viewHeading)
 
@@ -518,8 +547,13 @@ do
 
         imgui.PopClipRect()
 
-        self:_renderControlButtons(ownWorldPos, viewHeading)
+        self:_renderControlButtons(viewHeading)
         self:_renderTimestamp()
+
+        local numPercentageOfClients = math.max(1, math.floor(#self.indexedRenderClients * 0.5))
+        for i = 1, numPercentageOfClients do
+            self:_bubbleSortClientsByAltitude()
+        end
 
         imgui.SetCursorPos(0.0, 309.0)
 
@@ -613,7 +647,7 @@ do
         end
     end
 
-    function RadarPanel:_renderControlButtons(ownWorldPos, viewHeading)
+    function RadarPanel:_renderControlButtons(viewHeading)
         imgui.SetCursorPos(RadarPanel.Constants.ImguiTopLeftPadding, RadarPanel.Constants.ImguiTopLeftPadding)
         imgui.PushStyleColor(imgui.constant.Col.Button, Globals.Colors.defaultImguiButtonBackground)
         imgui.PushStyleColor(imgui.constant.Col.ButtonActive, Globals.Colors.defaultImguiButtonBackground)
@@ -646,8 +680,6 @@ do
                 end
             end
         end
-
-        local diffVec = vector2Substract(self.worldViewPosSpring:getCurrentTargetPosition(), ownWorldPos)
 
         imgui.SameLine()
         Globals.ImguiUtils.renderActiveInactiveButton(
@@ -753,26 +785,26 @@ do
 
         self.blockingGrid:emptyAtScreenPos(
             {
-                screenPos[1] - RadarPanel.Constants.HalfIconSize,
-                screenPos[2] - RadarPanel.Constants.HalfIconSize
+                screenPos[1] - RadarPanel.Constants.VisibleHalfIconSize,
+                screenPos[2] - RadarPanel.Constants.VisibleHalfIconSize
             }
         )
         self.blockingGrid:emptyAtScreenPos(
             {
-                screenPos[1] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize,
-                screenPos[2] - RadarPanel.Constants.HalfIconSize
+                screenPos[1] + RadarPanel.Constants.VisibleIconSize - RadarPanel.Constants.VisibleHalfIconSize,
+                screenPos[2] - RadarPanel.Constants.VisibleHalfIconSize
             }
         )
         self.blockingGrid:emptyAtScreenPos(
             {
-                screenPos[1] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize,
-                screenPos[2] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize
+                screenPos[1] + RadarPanel.Constants.VisibleIconSize - RadarPanel.Constants.VisibleHalfIconSize,
+                screenPos[2] + RadarPanel.Constants.VisibleIconSize - RadarPanel.Constants.VisibleHalfIconSize
             }
         )
         self.blockingGrid:emptyAtScreenPos(
             {
-                screenPos[1] - RadarPanel.Constants.HalfIconSize,
-                screenPos[2] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize
+                screenPos[1] - RadarPanel.Constants.VisibleHalfIconSize,
+                screenPos[2] + RadarPanel.Constants.VisibleIconSize - RadarPanel.Constants.VisibleHalfIconSize
             }
         )
     end
@@ -784,26 +816,26 @@ do
 
         self.blockingGrid:fillAtScreenPos(
             {
-                screenPos[1] - RadarPanel.Constants.HalfIconSize,
-                screenPos[2] - RadarPanel.Constants.HalfIconSize
+                screenPos[1] - RadarPanel.Constants.VisibleHalfIconSize,
+                screenPos[2] - RadarPanel.Constants.VisibleHalfIconSize
             }
         )
         self.blockingGrid:fillAtScreenPos(
             {
-                screenPos[1] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize,
-                screenPos[2] - RadarPanel.Constants.HalfIconSize
+                screenPos[1] + RadarPanel.Constants.VisibleIconSize - RadarPanel.Constants.VisibleHalfIconSize,
+                screenPos[2] - RadarPanel.Constants.VisibleHalfIconSize
             }
         )
         self.blockingGrid:fillAtScreenPos(
             {
-                screenPos[1] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize,
-                screenPos[2] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize
+                screenPos[1] + RadarPanel.Constants.VisibleIconSize - RadarPanel.Constants.VisibleHalfIconSize,
+                screenPos[2] + RadarPanel.Constants.VisibleIconSize - RadarPanel.Constants.VisibleHalfIconSize
             }
         )
         self.blockingGrid:fillAtScreenPos(
             {
-                screenPos[1] - RadarPanel.Constants.HalfIconSize,
-                screenPos[2] + RadarPanel.Constants.IconSize - RadarPanel.Constants.HalfIconSize
+                screenPos[1] - RadarPanel.Constants.VisibleHalfIconSize,
+                screenPos[2] + RadarPanel.Constants.VisibleIconSize - RadarPanel.Constants.VisibleHalfIconSize
             }
         )
     end
@@ -962,12 +994,10 @@ do
 
             local compassStr = tostring(math.floor(n * 0.1))
             imgui.SetCursorPos(math.floor(compassPoint[1]) - (compassStr:len() * 2.7), math.floor(compassPoint[2] - 8))
-            local compassColor = Globals.Colors.darkerBlue
-            if (n % 90 == 0) then
-                compassColor = Globals.Colors.a320Blue
-            end
+            local compassColor = Globals.Colors.darkerOrange
+
             if (n == 0) then
-                imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.darkerOrange)
+                imgui.PushStyleColor(imgui.constant.Col.Text, Globals.Colors.a320Orange)
                 imgui.TextUnformatted("N")
             else
                 imgui.PushStyleColor(imgui.constant.Col.Text, compassColor)
@@ -981,61 +1011,6 @@ do
 
     function RadarPanel:_renderClientIconBlockingPass(client, clientIndex)
         self:_renderIconToBlockingGrid(client.screenPos, clientIndex)
-    end
-
-    function RadarPanel:_debugRenderBlockingGrid()
-        for y = 1, self.blockingGrid.len do
-            for x = 1, self.blockingGrid.len do
-                local v = self.blockingGrid.grid[y * self.blockingGrid.len + x]
-                local color =
-                    Utilities.lerpColors(
-                    0x2200FF00,
-                    0x220000FF,
-                    Utilities.Math.lerp(0.0, 1.0, math.min(1.0, v / self.blockingGrid.heatUpFrames))
-                )
-
-                if (v <= 0) then
-                    color = 0x22FF0000
-                end
-                Globals.ImguiUtils.renderDebugPixels(
-                    self.whiteImage,
-                    {
-                        ((x - 1) * self.screenWidth) / self.blockingGrid.len,
-                        ((y - 1) * self.screenHeight) / self.blockingGrid.len
-                    },
-                    self.screenWidth / self.blockingGrid.len,
-                    self.screenHeight / self.blockingGrid.len,
-                    color
-                )
-            end
-        end
-    end
-
-    function RadarPanel:_renderDebugPixels(screenPos, rectWidth, rectHeight, color)
-        local actualScreenPos = {
-            screenPos[1] + RadarPanel.Constants.ImguiTopLeftPadding,
-            screenPos[2] + RadarPanel.Constants.ImguiTopLeftPadding
-        }
-        imgui.DrawList_AddImageQuad(
-            self.whiteImage,
-            actualScreenPos[1],
-            actualScreenPos[2],
-            actualScreenPos[1] + rectWidth,
-            actualScreenPos[2],
-            actualScreenPos[1] + rectWidth,
-            actualScreenPos[2] + rectHeight,
-            actualScreenPos[1],
-            actualScreenPos[2] + rectHeight,
-            0,
-            0,
-            1,
-            0,
-            1,
-            1,
-            0,
-            1,
-            color
-        )
     end
 
     function RadarPanel:_renderClient(client, clientIndex, collectTunedInStations)
@@ -1054,7 +1029,7 @@ do
             if (VHFHelperPublicInterface.isCurrentlyTunedIn(client.frequency)) then
                 color = Globals.Colors.a320Orange
                 if (collectTunedInStations == true) then
-                    table.insert(self.tunedInStationClients, client)
+                    self.tunedInStationClients[clientIndex] = client
                     return
                 end
             end
@@ -1075,6 +1050,34 @@ do
 
         if (LuaPlatform.Time.now() - client.firstSeenTimestamp < 60.0) then
             color = Globals.Colors.a320Green
+        end
+
+        if
+            (client.type == RadarPanel.Constants.ClientType.Plane and color ~= Globals.Colors.a320Green and
+                color ~= Globals.Colors.darkerOrange)
+         then
+            -- 0xFF7FC3FF,
+            if (client.worldPos[3] > self.ownWorldPos[3]) then
+                color =
+                    Utilities.lerpColors(
+                    Globals.Colors.white,
+                    Globals.Colors.a320Blue,
+                    math.min(
+                        1.0,
+                        math.abs(client.worldPos[3] - self.ownWorldPos[3]) * (1.0 / (10000.0 * Utilities.FeetToMeter))
+                    )
+                )
+            else
+                color =
+                    Utilities.lerpColors(
+                    Globals.Colors.white,
+                    Globals.Colors.darkerBlue,
+                    math.min(
+                        1.0,
+                        math.abs(client.worldPos[3] - self.ownWorldPos[3]) * (1.0 / (10000.0 * Utilities.FeetToMeter))
+                    )
+                )
+            end
         end
 
         if (not isOwnClient) then
@@ -1166,6 +1169,61 @@ do
             rightBottomPos[2],
             leftBottomPos[1],
             leftBottomPos[2],
+            0,
+            0,
+            1,
+            0,
+            1,
+            1,
+            0,
+            1,
+            color
+        )
+    end
+
+    function RadarPanel:_debugRenderBlockingGrid()
+        for y = 1, self.blockingGrid.len do
+            for x = 1, self.blockingGrid.len do
+                local v = self.blockingGrid.grid[y * self.blockingGrid.len + x]
+                local color =
+                    Utilities.lerpColors(
+                    0x2200FF00,
+                    0x220000FF,
+                    Utilities.Math.lerp(0.0, 1.0, math.min(1.0, v / self.blockingGrid.heatUpFrames))
+                )
+
+                if (v <= 0) then
+                    color = 0x22FF0000
+                end
+                Globals.ImguiUtils.renderDebugPixels(
+                    self.whiteImage,
+                    {
+                        ((x - 1) * self.screenWidth) / self.blockingGrid.len,
+                        ((y - 1) * self.screenHeight) / self.blockingGrid.len
+                    },
+                    self.screenWidth / self.blockingGrid.len,
+                    self.screenHeight / self.blockingGrid.len,
+                    color
+                )
+            end
+        end
+    end
+
+    function RadarPanel:_renderDebugPixels(screenPos, rectWidth, rectHeight, color)
+        local actualScreenPos = {
+            screenPos[1] + RadarPanel.Constants.ImguiTopLeftPadding,
+            screenPos[2] + RadarPanel.Constants.ImguiTopLeftPadding
+        }
+        imgui.DrawList_AddImageQuad(
+            self.whiteImage,
+            actualScreenPos[1],
+            actualScreenPos[2],
+            actualScreenPos[1] + rectWidth,
+            actualScreenPos[2],
+            actualScreenPos[1] + rectWidth,
+            actualScreenPos[2] + rectHeight,
+            actualScreenPos[1],
+            actualScreenPos[2] + rectHeight,
             0,
             0,
             1,

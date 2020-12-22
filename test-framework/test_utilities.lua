@@ -132,7 +132,7 @@ Utilities.roundFloatingPointToNearestInteger = function(v)
 end
 
 Utilities.DegToRad = 0.017453293
-Utilities.FeetToM = 0.3048
+Utilities.FeetToMeter = 0.3048
 Utilities.KnotsToKmh = 1.852
 Utilities.EarthRadius = 6371
 
