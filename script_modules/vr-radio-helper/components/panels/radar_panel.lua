@@ -265,9 +265,10 @@ do
     end
 
     function RadarPanel:_updateRenderClient(newRenderClient, freshTimestamp)
-        local oldClient = self.renderClients[newRenderClient.vatsimClientId]
-        self.renderClients[newRenderClient.vatsimClientId] = newRenderClient
-        local updatedRenderClient = self.renderClients[newRenderClient.vatsimClientId]
+        local uniqueId = ("%s%s"):format(newRenderClient.vatsimClientId, newRenderClient.name)
+        local oldClient = self.renderClients[uniqueId]
+        self.renderClients[uniqueId] = newRenderClient
+        local updatedRenderClient = self.renderClients[uniqueId]
 
         if (oldClient == nil) then
             updatedRenderClient.labelVisibility = 0.0
