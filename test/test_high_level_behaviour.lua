@@ -366,8 +366,8 @@ end
 function TestHighLevelBehaviour:testRadarPanelShowsAtLeastOnePlane()
 	self:_pressButton(self.Constants.radarPanelButtonTitle)
 	vatsimbriefHelperStub:emitVatsimDataRefreshEvent()
-	self:_runForSomeTime(0.5)
-	-- self:_assertStringShowsUp("DLH57D")
+	self:_runForSomeTime(2.0)
+	self:_assertStringShowsUp("DLH57D")
 end
 
 function TestHighLevelBehaviour:_runNFramesAndGetFps(totalFrames)
