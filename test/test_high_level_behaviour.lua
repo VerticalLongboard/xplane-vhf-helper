@@ -452,7 +452,7 @@ function TestHighLevelBehaviour:testRadarPanelRunsFastEnoughWithoutCallingImguiM
 	self:_runForSomeTime(1.0)
 
 	local fps = self:_runNFramesAndGetFps(10)
-	-- luaUnit.assertTrue(fps > 120.0)
+	luaUnit.assertTrue(fps > 120.0)
 end
 
 function TestHighLevelBehaviour:testSideWindowOpensAndRendersCorrectly()
