@@ -323,7 +323,7 @@ function TestHighLevelBehaviour:testCurrentBarosAreShownSomewhere()
 end
 
 function TestHighLevelBehaviour:testTogglePanelCommandTogglesPanel()
-	local toggleWindowCommandName = "FlyWithLua/VR Radio Helper/TogglePanel"
+	local toggleWindowCommandName = "FlyWithLua/VR_Radio_Helper/TogglePanel"
 	local windowTitle = vhfHelperPackageExport.test.vhfHelperMainWindow.Constants.defaultWindowName
 
 	luaUnit.assertIsTrue(flyWithLuaStub:isWindowOpen(flyWithLuaStub:getWindowByTitle(windowTitle)))

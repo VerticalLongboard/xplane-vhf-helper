@@ -6,6 +6,7 @@ local Globals = {
     decimalCharacter = ".",
     underscoreCharacter = "_",
     readableScriptName = "VR Radio Helper",
+    commandReadableScriptName = "VR_Radio_Helper",
     sidePanelName = "VR Radio Helper Feedback and Settings"
 }
 

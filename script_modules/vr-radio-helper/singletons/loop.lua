@@ -104,8 +104,8 @@ do
         )
 
         create_command(
-            "FlyWithLua/" .. Globals.readableScriptName .. "/TogglePanel",
-            "Toggle " .. Globals.readableScriptName .. " Window",
+            "FlyWithLua/" .. Globals.commandReadableScriptName .. "/TogglePanel",
+            "Toggle " .. Globals.commandReadableScriptName .. " Window",
             "vhfHelperMainWindow:toggle()",
             "",
             ""
